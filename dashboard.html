@@ -1,0 +1,3618 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>K&L CRM Dashboard</title>
+  <style>
+    /* ========================================
+       CSS Variables - Design System
+       ======================================== */
+    :root {
+      --primary: #0F2537;
+      --primary-light: #1a3a52;
+      --primary-dark: #0a1929;
+      --success: #27ae60;
+      --success-light: #2ecc71;
+      --warning: #f39c12;
+      --warning-light: #f1c40f;
+      --danger: #c0392b;
+      --danger-light: #e74c3c;
+      --bg: #f2f2f6;
+      --bg-dark: #e5e5ea;
+      --card-bg: #ffffff;
+      --text: #1c1c1e;
+      --text-secondary: #8e8e93;
+      --text-light: #ffffff;
+      --border: #dcdde1;
+      --border-light: #e9ecef;
+      --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+      --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 16px;
+      --transition: all 0.2s ease;
+      --transition-slow: all 0.3s ease;
+      --sidebar-width: 450px;
+      --sidebar-min-width: 320px;
+      --sidebar-max-width: 600px;
+      --header-height: 64px;
+    }
+
+    /* CRM Dashboard Panel */
+    .crm-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .crm-tile {
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+    }
+
+    .crm-tile.red {
+      background: var(--danger);
+      color: var(--text-light);
+    }
+
+    .crm-tile.yellow {
+      background: var(--warning);
+      color: var(--text);
+    }
+
+    .crm-tile.green {
+      background: var(--success);
+      color: var(--text-light);
+    }
+
+    .crm-tile.orange {
+      background: var(--warning-light);
+      color: var(--text);
+    }
+
+    .crm-tile.blue {
+      background: var(--primary-light);
+      color: var(--text-light);
+    }
+
+    .crm-tile.teal {
+      background: #1abc9c;
+      color: var(--text-light);
+    }
+
+    .crm-tile.gray {
+      background: var(--text-secondary);
+      color: var(--text-light);
+    }
+
+    .crm-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    .crm-table th,
+    .crm-table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 12px;
+    }
+
+    .crm-table th {
+      text-transform: uppercase;
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+
+    /* ========================================
+       Reset & Base Styles
+       ======================================== */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ========================================
+       Sidebar Container (works in both dialog and sidebar contexts)
+       ======================================== */
+    .sidebar-container {
+      position: relative;
+      height: 100%;
+      width: 100%;
+      min-width: var(--sidebar-min-width);
+      max-width: var(--sidebar-max-width);
+      background: var(--card-bg);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      z-index: 999999;
+      transition: box-shadow var(--transition), transform var(--transition-slow);
+      overflow: hidden;
+      /* Prevent container overflow */
+    }
+
+    /* Dialog context - make it floating */
+    body:has(.dialog-context) .sidebar-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: var(--sidebar-width);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar-container.floating {
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+      transform: translateX(-10px);
+    }
+
+    .sidebar-container.resizing {
+      transition: none;
+    }
+
+    /* ========================================
+       Resize Handle
+       ======================================== */
+    .resize-handle {
+      position: absolute;
+      top: 0;
+      right: -8px;
+      width: 16px;
+      height: 100%;
+      cursor: ew-resize;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000000;
+      background: linear-gradient(90deg, transparent, rgba(15, 37, 55, 0.1));
+      border-radius: 0 8px 8px 0;
+    }
+
+    .resize-handle::before {
+      content: '';
+      height: 60px;
+      width: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      transition: var(--transition);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .resize-handle:hover::before,
+    .resize-handle.active::before {
+      background: var(--primary);
+      box-shadow: 0 0 8px rgba(15, 37, 55, 0.4);
+    }
+
+    /* ========================================
+       Sidebar Header
+       ======================================== */
+    .sidebar-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--text-light);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-shrink: 0;
+      cursor: move;
+      user-select: none;
+      position: relative;
+    }
+
+    .sidebar-header::before {
+      content: '⋮⋮';
+      position: absolute;
+      left: 8px;
+      font-size: 10px;
+      opacity: 0.6;
+      letter-spacing: 2px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-badge {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(8px);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* ========================================
+       Sidebar Content
+       ======================================== */
+    .sidebar-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px;
+      scroll-behavior: smooth;
+    }
+
+    .sidebar-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar-content::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    .sidebar-content::-webkit-scrollbar-thumb:hover {
+      background: var(--text-secondary);
+    }
+
+    /* ========================================
+       Section Styles
+       ======================================== */
+    .section {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border-light);
+      transition: var(--transition);
+    }
+
+    .section:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .section-title-icon {
+      font-size: 14px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, var(--border-light), transparent);
+      margin-left: 8px;
+    }
+
+    /* ========================================
+       Form Elements
+       ======================================== */
+    .form-group {
+      margin-bottom: 8px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: inherit;
+      background: var(--card-bg);
+      color: var(--text);
+      transition: var(--transition);
+    }
+
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15, 37, 55, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+      max-height: 200px;
+    }
+
+    /* ========================================
+       Status Buttons
+       ======================================== */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* ========================================
+       Date Grid
+       ======================================== */
+    .date-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* ========================================
+       Buttons
+       ======================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .btn:hover::before {
+      opacity: 1;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--text-light);
+      box-shadow: 0 4px 12px rgba(15, 37, 55, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(15, 37, 55, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-warning {
+      width: 100%;
+      background: linear-gradient(135deg, var(--warning) 0%, var(--warning-light) 100%);
+      color: var(--text);
+      box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+    }
+
+    .btn-warning:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(243, 156, 18, 0.4);
+    }
+
+    /* ========================================
+       Stats Grid
+       ======================================== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg-dark) 100%);
+      padding: 14px 10px;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      border: 1px solid var(--border-light);
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ========================================
+       Quick Links
+       ======================================== */
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .quick-link {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 8px;
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .quick-link:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: linear-gradient(135deg, rgba(15, 37, 55, 0.05) 0%, transparent 100%);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    /* ========================================
+       Suggestions / Autocomplete
+       ======================================== */
+    .suggestions-container {
+      position: relative;
+    }
+
+    .suggestions {
+      position: absolute;
+      top: calc(100% - 2px);
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+      max-height: 180px;
+      overflow-y: auto;
+      display: none;
+      z-index: 1000001;
+      box-shadow: var(--shadow-lg);
+      border-top: none;
+    }
+
+    .suggestions.active {
+      display: block;
+      animation: slideDown 0.2s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .suggestion-item {
+      padding: 12px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-light);
+      transition: var(--transition);
+    }
+
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    .suggestion-item:hover,
+    .suggestion-item.highlighted {
+      background: linear-gradient(135deg, rgba(15, 37, 55, 0.08) 0%, transparent 100%);
+      color: var(--primary);
+    }
+
+    /* ========================================
+       Last Touch Card
+       ======================================== */
+    .last-touch-card {
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg-dark) 100%);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 12px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .last-touch-card.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .last-touch-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .last-touch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .last-touch-item {
+      background: var(--card-bg);
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-light);
+    }
+
+    .last-touch-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 4px;
+    }
+
+    .last-touch-value {
+      font-weight: 700;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .days-since {
+      font-weight: 800;
+      color: var(--warning);
+    }
+
+    .days-since.low {
+      color: var(--success);
+    }
+
+    .days-since.high {
+      color: var(--danger);
+    }
+
+    /* ========================================
+       Account Form
+       ======================================== */
+    .account-form {
+      background: linear-gradient(135deg, rgba(39, 174, 96, 0.08) 0%, rgba(46, 204, 113, 0.05) 100%);
+      border: 2px solid var(--success);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 12px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .account-form.active {
+      display: block;
+    }
+
+    .account-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--success);
+      margin-bottom: 12px;
+    }
+
+    /* ========================================
+       Voice Section
+       ======================================== */
+    .voice-section {
+      margin-top: 12px;
+    }
+
+    .voice-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--text-light);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: inherit;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(15, 37, 55, 0.3);
+    }
+
+    .voice-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(15, 37, 55, 0.4);
+    }
+
+    .voice-btn.recording {
+      background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
+      animation: pulse 1.2s ease-in-out infinite;
+      box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+    }
+
+    .voice-btn.recording:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 20px rgba(192, 57, 43, 0.4);
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 12px rgba(192, 57, 43, 0);
+      }
+    }
+
+    .voice-preview {
+      background: var(--bg);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .voice-preview.has-content {
+      border-style: solid;
+      border-color: var(--success);
+      background: linear-gradient(135deg, rgba(39, 174, 96, 0.05) 0%, transparent 100%);
+      color: var(--text);
+    }
+
+    /* ========================================
+       Shortcut Hint
+       ======================================== */
+    .shortcut-hint {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: center;
+      margin-top: 12px;
+      font-style: italic;
+      opacity: 0.8;
+    }
+
+    /* ========================================
+       Toast Notifications
+       ======================================== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--primary);
+      color: var(--text-light);
+      padding: 14px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+      z-index: 1000002;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .toast.show {
+      display: block;
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    .toast.warning {
+      background: var(--warning);
+      color: var(--text);
+    }
+
+    /* ========================================
+       Loading Overlay
+       ======================================== */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 4000;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ========================================
+       Prospect Status Indicator
+       ======================================== */
+    .prospect-status-indicator {
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg-dark) 100%);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 12px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .status-icon {
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+
+    .status-message {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .prospect-status-indicator.existing {
+      border-color: var(--success);
+      background: linear-gradient(135deg, rgba(39, 174, 96, 0.08) 0%, transparent 100%);
+    }
+
+    .prospect-status-indicator.new {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(15, 37, 55, 0.08) 0%, transparent 100%);
+    }
+
+    .prospect-status-indicator.existing .status-icon {
+      color: var(--success);
+    }
+
+    .prospect-status-indicator.new .status-icon {
+      color: var(--primary);
+    }
+
+    /* ========================================
+       Workflow Display
+       ======================================== */
+    .workflow-display {
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg-dark) 100%);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 12px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .workflow-display.urgent {
+      border-color: var(--danger);
+      background: linear-gradient(135deg, rgba(192, 57, 43, 0.08) 0%, rgba(192, 57, 43, 0.05) 100%);
+    }
+
+    .workflow-display.high {
+      border-color: var(--warning);
+      background: linear-gradient(135deg, rgba(243, 156, 18, 0.08) 0%, rgba(243, 156, 18, 0.05) 100%);
+    }
+
+    .workflow-display.medium {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, rgba(15, 37, 55, 0.08) 0%, rgba(15, 37, 55, 0.05) 100%);
+    }
+
+    .workflow-display.low {
+      border-color: var(--text-secondary);
+      background: linear-gradient(135deg, rgba(142, 142, 147, 0.08) 0%, rgba(142, 142, 147, 0.05) 100%);
+    }
+
+    .workflow-status {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .workflow-item {
+      background: var(--card-bg);
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-light);
+      text-align: center;
+    }
+
+    .workflow-label {
+      display: block;
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .workflow-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .workflow-value.success {
+      color: var(--success);
+    }
+
+    .workflow-value.warning {
+      color: var(--warning);
+    }
+
+    .workflow-value.info {
+      color: var(--primary);
+    }
+
+    .workflow-value.danger {
+      color: var(--danger);
+    }
+
+    /* ========================================
+       Outcome Buttons
+       ======================================== */
+    .outcome-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 4px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--card-bg);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: inherit;
+      color: var(--text-secondary);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      min-height: 48px;
+    }
+
+    .outcome-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .outcome-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .outcome-btn:hover::before {
+      opacity: 1;
+    }
+
+    .outcome-btn.active {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--text-light);
+      box-shadow: 0 4px 12px rgba(15, 37, 55, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .outcome-btn.active::before {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+      opacity: 1;
+    }
+
+    .outcome-btn-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    /* ========================================
+       Quick Date Options
+       ======================================== */
+    .quick-date-options {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .quick-date-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 8px 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .quick-date-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: linear-gradient(135deg, rgba(15, 37, 55, 0.05) 0%, transparent 100%);
+    }
+
+    /* ========================================
+       Report Output
+       ======================================== */
+    .copy-report-btn {
+      padding: 6px 12px;
+      background: var(--success);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .copy-report-btn:hover {
+      background: var(--success-light);
+    }
+
+    .report-textarea {
+      width: 100%;
+      min-height: 150px;
+      max-height: 300px;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+      font-size: 11px;
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+      resize: vertical;
+    }
+
+    .report-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    /* ========================================
+       Control Center - Tabbed Utilities
+       ======================================== */
+    .control-center-content {
+      display: block;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .control-center-content.collapsed {
+      max-height: 0;
+      overflow: hidden;
+    }
+
+    .control-center-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .control-tab {
+      padding: 8px 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 10px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .control-tab:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: linear-gradient(135deg, rgba(15, 37, 55, 0.05) 0%, transparent 100%);
+    }
+
+    .control-tab.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--text-light);
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(15, 37, 55, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .control-tool {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .control-tool.active {
+      display: block;
+    }
+
+    /* ========================================
+       Responsive Design
+       ======================================== */
+    @media (max-width: 768px) {
+      .sidebar-container {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      .resize-handle {
+        display: none;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+
+      .stat-card {
+        padding: 10px 6px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+      }
+
+      .control-center-tabs {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .control-tab {
+        font-size: 9px;
+        padding: 6px 4px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Floating Sidebar -->
+  <div class="sidebar-container" id="sidebar">
+    <!-- Resize Handle -->
+    <div class="resize-handle" id="resizeHandle"></div>
+
+    <!-- Header -->
+    <div class="sidebar-header">
+      <div class="header-left">
+        <span class="brand-icon">🗺️</span>
+        <div class="brand-text">
+          <span class="brand-title">K&L CRM</span>
+          <span class="brand-subtitle">Field Operations</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="time-badge" id="currentTime">--:--</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="sidebar-content">
+      <!-- Visit Entry Section -->
+      <div class="section">
+        <div class="visit-header">
+          <div class="visit-title">
+            <span>📝</span>
+            <span>Log Visit</span>
+          </div>
+        </div>
+
+        <!-- Outreach ID -->
+        <div class="form-group">
+          <label for="outreachId" class="form-label">Outreach ID</label>
+          <input type="text" id="outreachId" class="form-input"
+            placeholder="Leave empty to auto-generate (e.g., LID-00128)">
+        </div>
+
+        <!-- Company Search with Autocomplete -->
+        <div class="form-group suggestions-container">
+          <label for="companyInput" class="form-label">Company <span class="required">*</span></label>
+          <input type="text" id="companyInput" list="companyList" class="form-input" oninput="handleCompanySearchInput(this.value)" placeholder="Search or type new company..." autocomplete="off">
+          <datalist id="companyList"></datalist>
+          <input type="hidden" id="selectedCompanyId">
+        </div>
+
+        <!-- New Company Info Toggle -->
+        <div class="form-group">
+          <button type="button" class="quick-link" style="width:100%;" onclick="toggleNewCompanyFields()">
+            <span id="newCompanyToggleIcon">+</span>
+            <span id="newCompanyToggleText">Add New Company Details</span>
+          </button>
+        </div>
+
+        <!-- New Company Additional Fields -->
+        <div id="newCompanyFields" class="new-company-fields" style="display:none;">
+          <div class="form-group">
+            <label for="newAddress" class="form-label">Address</label>
+            <input type="text" id="newAddress" class="form-input" placeholder="Street address">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="newCity" class="form-label">City</label>
+              <input type="text" id="newCity" class="form-input" placeholder="City" value="Tyler">
+            </div>
+            <div class="form-group">
+              <label for="newState" class="form-label">State</label>
+              <input type="text" id="newState" class="form-input" placeholder="State" value="TX">
+            </div>
+            <div class="form-group">
+              <label for="newZip" class="form-label">Zip</label>
+              <input type="text" id="newZip" class="form-input" placeholder="Zip Code">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="newIndustry" class="form-label">Industry</label>
+            <select id="newIndustry" class="form-select">
+              <option value="">Select Industry...</option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Appliance">Appliance</option>
+              <option value="Automotive">Automotive</option>
+              <option value="Business to business">Business to business</option>
+              <option value="Construction">Construction</option>
+              <option value="Electrical">Electrical</option>
+              <option value="Fabrication">Fabrication</option>
+              <option value="Fence">Fence</option>
+              <option value="Gutter">Gutter</option>
+              <option value="HVAC">HVAC</option>
+              <option value="Junk Removal">Junk Removal</option>
+              <option value="Manufacturing">Manufacturing</option>
+              <option value="Metal Fabrication">Metal Fabrication</option>
+              <option value="Other">Other</option>
+              <option value="Plumbing">Plumbing</option>
+              <option value="Retail">Retail</option>
+              <option value="Roofing">Roofing</option>
+              <option value="Trailer Dealer">Trailer Dealer</option>
+              <option value="Warehouses">Warehouses</option>
+              <option value="Welding">Welding</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="newContact" class="form-label">Contact Name</label>
+              <input type="text" id="newContact" class="form-input" placeholder="Contact">
+            </div>
+            <div class="form-group">
+              <label for="newPhone" class="form-label">Phone</label>
+              <input type="tel" id="newPhone" class="form-input" placeholder="Phone">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="newEmail" class="form-label">Email</label>
+            <input type="email" id="newEmail" class="form-input" placeholder="Email">
+          </div>
+          <div class="form-group">
+            <label for="competitor" class="form-label">Current Competitor</label>
+            <select id="competitor" class="form-select">
+              <option value="None">None / Unknown</option>
+              <option value="AIM">AIM</option>
+              <option value="Tyler Iron">Tyler Iron</option>
+              <option value="Huntwell">Huntwell</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Last Touch Card -->
+        <div class="last-touch-card" id="lastTouchCard">
+          <div class="last-touch-header">
+            <span>📊</span>
+            <span>Last Touch</span>
+          </div>
+          <div class="last-touch-grid">
+            <div class="last-touch-item">
+              <span class="last-touch-label">Last Contact</span>
+              <span class="last-touch-value" id="lastContactDate">--</span>
+            </div>
+            <div class="last-touch-item">
+              <span class="last-touch-label">Days Since</span>
+              <span class="last-touch-value days-since" id="daysSince">--</span>
+            </div>
+            <div class="last-touch-item">
+              <span class="last-touch-label">Last Outcome</span>
+              <span class="last-touch-value" id="lastOutcome">--</span>
+            </div>
+            <div class="last-touch-item">
+              <span class="last-touch-label">Next Steps</span>
+              <span class="last-touch-value" id="nextSteps">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outcome Selection (UPDATED TO MATCH SETTINGS) -->
+        <label class="visit-type-label">Visit Outcome</label>
+        <div class="outcome-btn-grid">
+          <button type="button" class="outcome-btn" onclick="setOutcome('Account Won', this)">
+            <span>🏆</span> Account Won
+          </button>
+          <button type="button" class="outcome-btn" onclick="setOutcome('Interested (Hot)', this)">
+            <span>🔥</span> Interested (Hot)
+          </button>
+          <button type="button" class="outcome-btn" onclick="setOutcome('Interested (Warm)', this)">
+            <span>🎯</span> Interested (Warm)
+          </button>
+          <button type="button" class="outcome-btn" onclick="setOutcome('Initial Contact', this)">
+            <span>👋</span> Initial Contact
+          </button>
+          <button type="button" class="outcome-btn" onclick="setOutcome('Follow-Up', this)">
+            <span>🔄</span> Follow-Up
+          </button>
+          <button type="button" class="outcome-btn" onclick="setOutcome('No Answer', this)">
+            <span>📞</span> No Answer
+          </button>
+          <button type="button" class="outcome-btn" onclick="setOutcome('Not Interested', this)">
+            <span>🚫</span> Not Interested
+          </button>
+          <button type="button" class="outcome-btn" onclick="setOutcome('Disqualified', this)">
+            <span>❌</span> Disqualified
+          </button>
+        </div>
+
+        <!-- Stage & Status Display (Auto-populated based on Outcome) -->
+        <div class="workflow-display" id="workflowDisplay" style="display:none;">
+          <div class="form-group">
+            <label class="visit-type-label">Workflow Status</label>
+            <div class="workflow-status">
+              <div class="workflow-item">
+                <span class="workflow-label">Outcome:</span>
+                <span class="workflow-value" id="outcomeValue">--</span>
+              </div>
+              <div class="workflow-item">
+                <span class="workflow-label">Stage:</span>
+                <span class="workflow-value" id="stageValue">--</span>
+              </div>
+              <div class="workflow-item">
+                <span class="workflow-label">Status:</span>
+                <span class="workflow-value" id="statusValue">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Date and Type -->
+        <div class="date-grid">
+          <div class="form-group">
+            <label for="nextDate" class="form-label">Next Action</label>
+            <input type="date" id="nextDate" class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="activityType" class="form-label">Type</label>
+          <select id="activityType" class="form-select">
+            <option value="Visit">Visit</option>
+            <option value="Phone">Phone</option>
+            <option value="Email">Email</option>
+          </select>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label for="notes" class="form-label">Notes</label>
+          <textarea id="notes" class="form-textarea" rows="3" placeholder="Site details..."></textarea>
+        </div>
+
+        <!-- New Account Form (Only shows for WON) -->
+        <div class="account-form" id="accountForm">
+          <div class="account-title">
+            <span>🚀</span>
+            <span>New Account Details</span>
+          </div>
+          <div class="form-group">
+            <input type="text" id="newContact" class="form-input" placeholder="Contact Name">
+          </div>
+          <div class="date-grid">
+            <input type="text" id="newPhone" class="form-input" placeholder="Phone">
+            <input type="text" id="newAddress" class="form-input" placeholder="Address">
+          </div>
+        </div>
+
+        <!-- Prospect Status Indicator -->
+        <div class="prospect-status-indicator" id="prospectStatusIndicator" style="margin-bottom: 12px; display: none;">
+          <div class="status-icon" id="prospectStatusIcon">⏳</div>
+          <div class="status-message" id="prospectStatusMessage">Checking company status...</div>
+        </div>
+
+        <!-- Save Button -->
+        <button type="button" class="btn btn-primary" onclick="saveEntry()">
+          <span>💾</span> Save Entry
+        </button>
+
+        <!-- Voice Section -->
+        <div class="voice-section">
+          <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
+            <span id="micIcon">🎤</span>
+            <span id="micText">Voice Notes</span>
+          </button>
+          <div class="voice-preview" id="voicePreview">Tap to record...</div>
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="shortcut-hint">Keyboard: Enter=Save • /=Search • R=Route</div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">📊</span>
+            Today's Overview
+          </div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="statWon">0</div>
+            <div class="stat-label">Wins</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statHot">0</div>
+            <div class="stat-label">Hot</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statVisits">0</div>
+            <div class="stat-label">Visits</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Tiles -->
+      <div id="crm-summary" class="crm-summary-grid"></div>
+
+      <!-- Follow-Up Table -->
+      <table id="crm-followups" class="crm-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Notes</th>
+            <th>Countdown</th>
+            <th>Urgency</th>
+            <th>Priority</th>
+            <th>Next Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Control Center - Collapsible Utility Panel -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-title-icon">⚙️</span>
+          Control Center
+        </div>
+        <button type="button" class="quick-link" style="padding: 4px 8px; font-size: 10px;"
+          onclick="toggleControlCenter()">
+          <span id="controlCenterToggleIcon">▼</span>
+        </button>
+      </div>
+
+      <div id="controlCenterContent" class="control-center-content">
+        <!-- Control Center Tabs -->
+        <div class="control-center-tabs">
+          <button type="button" class="control-tab active" onclick="showTool('route', this)">
+            🗺️ Route
+          </button>
+          <button type="button" class="control-tab" onclick="showTool('quick-actions', this)">
+            ⚡ Quick Actions
+          </button>
+          <button type="button" class="control-tab" onclick="showTool('csv', this)">
+            📁 CSV Import
+          </button>
+          <button type="button" class="control-tab" onclick="showTool('report', this)">
+            📊 Reports
+          </button>
+        </div>
+
+        <!-- Route Planning Tool -->
+        <div id="tool-route" class="control-tool active">
+          <div class="date-grid">
+            <div class="form-group">
+              <label for="routeStart" class="form-label">Start</label>
+              <input type="date" id="routeStart" class="form-input">
+            </div>
+            <div class="form-group">
+              <label for="routeEnd" class="form-label">End</label>
+              <input type="date" id="routeEnd" class="form-input">
+            </div>
+          </div>
+          <button type="button" class="btn btn-warning" onclick="generateRoute()">
+            <span>🗺️</span> Generate Route
+          </button>
+        </div>
+
+        <!-- Quick Actions Tool -->
+        <div id="tool-quick-actions" class="control-tool">
+          <div class="quick-links">
+            <button type="button" class="quick-link" onclick="quickAction('pipeline')">
+              <span>📊</span> Pipeline
+            </button>
+            <button type="button" class="quick-link" onclick="quickAction('accounts')">
+              <span>🏢</span> Accounts
+            </button>
+            <button type="button" class="quick-link" onclick="quickAction('calendar')">
+              <span>📅</span> Calendar
+            </button>
+            <button type="button" class="quick-link" onclick="quickAction('reports')">
+              <span>📈</span> Reports
+            </button>
+          </div>
+        </div>
+
+        <!-- CSV Import Tool -->
+        <div id="tool-csv" class="control-tool">
+          <div class="form-group">
+            <label for="csvText" class="form-label">Paste CSV Data</label>
+            <textarea id="csvText" class="form-textarea" rows="4" placeholder="Paste your CSV data here..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="importSheet" class="form-label">Target Sheet</label>
+            <select id="importSheet" class="form-select">
+              <option value="Outreach">Outreach</option>
+              <option value="Prospects">Prospects</option>
+              <option value="New Accounts">New Accounts</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-warning" onclick="importCSV()">
+            <span>📥</span> Import CSV
+          </button>
+        </div>
+
+        <!-- Report Generation Tool -->
+        <div id="tool-report" class="control-tool">
+          <!-- Quick Date Options -->
+          <div class="quick-date-options">
+            <button type="button" class="quick-date-btn" onclick="setReportDates('thisWeek')">This Week</button>
+            <button type="button" class="quick-date-btn" onclick="setReportDates('thisMonth')">This Month</button>
+            <button type="button" class="quick-date-btn" onclick="setReportDates('last7')">Last 7 Days</button>
+            <button type="button" class="quick-date-btn" onclick="setReportDates('last30')">Last 30 Days</button>
+          </div>
+
+          <div class="date-grid">
+            <div class="form-group">
+              <label for="reportStart" class="form-label">Start Date</label>
+              <input type="date" id="reportStart" class="form-input">
+            </div>
+            <div class="form-group">
+              <label for="reportEnd" class="form-label">End Date</label>
+              <input type="date" id="reportEnd" class="form-input">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="generateDateRangeReport()">
+            <span>📊</span> Generate Report
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Output Section (hidden until report generated) -->
+    <div class="section" id="reportOutputSection" style="display: none;">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-title-icon">📋</span>
+          Report Output
+        </div>
+        <button type="button" class="copy-report-btn" onclick="copyReportToClipboard()">
+          📋 Copy
+        </button>
+      </div>
+      <textarea id="reportOutput" class="report-textarea" readonly></textarea>
+    </div>
+  </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ========================================
+    // Non-Blocking UI Logic
+    // ========================================
+
+    const state = {
+      selectedStatus: '',
+      isRecording: false,
+      recognition: null,
+      searchTimeout: null,
+      selectedCompanyData: null
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      detectDisplayContext();
+      initializeDates();
+      initializeResize();
+      initializeEventListeners();
+      updateTime();
+      setInterval(updateTime, 60000);
+
+      // Initialize control center tabs
+      showTool('route');
+
+      // Staggered loading to prevent server-side queuing bottlenecks
+      setTimeout(loadStats, 100);
+      setTimeout(loadValidationLists, 500);
+
+      // Load company list for autocomplete
+      loadCompanyAutocompleteList();
+    });
+
+    function initializeDates() {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('nextDate').value = today;
+      document.getElementById('routeStart').value = today;
+      document.getElementById('routeEnd').value = today;
+    }
+
+    function initializeEventListeners() {
+      // Close suggestions on outside click
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#companyInput') && !e.target.closest('.suggestions')) {
+          document.getElementById('suggestions').classList.remove('active');
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', handleKeyboardShortcuts);
+    }
+
+    // ========================================
+    // Company Autocomplete Logic
+    // ========================================
+    function loadCompanyAutocompleteList() {
+      google.script.run
+        .withSuccessHandler(function(companies) {
+          const list = document.getElementById('companyList');
+          if (companies && companies.length > 0) {
+            companies.forEach(c => {
+              const option = document.createElement('option');
+              option.value = c.name || c.companyName || '';
+              option.dataset.id = c.id || c.companyId || '';
+              list.appendChild(option);
+            });
+            console.log('Loaded ' + companies.length + ' companies for autocomplete');
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.warn('Failed to load company autocomplete list:', error);
+        })
+        .getCompanyAutocompleteList();
+    }
+
+    function handleCompanySearchInput(value) {
+      clearTimeout(state.searchTimeout);
+
+      if (value.length < 2) {
+        document.getElementById('selectedCompanyId').value = '';
+        document.getElementById('lastTouchCard').classList.remove('active');
+        document.getElementById('prospectStatusIndicator').classList.remove('active');
+        return;
+      }
+
+      // Check if value matches a datalist option
+      const options = document.querySelectorAll('#companyList option');
+      let matchedCompanyId = '';
+
+      for (let opt of options) {
+        if (opt.value === value) {
+          matchedCompanyId = opt.dataset.id;
+          break;
+        }
+      }
+
+      if (matchedCompanyId) {
+        document.getElementById('selectedCompanyId').value = matchedCompanyId;
+        // Fetch and autofill prospect data
+        google.script.run
+          .withSuccessHandler(fillProspectData)
+          .withFailureHandler(function(error) {
+            console.warn('Failed to get prospect details:', error);
+          })
+          .getProspectDetails(matchedCompanyId);
+
+        // Load last touch info
+        loadLastTouchInfo(value);
+        checkProspectStatus(value);
+      } else {
+        // New company - clear stored ID
+        document.getElementById('selectedCompanyId').value = '';
+      }
+    }
+
+    function fillProspectData(details) {
+      if (details) {
+        // Show the new company fields section
+        const newCompanyFields = document.getElementById('newCompanyFields');
+        const toggleIcon = document.getElementById('newCompanyToggleIcon');
+        const toggleText = document.getElementById('newCompanyToggleText');
+
+        if (newCompanyFields.style.display === 'none') {
+          newCompanyFields.style.display = 'block';
+          toggleIcon.textContent = '-';
+          toggleText.textContent = 'Hide New Company Details';
+        }
+
+        // Autofill available fields
+        if (details.address) {
+          const field = document.getElementById('newAddress');
+          if (field) field.value = details.address;
+        }
+        if (details.industry) {
+          const field = document.getElementById('newIndustry');
+          if (field) field.value = details.industry;
+        }
+        if (details.contactName) {
+          const field = document.getElementById('newContact');
+          if (field) field.value = details.contactName;
+        }
+        if (details.phone) {
+          const field = document.getElementById('newPhone');
+          if (field) field.value = details.phone;
+        }
+        if (details.email) {
+          const field = document.getElementById('newEmail');
+          if (field) field.value = details.email;
+        }
+
+        console.log('Autofilled prospect data:', details);
+      }
+    }
+
+    // ========================================
+    // Sidebar Resize & Drag Functionality
+    // ========================================
+    function initializeResize() {
+      const sidebar = document.getElementById('sidebar');
+      const handle = document.getElementById('resizeHandle');
+      const header = document.querySelector('.sidebar-header');
+      let isResizing = false;
+      let isDragging = false;
+      let startX, startY, startWidth, startLeft, startTop;
+
+      // Resize functionality
+      handle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startWidth = sidebar.offsetWidth;
+        sidebar.classList.add('resizing');
+        handle.classList.add('active');
+        document.body.style.cursor = 'ew-resize';
+        document.body.style.userSelect = 'none';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isResizing) {
+          const diff = e.clientX - startX;
+          const minWidth = 280;
+          const maxWidth = 600;
+          const newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + diff));
+          sidebar.style.width = newWidth + 'px';
+        } else if (isDragging) {
+          const diffX = e.clientX - startX;
+          const diffY = e.clientY - startY;
+          sidebar.style.left = (startLeft + diffX) + 'px';
+          sidebar.style.top = (startTop + diffY) + 'px';
+          sidebar.style.right = 'auto';
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (isResizing || isDragging) {
+          isResizing = false;
+          isDragging = false;
+          sidebar.classList.remove('resizing');
+          handle.classList.remove('active');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        }
+      });
+
+      // Drag functionality (from header)
+      header.addEventListener('mousedown', (e) => {
+        // Only start drag if not clicking on header buttons
+        if (e.target.closest('.header-right')) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = sidebar.offsetLeft;
+        startTop = sidebar.offsetTop;
+        sidebar.classList.add('floating');
+        document.body.style.cursor = 'move';
+        document.body.style.userSelect = 'none';
+      });
+
+      // Touch support for resize
+      handle.addEventListener('touchstart', (e) => {
+        isResizing = true;
+        startX = e.touches[0].clientX;
+        startWidth = sidebar.offsetWidth;
+        sidebar.classList.add('resizing');
+      });
+
+      document.addEventListener('touchmove', (e) => {
+        if (isResizing) {
+          e.preventDefault();
+          const diff = e.touches[0].clientX - startX;
+          const newWidth = Math.max(280, Math.min(600, startWidth + diff));
+          sidebar.style.width = newWidth + 'px';
+        }
+      });
+
+      document.addEventListener('touchend', () => {
+        if (isResizing) {
+          isResizing = false;
+          sidebar.classList.remove('resizing');
+        }
+      });
+    }
+
+    // ========================================
+    // Time Display
+    // ========================================
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('currentTime').innerText =
+        now.toLocaleDateString('en-US', { weekday: 'short' }) + ' ' +
+        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ========================================
+    // Keyboard Shortcuts
+    // ========================================
+    function handleKeyboardShortcuts(e) {
+      // Ignore if typing in form fields
+      if (e.target.matches('input, textarea, select')) {
+        // Allow Enter to submit if in input and Shift not pressed
+        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+          const tagName = e.target.tagName.toLowerCase();
+          if (tagName !== 'textarea') {
+            e.preventDefault();
+            saveEntry();
+          }
+        }
+        return;
+      }
+
+      switch (e.key) {
+        case 'Enter':
+          e.preventDefault();
+          saveEntry();
+          break;
+        case '/':
+          e.preventDefault();
+          document.getElementById('companyInput').focus();
+          break;
+        case 'r':
+        case 'R':
+          generateRoute();
+          break;
+      }
+    }
+
+    // ========================================
+    // Workflow-Based Status Selection
+    // ========================================
+
+    // Standardized workflow mapping based on user's unified approach
+    const workflowMap = {
+      'Account Won': {
+        stage: 'Won',
+        status: 'Active',
+        priority: 'urgent',
+        days: 1
+      },
+      'Interested (Hot)': {
+        stage: 'Nurture',
+        status: 'Interested (Hot)',
+        priority: 'high',
+        days: 7
+      },
+      'Interested (Warm)': {
+        stage: 'Nurture',
+        status: 'Interested (Warm)',
+        priority: 'medium',
+        days: 14
+      },
+      'Initial Contact': {
+        stage: 'Outreach',
+        status: 'Interested (Warm)',
+        priority: 'medium',
+        days: 30
+      },
+      'Follow-Up': {
+        stage: 'Nurture',
+        status: 'Interested (Warm)',
+        priority: 'medium',
+        days: 14
+      },
+      'No Answer': {
+        stage: 'Outreach',
+        status: 'Cold',
+        priority: 'high',
+        days: 3
+      },
+      'Not Interested': {
+        stage: 'Lost',
+        status: 'Disqualified',
+        priority: 'low',
+        days: 180
+      },
+      'Disqualified': {
+        stage: 'Lost',
+        status: 'Disqualified',
+        priority: 'low',
+        days: 0
+      }
+    };
+
+    // Set outcome and auto-populate workflow
+    function setOutcome(outcome, btn) {
+      // Clear previous selections
+      document.querySelectorAll('.outcome-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Get workflow details for this outcome
+      const workflow = workflowMap[outcome];
+      if (workflow) {
+        // Update state with full workflow status
+        state.selectedOutcome = outcome;
+        state.selectedStage = workflow.stage;
+        state.selectedStatus = workflow.status;
+
+        // Update display
+        document.getElementById('outcomeValue').textContent = outcome;
+        document.getElementById('stageValue').textContent = workflow.stage;
+        document.getElementById('statusValue').textContent = workflow.status;
+
+        // Show workflow display
+        document.getElementById('workflowDisplay').style.display = 'block';
+
+        // Show account form for won accounts
+        document.getElementById('accountForm').classList.toggle('active', outcome === 'Account Won');
+
+        // Auto-set next date
+        const nextDate = new Date();
+        nextDate.setDate(nextDate.getDate() + workflow.days);
+        document.getElementById('nextDate').value = nextDate.toISOString().split('T')[0];
+
+        // Visual feedback based on priority
+        updateWorkflowStyling(workflow.priority);
+      }
+    }
+
+    // Update workflow display styling based on priority
+    function updateWorkflowStyling(priority) {
+      const display = document.getElementById('workflowDisplay');
+      display.className = 'workflow-display';
+
+      // Remove previous priority classes
+      display.classList.remove('urgent', 'high', 'medium', 'low');
+
+      // Add new priority class
+      display.classList.add(priority);
+
+      // Update status value styling
+      const statusEl = document.getElementById('statusValue');
+      statusEl.className = 'workflow-value';
+
+      const statusColors = {
+        'Won': 'success',
+        'Interested (Hot)': 'warning',
+        'Interested (Warm)': 'info',
+        'Disqualified': 'danger',
+        'Cold': 'danger',
+        'Active': 'success',
+        'Lost': 'danger',
+        'Nurture': 'info',
+        'Outreach': 'warning',
+        'Prospect': 'info'
+      };
+
+      const status = state.selectedStatus;
+      if (statusColors[status]) {
+        statusEl.classList.add(statusColors[status]);
+      }
+    }
+
+    // ========================================
+    // Company Search
+    // ========================================
+    function searchCompany(input) {
+      console.log('searchCompany called with input:', input.value);
+      clearTimeout(state.searchTimeout);
+
+      if (input.value.length < 2) {
+        console.log('Input too short, hiding suggestions');
+        document.getElementById('suggestions').classList.remove('active');
+        document.getElementById('lastTouchCard').classList.remove('active');
+        document.getElementById('prospectStatusIndicator').classList.remove('active');
+        return;
+      }
+
+      console.log('Setting timeout for search');
+      state.searchTimeout = setTimeout(() => {
+        console.log('Calling apiSearchProspects with:', input.value);
+        google.script.run
+          .withSuccessHandler(handleSearchResults)
+          .withFailureHandler(error => handleApiError(error, 'Search failed'))
+          .apiSearchProspects(input.value);
+      }, 300);
+    }
+
+    function handleSearchResults(result) {
+      console.log('handleSearchResults called with:', result);
+      let companies = [];
+
+      if (result && typeof result === 'object') {
+        if (Array.isArray(result)) {
+          companies = result;
+          console.log('Direct array result:', companies.length, 'companies');
+        } else if (result.success && result.data) {
+          companies = result.data;
+          console.log('Object result with data:', companies.length, 'companies');
+        } else if (result.success === false) {
+          console.log('Search failed with error:', result.error);
+          showToast('❌ ' + (result.error || 'Search failed'), 'error');
+          return;
+        } else {
+          console.log('Unexpected result format:', result);
+        }
+      } else {
+        console.log('Invalid result:', result);
+      }
+
+      console.log('Final companies array:', companies);
+      if (companies.length > 0) {
+        console.log('Calling showSuggestions with', companies.length, 'companies');
+        showSuggestions(companies);
+      } else {
+        console.log('No companies found, hiding suggestions');
+        // No results found - still hide dropdown
+        document.getElementById('suggestions').classList.remove('active');
+      }
+    }
+
+    // ========================================
+    // Toast & Loading Helpers
+    // ========================================
+    function handleApiError(error, defaultMsg) {
+      showLoading(false);
+      showToast('❌ ' + (error.message || defaultMsg), 'error');
+    }
+
+    function showSuggestions(results) {
+      console.log('showSuggestions called with:', results);
+      const dropdown = document.getElementById('suggestions');
+      console.log('Dropdown element:', dropdown);
+
+      if (results && results.length > 0) {
+        console.log('Generating HTML for', results.length, 'results');
+        // Use data attributes instead of inline onclick to handle special characters
+        dropdown.innerHTML = results.map((r, index) => {
+          const escapedName = escapeHtml(r.companyName || r.company);
+          const companyId = r.companyId || '';
+          const address = escapeHtml(r.address || '');
+          const phone = escapeHtml(r.phone || '');
+          const email = escapeHtml(r.email || '');
+          const contactName = escapeHtml(r.contactName || '');
+          return `<div class="suggestion-item" data-index="${index}" data-name="${escapedName}" data-id="${companyId}" data-address="${address}" data-phone="${phone}" data-email="${email}" data-contact="${contactName}">${escapedName}</div>`;
+        }).join('');
+
+        console.log('HTML set, adding click listeners');
+        // Add click listeners to suggestion items
+        dropdown.querySelectorAll('.suggestion-item').forEach(item => {
+          item.onclick = function () {
+            console.log('Suggestion clicked:', this.dataset.name);
+            const companyData = {
+              companyName: this.dataset.name,
+              companyId: this.dataset.id,
+              address: this.dataset.address,
+              phone: this.dataset.phone,
+              email: this.dataset.email,
+              contactName: this.dataset.contact
+            };
+            selectCompany(companyData);
+          };
+        });
+
+        console.log('Adding active class to dropdown');
+        dropdown.classList.add('active');
+      } else {
+        console.log('No results, removing active class');
+        dropdown.classList.remove('active');
+      }
+    }
+
+    function selectCompany(companyData) {
+      // Handle both object and string input for backwards compatibility
+      if (typeof companyData === 'string') {
+        // Legacy: received just company name string
+        document.getElementById('companyInput').value = companyData;
+        document.getElementById('suggestions').classList.remove('active');
+        loadLastTouchInfo(companyData);
+        checkProspectStatus(companyData);
+        return;
+      }
+
+      // New: receive company object with companyId - get comprehensive data for autofill
+      const companyId = companyData.companyId;
+      const companyName = companyData.companyName || companyData.company || '';
+
+      document.getElementById('companyInput').value = companyName;
+      document.getElementById('suggestions').classList.remove('active');
+
+      // Visual feedback
+      const input = document.getElementById('companyInput');
+      input.style.borderColor = 'var(--success)';
+      setTimeout(() => input.style.borderColor = 'var(--border)', 500);
+
+      // Get comprehensive company details for autofill
+      if (companyId) {
+        showLoading(true);
+        google.script.run
+          .withSuccessHandler(function (result) {
+            showLoading(false);
+            if (result && result.success && result.data) {
+              // Store comprehensive company data
+              state.selectedCompanyData = result.data;
+              // Autofill form with comprehensive data
+              autofillCompanyData(result.data);
+            } else {
+              // Fallback to basic data if API call fails
+              state.selectedCompanyData = companyData;
+              autofillCompanyData(companyData);
+            }
+          })
+          .withFailureHandler(function (error) {
+            showLoading(false);
+            console.warn('Failed to get comprehensive company details:', error);
+            // Fallback to basic data
+            state.selectedCompanyData = companyData;
+            autofillCompanyData(companyData);
+          })
+          .getCompanyDetailsForAutofill(companyId);
+      } else {
+        // No companyId available, use basic data
+        state.selectedCompanyData = companyData;
+        autofillCompanyData(companyData);
+      }
+
+      // Load last touch information
+      loadLastTouchInfo(companyName);
+
+      // Check prospect status
+      checkProspectStatus(companyName);
+    }
+
+    function autofillCompanyData(companyData) {
+      console.log('🔍 autofillCompanyData called with:', companyData);
+
+      // Only autofill if we have a companyId (meaning it came from prospect sheet)
+      if (!companyData.companyId) {
+        console.log('❌ Skipping autofill - no companyId (company not found in prospect sheet)');
+        console.log('Available data:', {
+          companyName: companyData.companyName,
+          companyId: companyData.companyId,
+          hasContact: !!companyData.contactName,
+          hasPhone: !!companyData.phone,
+          hasAddress: !!companyData.address,
+          hasEmail: !!companyData.email
+        });
+        showToast('⚠️ Company not found in prospects - manual entry required', 'warning');
+        return;
+      }
+
+      console.log('✅ Autofilling company data for:', companyData.companyName);
+      console.log('Data to fill:', {
+        contactName: companyData.contactName,
+        phone: companyData.phone,
+        address: companyData.address,
+        email: companyData.email
+      });
+
+      // Show the "Add New Company Details" section so user can see the autofilled data
+      const newCompanyFields = document.getElementById('newCompanyFields');
+      const toggleIcon = document.getElementById('newCompanyToggleIcon');
+      const toggleText = document.getElementById('newCompanyToggleText');
+
+      if (newCompanyFields.style.display === 'none') {
+        console.log('📂 Expanding new company details section');
+        newCompanyFields.style.display = 'block';
+        toggleIcon.textContent = '-';
+        toggleText.textContent = 'Hide New Company Details';
+      }
+
+      let filledCount = 0;
+      const autofillResults = [];
+
+      // Autofill the expanded new company fields with existing company data
+      // Contact Name
+      if (companyData.contactName && companyData.contactName.trim()) {
+        const contactField = document.getElementById('newContact');
+        if (contactField) {
+          contactField.value = companyData.contactName.trim();
+          autofillResults.push('Contact Name');
+          filledCount++;
+          console.log('✅ Autofilled contact name:', companyData.contactName);
+        } else {
+          console.log('❌ Contact field not found');
+        }
+      }
+
+      // Phone
+      if (companyData.phone && companyData.phone.trim()) {
+        const phoneField = document.getElementById('newPhone');
+        if (phoneField) {
+          phoneField.value = companyData.phone.trim();
+          autofillResults.push('Phone');
+          filledCount++;
+          console.log('✅ Autofilled phone:', companyData.phone);
+        } else {
+          console.log('❌ Phone field not found');
+        }
+      }
+
+      // Address
+      if (companyData.address && companyData.address.trim()) {
+        const addressField = document.getElementById('newAddress');
+        if (addressField) {
+          addressField.value = companyData.address.trim();
+          autofillResults.push('Address');
+          filledCount++;
+          console.log('✅ Autofilled address:', companyData.address);
+        } else {
+          console.log('❌ Address field not found');
+        }
+      }
+
+      // Email
+      if (companyData.email && companyData.email.trim()) {
+        const emailField = document.getElementById('newEmail');
+        if (emailField) {
+          emailField.value = companyData.email.trim();
+          autofillResults.push('Email');
+          filledCount++;
+          console.log('✅ Autofilled email:', companyData.email);
+        } else {
+          console.log('❌ Email field not found');
+        }
+      }
+
+      // Industry (if available)
+      if (companyData.industry && companyData.industry.trim()) {
+        const industryField = document.getElementById('newIndustry');
+        if (industryField) {
+          industryField.value = companyData.industry.trim();
+          autofillResults.push('Industry');
+          filledCount++;
+          console.log('✅ Autofilled industry:', companyData.industry);
+        } else {
+          console.log('❌ Industry field not found');
+        }
+      }
+
+      // City (if available)
+      if (companyData.city && companyData.city.trim()) {
+        const cityField = document.getElementById('newCity');
+        if (cityField) {
+          cityField.value = companyData.city.trim();
+          autofillResults.push('City');
+          filledCount++;
+          console.log('✅ Autofilled city:', companyData.city);
+        } else {
+          console.log('❌ City field not found');
+        }
+      }
+
+      // State (if available)
+      if (companyData.state && companyData.state.trim()) {
+        const stateField = document.getElementById('newState');
+        if (stateField) {
+          stateField.value = companyData.state.trim();
+          autofillResults.push('State');
+          filledCount++;
+          console.log('✅ Autofilled state:', companyData.state);
+        } else {
+          console.log('❌ State field not found');
+        }
+      }
+
+      // Zip Code (if available)
+      if (companyData.zip && companyData.zip.trim()) {
+        const zipField = document.getElementById('newZip');
+        if (zipField) {
+          zipField.value = companyData.zip.trim();
+          autofillResults.push('Zip Code');
+          filledCount++;
+          console.log('✅ Autofilled zip code:', companyData.zip);
+        } else {
+          console.log('❌ Zip field not found');
+        }
+      }
+
+      console.log(`📊 Filled ${filledCount} fields:`, autofillResults);
+
+      // Show success feedback with detailed information
+      if (filledCount > 0) {
+        const fieldList = autofillResults.join(', ');
+        showToast(`✅ Company data loaded from prospects (${filledCount} fields: ${fieldList})`, 'success');
+      } else {
+        showToast('⚠️ Company found but no additional data available', 'warning');
+      }
+
+      // Ensure consistent company naming by using the exact name from prospect sheet
+      if (companyData.companyName && companyData.companyName.trim()) {
+        document.getElementById('companyInput').value = companyData.companyName.trim();
+      }
+
+      // Highlight the autofilled fields temporarily
+      if (filledCount > 0) {
+        autofillResults.forEach(function (fieldName) {
+          const fieldId = fieldName.toLowerCase().replace(' ', '');
+          const field = document.getElementById('new' + fieldId.charAt(0).toUpperCase() + fieldId.slice(1));
+          if (field) {
+            const originalBackground = field.style.backgroundColor;
+            field.style.backgroundColor = 'rgba(39, 174, 96, 0.1)';
+            field.style.borderColor = 'var(--success)';
+            field.style.boxShadow = '0 0 0 3px rgba(39, 174, 96, 0.1)';
+
+            // Remove highlight after 2 seconds
+            setTimeout(() => {
+              field.style.backgroundColor = originalBackground;
+              field.style.borderColor = 'var(--border)';
+              field.style.boxShadow = 'none';
+            }, 2000);
+          }
+        });
+      }
+    }
+
+    // ========================================
+    // Last Touch Info
+    // ========================================
+    function loadLastTouchInfo(companyName) {
+      google.script.run
+        .withSuccessHandler(displayLastTouchInfo)
+        .withFailureHandler((error) => handleApiError(error, 'Last touch info failed'))
+        .getLastTouchInfo(companyName);
+    }
+
+    function displayLastTouchInfo(result) {
+      const card = document.getElementById('lastTouchCard');
+
+      if (result && result.success && result.data) {
+        const data = result.data;
+
+        document.getElementById('lastContactDate').innerText = data.lastContact || '--';
+        document.getElementById('daysSince').innerText = (data.daysSince || 0) + ' days';
+        document.getElementById('lastOutcome').innerText = data.lastOutcome || '--';
+        document.getElementById('nextSteps').innerText = data.nextSteps || '--';
+
+        // Color coding based on days since
+        const daysEl = document.getElementById('daysSince');
+        daysEl.className = 'last-touch-value days-since';
+
+        if (data.daysSince <= 7) {
+          daysEl.classList.add('low');
+        } else if (data.daysSince > 30) {
+          daysEl.classList.add('high');
+        }
+
+        card.classList.add('active');
+      } else {
+        card.classList.remove('active');
+      }
+    }
+
+    // ========================================
+    // Prospect Status Checking
+    // ========================================
+    function checkProspectStatus(companyName) {
+      if (!companyName || companyName.length < 2) {
+        document.getElementById('prospectStatusIndicator').classList.remove('active');
+        return;
+      }
+
+      // Show loading state
+      const statusIndicator = document.getElementById('prospectStatusIndicator');
+      const statusIcon = document.getElementById('prospectStatusIcon');
+      const statusMessage = document.getElementById('prospectStatusMessage');
+
+      statusIcon.textContent = '⏳';
+      statusMessage.textContent = 'Checking company status...';
+      statusIndicator.classList.remove('existing', 'new');
+      statusIndicator.classList.add('active');
+
+      google.script.run
+        .withSuccessHandler(handleProspectStatusResult)
+        .withFailureHandler(handleProspectStatusError)
+        .checkProspectStatus(companyName);
+    }
+
+    function handleProspectStatusResult(result) {
+      const statusIndicator = document.getElementById('prospectStatusIndicator');
+      const statusIcon = document.getElementById('prospectStatusIcon');
+      const statusMessage = document.getElementById('prospectStatusMessage');
+
+      if (result && result.success) {
+        if (result.exists) {
+          // Company exists in prospects
+          statusIndicator.classList.remove('new');
+          statusIndicator.classList.add('existing');
+          statusIcon.textContent = '✅';
+          statusMessage.textContent = 'Existing prospect - ' + (result.status || 'Active');
+
+          // Store company data for later use
+          state.selectedCompanyData = {
+            companyName: document.getElementById('companyInput').value,
+            companyId: result.companyId,
+            status: result.status,
+            lastOutcome: result.lastOutcome,
+            daysSinceLastContact: result.daysSinceLastContact
+          };
+        } else {
+          // Company does not exist in prospects
+          statusIndicator.classList.remove('existing');
+          statusIndicator.classList.add('new');
+          statusIcon.textContent = '🆕';
+          statusMessage.textContent = 'New prospect - not in database';
+
+          // Clear any stored company data
+          state.selectedCompanyData = null;
+        }
+      } else {
+        // Error case
+        statusIndicator.classList.remove('existing', 'new');
+        statusIcon.textContent = '❌';
+        statusMessage.textContent = 'Error checking status: ' + (result.error || 'Unknown error');
+      }
+    }
+
+    function handleProspectStatusError(error) {
+      const statusIndicator = document.getElementById('prospectStatusIndicator');
+      const statusIcon = document.getElementById('prospectStatusIcon');
+      const statusMessage = document.getElementById('prospectStatusMessage');
+
+      statusIndicator.classList.remove('existing', 'new');
+      statusIcon.textContent = '❌';
+      statusMessage.textContent = 'Error checking status: ' + (error.message || 'Unknown error');
+      console.error('Prospect status check error:', error);
+    }
+
+    // ========================================
+    // Save Entry with Duplicate LID Check
+    // ========================================
+    function loadStats() {
+      const today = new Date().toISOString().split('T')[0];
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.success && res.data) {
+            const accs = res.data;
+            document.getElementById('statVisits').innerText = accs.length || 0;
+            document.getElementById('statWon').innerText = accs.filter(a => a.Status === 'WON').length || 0;
+            document.getElementById('statHot').innerText = accs.filter(a =>
+              (a.Status && a.Status.includes('HOT')) || (a.Status && a.Status.includes('STRONG'))
+            ).length || 0;
+          }
+        })
+        .withFailureHandler(error => console.error('Failed to load stats:', error))
+        .getOutreachData(today, today);
+    }
+
+    // ========================================
+    // Voice Recording
+    // ========================================
+    function toggleVoice() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showToast('❌ Voice not supported in this browser', 'error');
+        return;
+      }
+
+      state.isRecording ? stopVoice() : startVoice();
+    }
+
+    function startVoice() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      state.recognition = new SpeechRecognition();
+      state.recognition.continuous = true;
+      state.recognition.interimResults = true;
+      state.recognition.lang = 'en-US';
+
+      state.recognition.onstart = () => {
+        state.isRecording = true;
+        updateVoiceUI(true);
+      };
+
+      state.recognition.onresult = (event) => {
+        let transcript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+
+        const preview = document.getElementById('voicePreview');
+        preview.textContent = transcript || 'Listening...';
+        preview.classList.toggle('has-content', transcript.length > 0);
+      };
+
+      state.recognition.onend = () => {
+        if (state.isRecording) {
+          stopVoice();
+        }
+      };
+
+      state.recognition.onerror = (event) => {
+        console.error('Voice recognition error:', event.error);
+        showToast('❌ Voice error: ' + event.error, 'error');
+        stopVoice();
+      };
+
+      try {
+        state.recognition.start();
+      } catch (e) {
+        showToast('❌ Failed to start voice recognition', 'error');
+      }
+    }
+
+    function stopVoice() {
+      if (state.recognition) {
+        state.recognition.stop();
+      }
+
+      state.isRecording = false;
+      updateVoiceUI(false);
+
+      const text = document.getElementById('voicePreview').textContent;
+
+      if (text && text !== 'Tap to record...' && text !== 'Listening...') {
+        document.getElementById('notes').value = text;
+        document.getElementById('voicePreview').classList.add('has-content');
+      } else {
+        document.getElementById('voicePreview').textContent = 'Tap to record...';
+        document.getElementById('voicePreview').classList.remove('has-content');
+      }
+    }
+
+    function updateVoiceUI(recording) {
+      const btn = document.getElementById('voiceBtn');
+      const icon = document.getElementById('micIcon');
+      const text = document.getElementById('micText');
+
+      btn.classList.toggle('recording', recording);
+      icon.textContent = recording ? '🎙️' : '🎤';
+      text.textContent = recording ? 'Stop Recording' : 'Voice Notes';
+    }
+
+    /**
+     * REFACTORED: Route Generation (Tab-Safe)
+     */
+    function generateRoute() {
+      const today = new Date().toISOString().split('T')[0];
+      showLoading(true);
+      showToast('🚛 Fetching today\'s stops...', 'info');
+
+      google.script.run
+        .withSuccessHandler(res => {
+          showLoading(false);
+          if (res.success && res.data && res.data.length > 0) {
+            const companies = res.data.map(e => e.company || e.Company || '').filter(n => n !== '');
+
+            // Open in NEW TAB via Backend to bypass popup blockers
+            google.script.run.generateRouteForCompanies(companies);
+            showToast('🗺️ Route sent to Maps!', 'success');
+          } else {
+            showToast('⚠️ No stops logged for today.', 'warning');
+          }
+        })
+        .withFailureHandler(e => handleApiError(e, 'Route failed'))
+        .getOutreachData(today, today);
+    }
+
+    function handleRouteResult(result) {
+      showLoading(false);
+
+      if (result.success && result.data) {
+        const url = result.data.url;
+        const failures = result.data.failures;
+
+        // Open route in new tab
+        if (url) {
+          window.open(url, '_blank');
+        }
+
+        let message = '🚛 Route generated!';
+
+        if (failures && failures.length > 0) {
+          message += ` (${failures.length} not found)`;
+        }
+
+        showToast(message, 'success');
+      } else {
+        showToast('❌ Route generation failed', 'error');
+      }
+    }
+
+    /**
+     * REFACTORED: Quick Action Handler (Non-Blocking)
+     */
+    function quickAction(action) {
+      console.log('Action triggered:', action);
+
+      // Turn off loading spinner immediately for UI fluidity
+      if (action === 'reports') {
+        showToast('📊 Initializing Report...', 'info');
+        // Fire and Forget: Do not wait for success handler to finish before allowing interaction
+        google.script.run
+          .withFailureHandler(e => showToast('❌ Report Error: ' + e.message, 'error'))
+          .showProfessionalReport();
+        return;
+      }
+
+      switch (action) {
+        case 'pipeline':
+          showToast('🚀 Opening Pipeline...', 'info');
+          google.script.run.openSuiteCRM(); // Routes to the new Suite View
+          break;
+        case 'accounts':
+          // Direct link to sheet to avoid modal blocking
+          window.open('https://docs.google.com/spreadsheets/d/1veh2zY5h6sVktA7tdH8k85-TwNEEpdgUYYR16J2a3bdWFeLoTcP2TbJq/edit#gid=0', '_blank');
+          break;
+        case 'calendar':
+          showCalendarView();
+          break;
+        default:
+          showToast('⚠️ Feature in development', 'warning');
+      }
+    }
+
+    // Show pipeline overview with stats by stage
+    function showPipelineView() {
+      showLoading(true);
+      google.script.run
+        .withSuccessHandler(function (data) {
+          showLoading(false);
+          if (data.success && data.data) {
+            displayPipelineModal(data.data);
+          } else {
+            showToast('❌ Failed to load pipeline data', 'error');
+          }
+        })
+        .withFailureHandler(function (error) {
+          showLoading(false);
+          showToast('❌ Pipeline error: ' + (error.message || 'Unknown error'), 'error');
+        })
+        .getDashboardMetrics();
+    }
+
+    // Show accounts management view
+    function showAccountsView() {
+      showLoading(true);
+
+      // First try to open the New Accounts sheet
+      try {
+        var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+        var sheet = spreadsheet.getSheetByName('New Accounts');
+        if (sheet) {
+          sheet.activate();
+          showLoading(false);
+          showToast('✅ New Accounts sheet opened', 'success');
+          return;
+        }
+      } catch (e) {
+        // Sheet not accessible, continue to show modal
+      }
+
+      // If sheet not accessible, show a summary modal instead
+      google.script.run
+        .withSuccessHandler(function (result) {
+          showLoading(false);
+          if (result.success && result.data) {
+            displayAccountsModal(result.data);
+          } else {
+            showToast('❌ Failed to load account data', 'error');
+          }
+        })
+        .withFailureHandler(function (error) {
+          showLoading(false);
+          showToast('❌ Accounts error: ' + (error.message || 'Unknown error'), 'error');
+        })
+        .getOutreachData(new Date().toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+    }
+
+    // Show calendar view of upcoming follow-ups
+    function showCalendarView() {
+      showLoading(true);
+
+      // Get today's date and future dates
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+
+      // Get today's tasks
+      google.script.run
+        .withSuccessHandler(function (todayResult) {
+          // Get tomorrow's tasks
+          google.script.run
+            .withSuccessHandler(function (tomorrowResult) {
+              // Get this week's tasks
+              google.script.run
+                .withSuccessHandler(function (weekResult) {
+                  showLoading(false);
+                  displayCalendarModal({
+                    today: todayResult.success ? todayResult.data : [],
+                    tomorrow: tomorrowResult.success ? tomorrowResult.data : [],
+                    thisWeek: weekResult.success ? weekResult.data : []
+                  });
+                })
+                .withFailureHandler(function (error) {
+                  showLoading(false);
+                  showToast('❌ Calendar error: ' + (error.message || 'Unknown error'), 'error');
+                })
+                .getOutreachData(today.toISOString().split('T')[0], nextWeek.toISOString().split('T')[0]);
+            })
+            .withFailureHandler(function (error) {
+              showLoading(false);
+              showToast('❌ Calendar error: ' + (error.message || 'Unknown error'), 'error');
+            })
+            .getOutreachData(tomorrow.toISOString().split('T')[0], tomorrow.toISOString().split('T')[0]);
+        })
+        .withFailureHandler(function (error) {
+          showLoading(false);
+          showToast('❌ Calendar error: ' + (error.message || 'Unknown error'), 'error');
+        })
+        .getOutreachData(today.toISOString().split('T')[0], today.toISOString().split('T')[0]);
+    }
+
+    // Display pipeline overview modal
+    function displayPipelineModal(data) {
+      const pipeline = data.pipeline || {};
+      const activity = data.activity || [];
+
+      let html = `
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #0F2537; margin-bottom: 10px;">📊 Sales Pipeline Overview</h1>
+            <p style="color: #666;">Current status of all leads and opportunities</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${pipeline.totalActive || 0}</div>
+              <div style="font-size: 14px; opacity: 0.9;">Active Opportunities</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${(pipeline.byStage || {}).Lost || 0}</div>
+              <div style="font-size: 14px; opacity: 0.9;">Lost Deals</div>
+            </div>
+          </div>
+
+          <h3 style="color: #0F2537; margin-bottom: 15px;">📈 Pipeline by Stage</h3>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
+      `;
+
+      // Pipeline stages
+      const stages = ['Prospect', 'Nurture', 'Active Pursuit', 'Customer', 'Lost'];
+      stages.forEach(stage => {
+        const count = (pipeline.byStage || {})[stage] || 0;
+        const colors = {
+          'Prospect': '#3498db',
+          'Nurture': '#f39c12',
+          'Active Pursuit': '#e74c3c',
+          'Customer': '#27ae60',
+          'Lost': '#95a5a6'
+        };
+        html += `
+          <div style="background: ${colors[stage]}; color: white; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">${count}</div>
+            <div style="font-size: 12px;">${stage}</div>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+
+          <h3 style="color: #0F2537; margin-bottom: 15px;">🔥 Recent Activity</h3>
+          <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+      `;
+
+      if (activity.length > 0) {
+        activity.slice(0, 5).forEach(item => {
+          html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;">
+              <div>
+                <div style="font-weight: 600; color: #2c3e50;">${item.company || 'Unknown Company'}</div>
+                <div style="font-size: 12px; color: #7f8c8d;">${item.outcome || 'No outcome'}</div>
+              </div>
+              <div style="font-size: 12px; color: #95a5a6;">${item.date || 'No date'}</div>
+            </div>
+          `;
+        });
+      } else {
+        html += '<p style="color: #666; text-align: center; margin: 20px 0;">No recent activity found</p>';
+      }
+
+      html += `
+          </div>
+        </div>
+      `;
+
+      const htmlOutput = HtmlService
+        .createHtmlOutput(html)
+        .setWidth(800)
+        .setHeight(600);
+
+      SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📊 Sales Pipeline');
+    }
+
+    // Display calendar modal with upcoming follow-ups
+    function displayCalendarModal(data) {
+      const today = new Date();
+      const nextWeek = new Date(today);
+      nextWeek.setDate(today.getDate() + 7);
+
+      let html = `
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #0F2537; margin-bottom: 10px;">📅 Upcoming Follow-ups</h1>
+            <p style="color: #666;">Scheduled activities and reminders</p>
+          </div>
+
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <h4 style="color: #856404; margin-bottom: 10px;">📋 Today's Tasks</h4>
+      `;
+
+      // Display today's tasks
+      if (data.today && data.today.length > 0) {
+        data.today.slice(0, 3).forEach(task => {
+          html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #ffeaa7;">
+              <div>
+                <div style="font-weight: 600; color: #856404;">${task.company || task['Company Name'] || 'Unknown Company'}</div>
+                <div style="font-size: 12px; color: #856404;">${task.Notes || 'No notes'}</div>
+              </div>
+              <div style="font-size: 12px; color: #856404; font-weight: 600;">${task.Status || 'Pending'}</div>
+            </div>
+          `;
+        });
+      } else {
+        html += `<p style="color: #856404; margin: 0;">No tasks scheduled for today</p>`;
+      }
+
+      html += `
+          </div>
+
+          <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <h4 style="color: #0c5460; margin-bottom: 10px;">⏰ This Week</h4>
+      `;
+
+      // Display this week's tasks
+      if (data.thisWeek && data.thisWeek.length > 0) {
+        data.thisWeek.slice(0, 5).forEach(task => {
+          html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #bee5eb;">
+              <div>
+                <div style="font-weight: 600; color: #0c5460;">${task.company || task['Company Name'] || 'Unknown Company'}</div>
+                <div style="font-size: 12px; color: #0c5460;">${task.Notes || 'No notes'}</div>
+              </div>
+              <div style="font-size: 12px; color: #0c5460; font-weight: 600;">${task.Status || 'Pending'}</div>
+            </div>
+          `;
+        });
+      } else {
+        html += `<p style="color: #0c5460; margin: 0;">No follow-ups scheduled this week</p>`;
+      }
+
+      html += `
+          </div>
+
+          <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+            <h4 style="color: #495057; margin-bottom: 10px;">📊 Activity Summary</h4>
+      `;
+
+      // Calculate summary statistics
+      const totalToday = data.today ? data.today.length : 0;
+      const totalThisWeek = data.thisWeek ? data.thisWeek.length : 0;
+      const totalActivities = totalToday + totalThisWeek;
+
+      if (totalActivities > 0) {
+        html += `<p style="color: #495057; margin: 0;">${totalActivities} scheduled activities this week (${totalToday} today, ${totalThisWeek} remaining)</p>`;
+      } else {
+        html += `<p style="color: #6c757d; margin: 0;">No scheduled activities found</p>`;
+      }
+
+      html += `
+          </div>
+        </div>
+      `;
+
+      const htmlOutput = HtmlService
+        .createHtmlOutput(html)
+        .setWidth(750)
+        .setHeight(600);
+
+      SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📅 Calendar View');
+    }
+
+    // Display accounts summary modal
+    function displayAccountsModal(data) {
+      // Calculate account statistics
+      const totalAccounts = data.length;
+      const deployedAccounts = data.filter(a => a.Status && a.Status.toUpperCase().includes('DEPLOYED')).length;
+      const pendingAccounts = totalAccounts - deployedAccounts;
+
+      let html = `
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #0F2537; margin-bottom: 10px;">🏢 Account Management</h1>
+            <p style="color: #666;">New account deployments and status</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${totalAccounts}</div>
+              <div style="font-size: 14px; opacity: 0.9;">Total Accounts</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${deployedAccounts}</div>
+              <div style="font-size: 14px; opacity: 0.9;">Deployed</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
+              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${pendingAccounts}</div>
+              <div style="font-size: 14px; opacity: 0.9;">Pending</div>
+            </div>
+          </div>
+
+          <h3 style="color: #0F2537; margin-bottom: 15px;">📋 Recent Account Activity</h3>
+          <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+      `;
+
+      if (data && data.length > 0) {
+        // Show last 5 accounts
+        data.slice(-5).reverse().forEach(account => {
+          const statusColor = account.Status && account.Status.toUpperCase().includes('DEPLOYED') ? '#27ae60' : '#f39c12';
+          html += `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+              <div>
+                <div style="font-weight: 600; color: #2c3e50;">${account.company || account['Company Name'] || 'Unknown Company'}</div>
+                <div style="font-size: 12px; color: #7f8c8d;">${account.Notes || 'No notes available'}</div>
+              </div>
+              <div style="font-size: 12px; color: ${statusColor}; font-weight: 600;">${account.Status || 'Pending'}</div>
+            </div>
+          `;
+        });
+      } else {
+        html += '<p style="color: #666; text-align: center; margin: 20px 0;">No account data available</p>';
+      }
+
+      html += `
+          </div>
+
+          <div style="margin-top: 20px; text-align: center;">
+            <button onclick="window.open('', '_blank').close();" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+              📊 Open Full Accounts Sheet
+            </button>
+          </div>
+        </div>
+      `;
+
+      const htmlOutput = HtmlService
+        .createHtmlOutput(html)
+        .setWidth(750)
+        .setHeight(600);
+
+      SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🏢 Account Management');
+    }
+
+    // ========================================
+    // Generate Date Range Report
+    // ========================================
+    function generateDateRangeReport() {
+      const startDate = document.getElementById('reportStart').value;
+      const endDate = document.getElementById('reportEnd').value;
+
+      if (!startDate || !endDate) {
+        showToast('Please select both start and end dates', 'error');
+        return;
+      }
+
+      // Show loading immediately
+      showLoading(true);
+
+      // Set timeout to prevent infinite freeze
+      const timeoutId = setTimeout(() => {
+        showLoading(false);
+        showToast('Report generation timed out. Try a shorter date range.', 'error');
+      }, 30000); // 30 second timeout
+
+      google.script.run
+        .withSuccessHandler(function () { showLoading(false); showToast('Report opened', 'success'); })
+        .withFailureHandler(function (e) { showLoading(false); handleApiError(e, 'Report generation failed'); })
+        .showProfessionalReport(startDate, endDate);
+    }
+
+    // ========================================
+    // Quick Date Selection
+    // ========================================
+    function setReportDates(range) {
+      const today = new Date();
+      let start, end;
+
+      switch (range) {
+        case 'thisWeek':
+          // Start from Sunday of current week
+          start = new Date(today);
+          start.setDate(today.getDate() - today.getDay());
+          break;
+        case 'thisMonth':
+          start = new Date(today.getFullYear(), today.getMonth(), 1);
+          break;
+        case 'last7':
+          start = new Date(today);
+          start.setDate(today.getDate() - 7);
+          break;
+        case 'last30':
+          start = new Date(today);
+          start.setDate(today.getDate() - 30);
+          break;
+      }
+
+      end = today;
+
+      document.getElementById('reportStart').value = formatDate(start);
+      document.getElementById('reportEnd').value = formatDate(end);
+    }
+
+    function formatDate(date) {
+      return date.toISOString().split('T')[0];
+    }
+
+    // ========================================
+    // Copy Report to Clipboard
+    // ========================================
+    function copyReportToClipboard() {
+      const textarea = document.getElementById('reportOutput');
+
+      // Try modern API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textarea.value)
+          .then(() => {
+            showToast('📋 Report copied to clipboard!', 'success');
+          })
+          .catch(err => {
+            fallbackCopy(textarea);
+          });
+      } else {
+        fallbackCopy(textarea);
+      }
+    }
+
+    function fallbackCopy(textarea) {
+      textarea.select();
+      textarea.setSelectionRange(0, 99999); // For mobile
+
+      try {
+        document.execCommand('copy');
+        showToast('📋 Report copied to clipboard!', 'success');
+      } catch (err) {
+        showToast('❌ Failed to copy. Please select and copy manually.', 'error');
+      }
+    }
+
+    // ========================================
+    // Utility Functions
+    // ========================================
+    function showLoading(show) {
+      const loading = document.getElementById('loading');
+      loading.classList.toggle('active', show);
+    }
+
+    function showToast(message, type = '') {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.className = 'toast ' + type;
+      toast.classList.add('show');
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ========================================
+    // New Company Fields Toggle
+    // ========================================
+    function toggleNewCompanyFields() {
+      const fields = document.getElementById('newCompanyFields');
+      const icon = document.getElementById('newCompanyToggleIcon');
+      const text = document.getElementById('newCompanyToggleText');
+
+      if (fields.style.display === 'none') {
+        fields.style.display = 'block';
+        icon.textContent = '-';
+        text.textContent = 'Hide New Company Details';
+      } else {
+        fields.style.display = 'none';
+        icon.textContent = '+';
+        text.textContent = 'Add New Company Details';
+      }
+    }
+
+    // ========================================
+    // Control Center Toggle
+    // ========================================
+    function toggleControlCenter() {
+      const content = document.getElementById('controlCenterContent');
+      const icon = document.getElementById('controlCenterToggleIcon');
+
+      content.classList.toggle('collapsed');
+      icon.textContent = content.classList.contains('collapsed') ? '▶' : '▼';
+    }
+
+    // ========================================
+    // Control Center Tab Switching
+    // ========================================
+    function showTool(toolId, clickedTab = null) {
+      // Hide all tools
+      document.querySelectorAll('.control-tool').forEach(tool => {
+        tool.classList.remove('active');
+      });
+
+      // Remove active class from all tabs
+      document.querySelectorAll('.control-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Show selected tool
+      const selectedTool = document.getElementById('tool-' + toolId);
+      if (selectedTool) {
+        selectedTool.classList.add('active');
+      }
+
+      // Add active class to clicked tab (or find it if called programmatically)
+      if (clickedTab) {
+        clickedTab.classList.add('active');
+      } else {
+        // Find the tab by its onclick attribute
+        const tab = document.querySelector(`[onclick="showTool('${toolId}')"]`);
+        if (tab) {
+          tab.classList.add('active');
+        }
+      }
+    }
+
+    // ========================================
+    // CSV Import
+    // ========================================
+    function importCSV() {
+      const csvText = document.getElementById('csvText').value.trim();
+      const targetSheet = document.getElementById('importSheet').value;
+
+      if (!csvText) {
+        showToast('⚠️ Please paste CSV data first', 'warning');
+        document.getElementById('csvText').focus();
+        return;
+      }
+
+      showLoading(true);
+
+      google.script.run
+        .withSuccessHandler(handleCSVImportSuccess)
+        .withFailureHandler(handleCSVImportError)
+        .importCSVData(csvText, targetSheet);
+    }
+
+    function handleCSVImportSuccess(result) {
+      showLoading(false);
+
+      if (result.success) {
+        const importedCount = result.data.importedCount || 0;
+        const skippedCount = result.data.skippedCount || 0;
+
+        let message = `✅ Successfully imported ${importedCount} rows to ${result.data.sheetName}`;
+        if (skippedCount > 0) {
+          message += ` (${skippedCount} skipped due to validation)`;
+        }
+
+        showToast(message, 'success');
+
+        // Clear the form
+        document.getElementById('csvText').value = '';
+      } else {
+        showToast('❌ ' + (result.error || 'Import failed'), 'error');
+      }
+    }
+
+    function handleCSVImportError(error) {
+      showLoading(false);
+      showToast('❌ CSV import error: ' + (error.message || error), 'error');
+    }
+
+
+
+    // ========================================
+    // Context Detection (Dialog vs Sidebar)
+    // ========================================
+    function detectDisplayContext() {
+      // Check if we're in a narrow container (sidebar) vs wide (dialog)
+      const isSidebar = window.innerWidth < 500 || document.body.clientWidth < 500;
+
+      if (isSidebar) {
+        // Sidebar context - ensure proper styling
+        document.body.classList.remove('dialog-context');
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+          sidebar.style.position = 'relative';
+          sidebar.style.width = '100%';
+          sidebar.style.left = 'auto';
+          sidebar.style.top = 'auto';
+        }
+      } else {
+        // Dialog context - apply floating styles
+        document.body.classList.add('dialog-context');
+      }
+    }
+
+    // ========================================
+    // Load Validation Lists
+    // ========================================
+    function loadValidationLists() {
+      google.script.run
+        .withSuccessHandler(function (result) {
+          if (result.success && result.data) {
+            populateValidationLists(result.data);
+          } else {
+            console.warn('Failed to load validation lists:', result.error);
+          }
+        })
+        .withFailureHandler(function (error) {
+          console.warn('Error loading validation lists:', error);
+        })
+        .getValidationLists();
+    }
+
+    function populateValidationLists(validationLists) {
+      // Populate activity types
+      const activityTypeSelect = document.getElementById('activityType');
+      if (validationLists['Activity Types']) {
+        // Clear existing options except the first
+        while (activityTypeSelect.options.length > 1) {
+          activityTypeSelect.remove(1);
+        }
+        // Add new options
+        validationLists['Activity Types'].values.forEach(function (type) {
+          const option = document.createElement('option');
+          option.value = type;
+          option.textContent = type;
+          activityTypeSelect.appendChild(option);
+        });
+      }
+
+      // Populate container sizes for new accounts
+      // This would be used when implementing the account form validation
+
+      // Store validation lists for form validation
+      state.validationLists = validationLists;
+
+      console.log('Validation lists loaded:', validationLists);
+    }
+
+    // ========================================
+    // Save Callbacks
+    // ========================================
+    function handleSaveSuccess(result) {
+      showLoading(false);
+
+      if (result && result.success) {
+        // Success - show confirmation and reset form
+        const company = document.getElementById('companyInput').value.trim();
+        showToast('✅ Visit logged for ' + company, 'success');
+
+        // Reset ALL form fields comprehensively
+        document.getElementById('companyInput').value = '';
+        document.getElementById('notes').value = '';
+        document.getElementById('outreachId').value = '';
+
+        // Reset new company fields
+        document.getElementById('newAddress').value = '';
+        document.getElementById('newPhone').value = '';
+        document.getElementById('newContact').value = '';
+        document.getElementById('newCity').value = 'Tyler';
+        document.getElementById('newState').value = 'TX';
+        document.getElementById('newZip').value = '';
+        document.getElementById('newEmail').value = '';
+        document.getElementById('newCompetitor').value = '';
+        document.getElementById('newIndustry').value = '';
+
+        // Reset date fields to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('nextDate').value = today;
+        document.getElementById('activityType').value = 'Visit';
+
+        // Reset status selection and UI elements
+        state.selectedStatus = '';
+        state.selectedOutcome = '';
+        state.selectedStage = '';
+        document.querySelectorAll('.outcome-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('workflowDisplay').style.display = 'none';
+
+        // Hide informational cards
+        document.getElementById('lastTouchCard').classList.remove('active');
+        document.getElementById('prospectStatusIndicator').classList.remove('active');
+        document.getElementById('accountForm').classList.remove('active');
+
+        // Collapse new company fields section if it was expanded
+        const newCompanyFields = document.getElementById('newCompanyFields');
+        if (newCompanyFields.style.display !== 'none') {
+          newCompanyFields.style.display = 'none';
+          document.getElementById('newCompanyToggleIcon').textContent = '+';
+          document.getElementById('newCompanyToggleText').textContent = 'Add New Company Details';
+        }
+
+        // Clear company data and voice preview
+        state.selectedCompanyData = null;
+        const voicePreview = document.getElementById('voicePreview');
+        voicePreview.textContent = 'Tap to record...';
+        voicePreview.classList.remove('has-content');
+
+        // Refresh stats to show updated counts
+        loadStats();
+
+        // Focus on company input for quick next entry
+        document.getElementById('companyInput').focus();
+      } else {
+        // Server returned failure
+        showToast('❌ ' + (result.error || 'Save failed'), 'error');
+      }
+    }
+
+    function handleSaveError(error) {
+      showLoading(false);
+      showToast('❌ ' + (error.message || error || 'Save failed'), 'error');
+      console.error('Save error:', error);
+    }
+
+    /**
+     * Standard Save Entry (Reliable Pattern)
+     */
+    function saveEntry() {
+      const company = document.getElementById('companyInput').value.trim();
+      if (!company || !state.selectedStatus) {
+        showToast('⚠️ Company and Status required', 'warning');
+        return;
+      }
+
+      showLoading(true);
+      const formData = {
+        company: company,
+        outcome: state.selectedOutcome,
+        stage: state.selectedStage,
+        status: state.selectedStatus,
+        notes: document.getElementById('notes').value,
+        nextVisitDate: document.getElementById('nextDate').value,
+        activityType: document.getElementById('activityType').value
+      };
+
+      google.script.run
+        .withSuccessHandler(res => {
+          showLoading(false);
+          if (res.success) {
+            showToast('✅ Logged: ' + company, 'success');
+            resetForm();
+            loadStats();
+          } else {
+            showToast('❌ ' + res.error, 'error');
+          }
+        })
+        .withFailureHandler(e => {
+          showLoading(false);
+          showToast('❌ Server error during save', 'error');
+        })
+        .addOutreachComplete(formData);
+    }
+
+    function resetForm() {
+      document.getElementById('companyInput').value = '';
+      document.getElementById('notes').value = '';
+      document.querySelectorAll('.outcome-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('workflowDisplay').style.display = 'none';
+      
+      // Reset other form elements to ensure no white text issues
+      const formInputs = document.querySelectorAll('.form-input, .form-select, .form-textarea');
+      formInputs.forEach(input => {
+        input.style.color = '';
+        input.style.backgroundColor = '';
+      });
+    }
+
+    function handleDuplicateCheck(result) {
+      const company = document.getElementById('companyInput').value.trim();
+      const outreachId = document.getElementById('outreachId').value.trim();
+
+      if (result.success && result.isDuplicate) {
+        showLoading(false);
+        const message = `⚠️ Duplicate Outreach ID: ${outreachId}\n\n` +
+          `Already exists for: ${result.existingCompany || 'Unknown'}\n` +
+          `Do you want to save anyway?`;
+
+        if (confirm(message)) {
+          proceedWithSave(company, outreachId);
+        }
+      } else {
+        proceedWithSave(company, outreachId);
+      }
+    }
+
+    function handleDuplicateCheckError(error) {
+      console.warn('Duplicate check failed, proceeding anyway:', error);
+      const company = document.getElementById('companyInput').value.trim();
+      const outreachId = document.getElementById('outreachId').value.trim();
+
+      showLoading(false);
+      if (confirm('⚠️ Could not verify Outreach ID uniqueness.\n\nSave anyway?')) {
+        proceedWithSave(company, outreachId);
+      }
+    }
+
+    function proceedWithSave(company, outreachId) {
+      const data = {
+        company: company,
+        companyName: company,
+        outcome: state.selectedOutcome, // NEW: Pass the Outcome
+        stage: state.selectedStage,     // NEW: Pass the Stage
+        status: state.selectedStatus,   // NEW: Pass the Status
+        notes: document.getElementById('notes').value,
+        nextVisitDate: document.getElementById('nextDate').value,
+        activityType: document.getElementById('activityType').value
+      };
+
+      if (outreachId) {
+        data.outreachId = outreachId;
+      }
+
+      if (state.selectedCompanyData && state.selectedCompanyData.companyId) {
+        data.companyId = state.selectedCompanyData.companyId;
+      }
+
+      // Collect new company details for prospect creation
+      const newCompanyFields = document.getElementById('newCompanyFields');
+      if (newCompanyFields && newCompanyFields.style.display !== 'none') {
+        // Only collect new company data if the section is expanded
+        data.newCompanyData = {
+          address: document.getElementById('newAddress').value,
+          city: document.getElementById('newCity').value,
+          state: document.getElementById('newState').value,
+          zip: document.getElementById('newZip').value,
+          industry: document.getElementById('newIndustry').value,
+          contactName: document.getElementById('newContact').value,
+          phone: document.getElementById('newPhone').value,
+          email: document.getElementById('newEmail').value,
+          competitor: document.getElementById('newCompetitor').value
+        };
+      }
+
+      if (state.selectedOutcome === 'Account Won') {
+        data.contact = document.getElementById('newContact').value;
+        data.phone = document.getElementById('newPhone').value;
+        data.site = document.getElementById('newAddress').value;
+      }
+
+      showLoading(true);
+
+      google.script.run
+        .withSuccessHandler(handleSaveSuccess)
+        .withFailureHandler(handleSaveError)
+        .addOutreachComplete(data);
+    }
+  </script>
+</body>
+
+</html>

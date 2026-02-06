@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #0F2537;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn:hover {
+      background: #1a3a52;
+    }
+    .quick-options {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    .quick-btn {
+      flex: 1;
+      padding: 8px;
+      background: #e0e0e0;
+      border: none;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .quick-btn:hover {
+      background: #d0d0d0;
+    }
+    #reportOutput {
+      display: none;
+      margin-top: 20px;
+    }
+    #reportText {
+      width: 100%;
+      height: 300px;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+    }
+    .copy-btn {
+      width: 100%;
+      padding: 10px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="inputForm">
+    <h3 style="margin-top: 0; color: #0F2537;">Generate Date Range Report</h3>
+    
+    <div class="quick-options">
+      <button class="quick-btn" onclick="setThisWeek()">This Week</button>
+      <button class="quick-btn" onclick="setThisMonth()">This Month</button>
+      <button class="quick-btn" onclick="setLast7Days()">Last 7 Days</button>
+      <button class="quick-btn" onclick="setLast30Days()">Last 30 Days</button>
+    </div>
+    
+    <div class="form-group">
+      <label for="startDate">Start Date</label>
+      <input type="date" id="startDate">
+    </div>
+    
+    <div class="form-group">
+      <label for="endDate">End Date</label>
+      <input type="date" id="endDate">
+    </div>
+    
+    <button class="btn" onclick="generateReport()">Generate Report</button>
+  </div>
+  
+  <div id="reportOutput">
+    <button class="copy-btn" onclick="copyReport()">📋 Copy to Clipboard</button>
+    <textarea id="reportText" readonly></textarea>
+  </div>
+  
+  <script>
+    // Set default dates to this week
+    function setThisWeek() {
+      var today = new Date();
+      var startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      
+      document.getElementById('startDate').value = formatDate(startOfWeek);
+      document.getElementById('endDate').value = formatDate(today);
+    }
+    
+    function setThisMonth() {
+      var today = new Date();
+      var startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      
+      document.getElementById('startDate').value = formatDate(startOfMonth);
+      document.getElementById('endDate').value = formatDate(today);
+    }
+    
+    function setLast7Days() {
+      var today = new Date();
+      var sevenDaysAgo = new Date(today);
+      sevenDaysAgo.setDate(today.getDate() - 7);
+      
+      document.getElementById('startDate').value = formatDate(sevenDaysAgo);
+      document.getElementById('endDate').value = formatDate(today);
+    }
+    
+    function setLast30Days() {
+      var today = new Date();
+      var thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(today.getDate() - 30);
+      
+      document.getElementById('startDate').value = formatDate(thirtyDaysAgo);
+      document.getElementById('endDate').value = formatDate(today);
+    }
+    
+    function formatDate(date) {
+      return date.toISOString().split('T')[0];
+    }
+    
+    function generateReport() {
+      var startDate = document.getElementById('startDate').value;
+      var endDate = document.getElementById('endDate').value;
+      
+      if (!startDate || !endDate) {
+        alert('Please select both start and end dates.');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(report) {
+          document.getElementById('reportText').value = report;
+          document.getElementById('inputForm').style.display = 'none';
+          document.getElementById('reportOutput').style.display = 'block';
+        })
+        .withFailureHandler(function(error) {
+          alert('Error: ' + error.message);
+        })
+        .generatePlainTextReportForRange(startDate, endDate);
+    }
+    
+    function copyReport() {
+      var textarea = document.getElementById('reportText');
+      textarea.select();
+      document.execCommand('copy');
+      alert('Report copied to clipboard!');
+    }
+    
+    // Initialize with this week
+    setThisWeek();
+  </script>
+</body>
+</html>

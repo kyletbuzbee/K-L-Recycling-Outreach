@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  /* General Styles for Browser Viewing */
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 20px; background-color: #f4f4f4; }
+  .container { max-width: 800px; margin: 0 auto; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  
+  /* Header */
+  .header { background-color: #003366; color: #ffffff; padding: 20px; text-align: center; }
+  .header h1 { margin: 0; font-size: 24px; }
+  .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+
+  /* KPI Section */
+  .kpi-row { display: flex; justify-content: center; background-color: #eef2f5; padding: 15px 0; border-bottom: 2px solid #ddd; flex-wrap: wrap; }
+  .kpi-box { text-align: center; width: 120px; margin: 0 10px; }
+  .kpi-label { display: block; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+  .kpi-value { display: block; font-size: 20px; font-weight: bold; margin-top: 5px; }
+  .hot-lead { color: #d35400; } /* Burnt Orange for Hot Leads */
+
+  /* Data Table */
+  table { width: 100%; border-collapse: collapse; margin-top: 0; }
+  th { background-color: #f8f9fa; color: #444; font-size: 12px; text-transform: uppercase; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; }
+  td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  
+  /* Outcome Badges */
+  .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; white-space: nowrap; }
+  .b-interested { background-color: #e6fffa; color: #047857; border: 1px solid #047857; }
+  .b-disqualified { background-color: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
+  .b-cold { background-color: #eff6ff; color: #1e40af; border: 1px solid #1e40af; }
+  .b-contact { background-color: #fff7ed; color: #c2410c; border: 1px solid #c2410c; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🚀 K&L Recycling</h1>
+    <p>Enterprise Operations Report | 01/14/2026 - 01/14/2026</p>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-box">
+      <span class="kpi-label">Total Visits</span>
+      <span class="kpi-value">11</span>
+    </div>
+    <div class="kpi-box">
+      <span class="kpi-label">New Wins</span>
+      <span class="kpi-value">0</span>
+    </div>
+    <div class="kpi-box">
+      <span class="kpi-label">🔥 Hot Leads</span>
+      <span class="kpi-value hot-lead">2</span>
+    </div>
+  </div>
+
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <thead>
+      <tr>
+        <th width="20%">Company</th>
+        <th width="12%">Date</th>
+        <th width="15%">Outcome</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Generac</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-disqualified">Disqualified</span></td>
+        <td>Spoke to GM. Not enough scrap to warrant a roll off. Front office confusion regarding scrap definition.</td>
+      </tr>
+      <tr>
+        <td><strong>Raney Appliance Service</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-disqualified">Disqualified</span></td>
+        <td>Low volume, but upcoming clean up. Will call when ready.</td>
+      </tr>
+      <tr>
+        <td><strong>Pro Custom Auto Works</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-interested">Interested</span></td>
+        <td><strong>Target:</strong> Owner needs large cleanup/roll off. Currently uses Huntwell but interested in switching. Will call next week.</td>
+      </tr>
+      <tr>
+        <td><strong>Larry Cathy</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-contact">Initial Contact</span></td>
+        <td>Owner out of office; office locked. Plan to visit tomorrow morning.</td>
+      </tr>
+      <tr>
+        <td><strong>Goodyear</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-disqualified">Disqualified</span></td>
+        <td>Insufficient scrap volume.</td>
+      </tr>
+      <tr>
+        <td><strong>C. Davis Heating And Air</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-cold">Cold</span></td>
+        <td>Currently allows unknown pickup without contact info. Left card for next interaction.</td>
+      </tr>
+      <tr>
+        <td><strong>Northwest Collision Center</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-cold">Cold</span></td>
+        <td>Employees take scrap (low volume). Left card with receptionist regarding premium pricing.</td>
+      </tr>
+      <tr>
+        <td><strong>Watson Plumbing</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-cold">Cold</span></td>
+        <td>Follow-up visit. Still unable to locate contact info for current scrap collector.</td>
+      </tr>
+      <tr>
+        <td><strong>Tyler Building Systems</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-contact">Contacted</span></td>
+        <td>No answer. Left 2 voicemails. Sending text tomorrow morning.</td>
+      </tr>
+      <tr>
+        <td><strong>Faith Co</strong></td>
+        <td>01/14</td>
+        <td><span class="badge b-interested">Interested</span></td>
+        <td>Spoke to receptionist; message left for owner/manager regarding outreach.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>
