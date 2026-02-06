@@ -3,26 +3,107 @@
  * Manages New Account submissions.
  */
 
+/**
+ * Creates a new account by appending to the bottom of the Accounts sheet
+ * @param {Object} accountData - Account data object
+ * @returns {Object} Result with success flag and message
+ */
+function createNewAccount(accountData) {
+  try {
+    // Validate required fields
+    if (!accountData || !accountData.companyName) {
+      return {
+        success: false,
+        error: 'Company name is required'
+      };
+    }
+
+    // Build account row from data (schema-aligned)
+    var accountRow = {
+      'deployed': 'No',
+      'timestamp': SharedUtils.formatDate(new Date()),
+      'company name': accountData.companyName,
+      'contact name': accountData.contactName || '',
+      'contact phone': accountData.contactPhone || accountData.phone || '',
+      'contact role': accountData.contactRole || accountData.role || '',
+      'site location': accountData.siteLocation || accountData.address || '',
+      'mailing location': accountData.mailingLocation || accountData.site || accountData.address || '',
+      'roll-off fee': accountData.rollOffFee || 'Yes',
+      'handling of metal': accountData.handlingOfMetal || 'All together',
+      'roll off container size': accountData.rolloffContainerSize || accountData.containerSize || '30 yd',
+      'notes': accountData.notes || '',
+      'payout price': accountData.payoutPrice || ''
+    };
+
+    // Append to Accounts sheet
+    appendRowSafe(CONFIG.SHEET_ACCOUNTS, accountRow);
+
+    console.log('Created new account: ' + accountData.companyName);
+
+    return {
+      success: true,
+      message: 'Account created successfully',
+      accountName: accountData.companyName
+    };
+
+  } catch (e) {
+    return ErrorHandling.handleError(e, {
+      functionName: 'createNewAccount',
+      severity: 'HIGH'
+    });
+  }
+}
+
 function processNewAccount(rowIndex) {
   try {
+    // Handle missing rowIndex - find first undeployed account
+    // FIX: Use SHEET_ACCOUNTS since there's no separate "New Accounts" sheet
+    var accountsSheetName = CONFIG.SHEET_ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
+    
+    if (rowIndex === null || rowIndex === undefined) {
+      console.log('No rowIndex provided - finding first undeployed account...');
+      var accounts = SharedUtils.getSafeSheetData(accountsSheetName, ['Company name', 'Deployed']);
+      if (!accounts || accounts.length === 0) {
+        return {
+          success: false,
+          error: 'No accounts found in Accounts sheet'
+        };
+      }
+      
+      // Find first undeployed account
+      var undeployed = accounts.find(function(a) { 
+        return !a['deployed'] || a['deployed'] === 'No' || a['deployed'] === false;
+      });
+      
+      if (!undeployed) {
+        return {
+          success: true,
+          message: 'All accounts are already deployed'
+        };
+      }
+      
+      rowIndex = undeployed._rowIndex;
+      console.log('Found undeployed account at row: ' + rowIndex);
+    }
+    
     // Validate input parameters
     var validationResult = ValidationUtils.validateRange(rowIndex, 1, 10000, 'rowIndex');
     if (!validationResult.success) {
       throw new Error(validationResult.error);
     }
 
-    // FIX: Use ColumnMapper for consistent column access
-    var companyNameIndex = ColumnMapper.getColumnIndex(CONFIG.SHEET_NEW_ACCOUNTS, 'Company name');
-    var deployedIndex = ColumnMapper.getColumnIndex(CONFIG.SHEET_NEW_ACCOUNTS, 'Deployed');
-    var rollOffFeeIndex = ColumnMapper.getColumnIndex(CONFIG.SHEET_NEW_ACCOUNTS, 'Roll-Off Fee');
-    var payoutPriceIndex = ColumnMapper.getColumnIndex(CONFIG.SHEET_NEW_ACCOUNTS, 'Payout Price');
+    // FIX: Use ColumnMapper for consistent column access with fallback sheet name
+    var companyNameIndex = ColumnMapper.getColumnIndex(accountsSheetName, 'Company name');
+    var deployedIndex = ColumnMapper.getColumnIndex(accountsSheetName, 'Deployed');
+    var rollOffFeeIndex = ColumnMapper.getColumnIndex(accountsSheetName, 'Roll-Off Fee');
+    var payoutPriceIndex = ColumnMapper.getColumnIndex(accountsSheetName, 'Payout Price');
 
     if (companyNameIndex === null || deployedIndex === null) {
-      throw new Error('Required columns not found in New Accounts sheet');
+      throw new Error('Required columns not found in Accounts sheet');
     }
 
     // Get account data using Safe-Fetch pattern
-    var accounts = SharedUtils.getSafeSheetData(CONFIG.SHEET_NEW_ACCOUNTS, ['Company name', 'Deployed', 'Roll-Off Fee', 'Payout Price']);
+    var accounts = SharedUtils.getSafeSheetData(accountsSheetName, ['Company name', 'Deployed', 'Roll-Off Fee', 'Payout Price']);
     if (!accounts || accounts.length === 0) {
       throw new Error('No accounts data available');
     }
@@ -67,7 +148,7 @@ function processNewAccount(rowIndex) {
 
     // Use error handling wrapper for the update operation
     var updateResult = ErrorHandling.withErrorHandling(function() {
-      return updateCellSafe(CONFIG.SHEET_NEW_ACCOUNTS, rowIndex, 'Deployed', true);
+      return updateCellSafe(accountsSheetName, rowIndex, 'Deployed', true);
     }, {
       functionName: 'processNewAccount',
       accountName: companyName,
@@ -103,19 +184,23 @@ function checkNewAccounts() {
 
     var ss = accessResult.spreadsheet;
 
-    // Get accounts data with comprehensive error handling
-    var accountsResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_NEW_ACCOUNTS, ['Deployed', 'Company name']);
-    }, {
-      functionName: 'checkNewAccounts',
-      operation: 'getAccountsData'
-    });
-
-    if (!accountsResult.success) {
-      throw new Error('Failed to retrieve accounts data: ' + accountsResult.error);
+    // FIX: Use SHEET_ACCOUNTS since there's no separate "New Accounts" sheet
+    var accountsSheetName = CONFIG.SHEET_ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
+    
+    // FIX: getSafeSheetData returns [] on error, not an error object
+    // So we call it directly without ErrorHandling wrapper
+    var accounts = SharedUtils.getSafeSheetData(accountsSheetName, ['Deployed', 'Company name']);
+    
+    // Handle undefined/null return from getSafeSheetData
+    if (accounts === null || accounts === undefined) {
+      console.warn('getSafeSheetData returned null/undefined - treating as empty array');
+      accounts = [];
     }
-
-    var accounts = accountsResult.data || [];
+    
+    // Check if we got a valid array
+    if (!Array.isArray(accounts)) {
+      throw new Error('getSafeSheetData did not return an array');
+    }
     var processedCount = 0;
     var errorCount = 0;
     var errors = [];

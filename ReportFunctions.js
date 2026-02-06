@@ -970,18 +970,20 @@ function hasAccountBeenWon(companyName, recentOutreach) {
       }
     }
 
-    // Also check if there's a "New Accounts" sheet entry for this company
+    // Also check if there's an Accounts sheet entry for this company
+    // FIX: Use SHEET_ACCOUNTS since there's no separate "New Accounts" sheet
     try {
-      var newAccountsData = SharedUtils.getSafeSheetData(CONFIG.SHEET_NEW_ACCOUNTS, ['Company name']);
+      var accountsSheetName = CONFIG.SHEET_ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
+      var newAccountsData = SharedUtils.getSafeSheetData(accountsSheetName, ['Company name']);
       for (var j = 0; j < newAccountsData.length; j++) {
         var accountCompany = (newAccountsData[j]['company name'] || '').toLowerCase().trim();
         if (accountCompany === normalizedCompany) {
-          return true; // Company exists in New Accounts sheet
+          return true; // Company exists in Accounts sheet
         }
       }
     } catch (e) {
-      // New Accounts sheet might not exist or be accessible, continue
-      console.log('Could not check New Accounts sheet:', e.message);
+      // Accounts sheet might not exist or be accessible, continue
+      console.log('Could not check Accounts sheet:', e.message);
     }
 
     return false;
@@ -1217,6 +1219,78 @@ function generatePlainTextReportForRange(startDate, endDate) {
 
     console.error('Plain Text Report Generation Failed: ' + e.message);
     return errorReport;
+  }
+}
+
+/**
+ * Parse date for report generation - returns Date object for ISO comparison
+ * Used by tests expecting ISO format output
+ * @param {string|Date|number} dateInput - Date to parse
+ * @return {Date} Parsed date object (or current date if invalid)
+ */
+function parseDateForReport(dateInput) {
+  try {
+    if (!dateInput) {
+      return new Date(); // Default to today for reports
+    }
+
+    // If already a Date object, return a copy
+    if (dateInput instanceof Date) {
+      if (!isNaN(dateInput.getTime())) {
+        return new Date(dateInput.getTime());
+      }
+      return new Date();
+    }
+
+    // Handle string inputs
+    if (typeof dateInput === 'string') {
+      var s = dateInput.trim();
+
+      // US format: MM/DD/YYYY or M/D/YYYY
+      var usMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (usMatch) {
+        var monthUS = parseInt(usMatch[1], 10) - 1;
+        var dayUS = parseInt(usMatch[2], 10);
+        var yearUS = parseInt(usMatch[3], 10);
+        var parsedDate = new Date(yearUS, monthUS, dayUS);
+        if (!isNaN(parsedDate.getTime())) return parsedDate;
+      }
+
+      // ISO format: YYYY-MM-DD
+      var isoMatch = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+      if (isoMatch) {
+        var year = parseInt(isoMatch[1], 10);
+        var month = parseInt(isoMatch[2], 10) - 1;
+        var day = parseInt(isoMatch[3], 10);
+        var parsedDate = new Date(year, month, day);
+        if (!isNaN(parsedDate.getTime())) return parsedDate;
+      }
+
+      // Try MMDDYYYY format (no separators)
+      var compactMatch = s.match(/^(\d{8})$/);
+      if (compactMatch) {
+        var month = parseInt(s.substring(0, 2), 10);
+        var day = parseInt(s.substring(2, 4), 10);
+        var year = parseInt(s.substring(4, 8), 10);
+        var parsedDate = new Date(year, month - 1, day);
+        if (!isNaN(parsedDate.getTime())) return parsedDate;
+      }
+    }
+
+    // Handle numbers (Excel serial dates)
+    if (typeof dateInput === 'number') {
+      var excelEpoch = new Date(1899, 11, 30);
+      var parsedDate = new Date(excelEpoch.getTime() + dateInput * 86400000);
+      if (!isNaN(parsedDate.getTime())) return parsedDate;
+    }
+
+    // Final fallback
+    var fallbackDate = new Date(dateInput);
+    return isNaN(fallbackDate.getTime()) ? new Date() : fallbackDate;
+
+  } catch (e) {
+    console.error('Error parsing date in parseDateForReport:', e.message);
+    return new Date(); // Safe fallback to today
   }
 }
 

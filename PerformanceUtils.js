@@ -563,8 +563,14 @@ function validateParameters(params, requiredFields, context) {
       throw new Error('requiredFields must be an array');
     }
 
+    // Defensive: Handle null/undefined params gracefully instead of throwing
     if (params === null || params === undefined) {
-      throw new Error('params cannot be null or undefined');
+      console.warn('validateParameters called with null/undefined params in: ' + (context.functionName || 'unknown'));
+      return {
+        success: false,
+        error: 'Missing required data: ' + (context.functionName || 'operation') + ' requires parameters',
+        missingFields: requiredFields
+      };
     }
 
     var missingFields = [];

@@ -79,6 +79,11 @@ function calculateUrgencyScore(daysSinceRaw, settings) {
   var daysSince = parseInt(daysSinceRaw) || 0;
   var defaultUrgency = { score: 20, band: 'Low', daysSince: daysSince };
 
+  // Handle undefined settings
+  if (!settings) {
+    return defaultUrgency;
+  }
+
   if (!settings.urgencyBands || settings.urgencyBands.length === 0) {
     return defaultUrgency;
   }

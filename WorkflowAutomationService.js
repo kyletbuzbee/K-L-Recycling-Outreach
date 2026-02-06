@@ -162,10 +162,12 @@ function sendAutomationCompletionNotification() {
 }
 
 function onFormSubmit(e) {
-  // Triggered when New Account form is submitted
+  // Triggered when form is submitted (New Accounts or other forms)
   if (e && e.range) {
     var sheet = e.range.getSheet();
-    if (sheet.getName() === CONFIG.SHEET_NEW_ACCOUNTS) {
+    // FIX: Use SHEET_ACCOUNTS since there's no separate "New Accounts" sheet
+    var accountsSheetName = CONFIG.SHEET_ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
+    if (sheet.getName() === accountsSheetName) {
       console.log('Form submitted - processing new accounts...');
       
       var result = checkNewAccounts();

@@ -1544,12 +1544,27 @@ var ComprehensiveValidation = {
       };
 
     } catch (e) {
+      // FIX: Defensive coding - handle when csvText is undefined/null
+      var csvTextLength = 0;
+      try {
+        csvTextLength = csvText ? csvText.length : 0;
+      } catch (lengthError) {
+        csvTextLength = 0;
+      }
+      
+      var lineCount = 0;
+      try {
+        lineCount = lines ? lines.length : 0;
+      } catch (lineError) {
+        lineCount = 0;
+      }
+      
       return {
         success: false,
         error: e.message,
         details: {
-          csvTextLength: csvText.length,
-          lineCount: lines ? lines.length : 0
+          csvTextLength: csvTextLength,
+          lineCount: lineCount
         }
       };
     }

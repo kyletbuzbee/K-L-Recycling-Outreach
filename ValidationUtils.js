@@ -177,5 +177,13 @@ var ValidationUtils = {
     return str.split(delimiter || ',')
       .map(function(part) { return part.trim(); })
       .filter(function(part) { return part.length > 0; });
+  },
+
+  /**
+   * Check if a value is not empty (null, undefined, or empty string)
+   * FIX: Added missing function that code expects on ValidationUtils
+   */
+  isNotEmpty: function(value) {
+    return value !== null && value !== undefined && value.toString().trim().length > 0;
   }
 };
