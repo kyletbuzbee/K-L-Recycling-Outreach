@@ -1,10 +1,68 @@
 /**
- * Core Engine Unit Tests
+ * Core Engine Unit Tests - Schema Aligned v1.3
+ * Aligned with system-schema.json and System_Schema.csv
  */
 var UnitTests_Core = {
   testConfigSchemaIntegrity: function() {
+    // Test sheet names match schema
     TestRunner.assert.notNull(CONFIG.SHEETS.PROSPECTS, "Prospects sheet name missing");
-    TestRunner.assert.isTrue(CONFIG.HEADERS.PROSPECTS.includes('Company ID'), "Schema Missing: Company ID");
+    TestRunner.assert.notNull(CONFIG.SHEETS.OUTREACH, "Outreach sheet name missing");
+    TestRunner.assert.notNull(CONFIG.SHEETS.ACCOUNTS, "Accounts sheet name missing");
+    TestRunner.assert.notNull(CONFIG.SHEETS.CONTACTS, "Contacts sheet name missing");
+    
+    // Test Prospects headers match schema exactly
+    var prospectFields = [
+      'Company ID', 'Address', 'Zip Code', 'Company Name', 'Industry',
+      'Latitude', 'Longitude', 'Last Outcome', 'Last Outreach Date',
+      'Days Since Last Contact', 'Next Step Due Countdown', 'Next Steps Due Date',
+      'Contact Status', 'Close Probability', 'Priority Score',
+      'UrgencyBand', 'Urgency Score', 'Totals'
+    ];
+    prospectFields.forEach(function(field) {
+      TestRunner.assert.isTrue(
+        CONFIG.HEADERS.PROSPECTS.includes(field),
+        "Prospects schema missing: " + field
+      );
+    });
+    
+    // Test Outreach headers match schema exactly
+    var outreachFields = [
+      'Outreach ID', 'Company ID', 'Company', 'Visit Date', 'Notes',
+      'Outcome', 'Stage', 'Status', 'Next Visit Date', 'Days Since Last Visit',
+      'Next Visit Countdown', 'Outcome Category', 'Follow Up Action', 'Owner',
+      'Prospects Match', 'Contact Type', 'Email Sent', 'Competitor'
+    ];
+    outreachFields.forEach(function(field) {
+      TestRunner.assert.isTrue(
+        CONFIG.HEADERS.OUTREACH.includes(field),
+        "Outreach schema missing: " + field
+      );
+    });
+    
+    // Test Accounts headers match schema
+    var accountFields = [
+      'Deployed', 'Timestamp', 'Company Name', 'Contact Name', 'Contact Phone',
+      'Contact Role', 'Site Location', 'Mailing Location', 'Roll-Off Fee',
+      'Handling of Metal', 'Roll Off Container Size', 'Notes', 'Payout Price'
+    ];
+    accountFields.forEach(function(field) {
+      TestRunner.assert.isTrue(
+        CONFIG.HEADERS.ACCOUNTS.includes(field),
+        "Accounts schema missing: " + field
+      );
+    });
+    
+    // Test Contacts headers match schema
+    var contactFields = [
+      'Name', 'Company', 'Account', 'Role', 'Department',
+      'Phone Number', 'Email', 'Address'
+    ];
+    contactFields.forEach(function(field) {
+      TestRunner.assert.isTrue(
+        CONFIG.HEADERS.CONTACTS.includes(field),
+        "Contacts schema missing: " + field
+      );
+    });
   },
 
   testDateValidation: function() {
@@ -18,7 +76,7 @@ var UnitTests_Core = {
   },
 
   testSharedUtilsFormatting: function() {
-    var date = new Date(2026, 1, 7); // Feb 7, 2026
+    var date = new Date(2026, 1, 7, 12, 0, 0); // Feb 7, 2026 at noon (timezone safe)
     var formatted = SharedUtils.formatDate(date);
     // Config default is MM/dd/yyyy
     TestRunner.assert.equals(formatted, "02/07/2026", "SharedUtils.formatDate failed pattern match");
@@ -28,6 +86,19 @@ var UnitTests_Core = {
     var raw = "  Company ID  ";
     var normalized = SharedUtils.normalizeHeader(raw);
     TestRunner.assert.equals(normalized, "company id", "Header normalization failed");
+    
+    // Test schema-aligned headers
+    var schemaHeaders = [
+      'Company ID', 'Company Name', 'Contact Status', 'UrgencyBand',
+      'Last Outreach Date', 'Next Steps Due Date', 'Roll-Off Fee'
+    ];
+    schemaHeaders.forEach(function(header) {
+      var normalized = SharedUtils.normalizeHeader(header);
+      TestRunner.assert.isTrue(
+        normalized.length > 0,
+        "Should normalize schema header: " + header
+      );
+    });
   },
 
   // ValidationUtils Tests
@@ -142,6 +213,18 @@ var UnitTests_Core = {
     var id = SharedUtils.generateCompanyId('Test Company');
     TestRunner.assert.isTrue(typeof id === 'string', "Should generate string company ID");
     TestRunner.assert.isTrue(id.length > 0, "Should generate non-empty company ID");
+    TestRunner.assert.isTrue(id.startsWith('CID-'), "Company ID should start with CID-");
+    
+    // Test with schema-aligned company names
+    var testCompanies = [
+      'ABC Metal Fabrication',
+      'XYZ Welding & HVAC',
+      '123 Construction Co.'
+    ];
+    testCompanies.forEach(function(company) {
+      var cid = SharedUtils.generateCompanyId(company);
+      TestRunner.assert.isTrue(cid.startsWith('CID-'), "Should generate valid CID for: " + company);
+    });
   },
 
   testParseCurrency: function() {
@@ -196,16 +279,20 @@ var UnitTests_Core = {
     // Test validateKeys with edge cases
     var emptyObj = {};
     try {
-      SharedUtils.validateKeys(emptyObj, ['name']);
+      SharedUtils.validateKeys(emptyObj, ['Company Name']);
       TestRunner.assert.isTrue(false, "Should throw error for empty object");
     } catch (e) {
       TestRunner.assert.isTrue(true, "Should throw error for missing required keys");
     }
     
-    // Test with null/undefined keys
-    var validObj = { name: 'John' };
-    var result = SharedUtils.validateKeys(validObj, ['name']);
-    TestRunner.assert.isTrue(result, "Should validate existing keys");
+    // Test with schema-aligned keys
+    var prospectObj = { 
+      'Company ID': 'CID-001',
+      'Company Name': 'Test Company',
+      'Contact Status': 'Interested (Hot)'
+    };
+    var result = SharedUtils.validateKeys(prospectObj, ['Company ID', 'Company Name']);
+    TestRunner.assert.isTrue(result, "Should validate schema-aligned keys");
   },
 
   testDateValidationEdgeCases: function() {
@@ -218,6 +305,13 @@ var UnitTests_Core = {
     
     var emptyDate = ValidationUtils.validateDate('');
     TestRunner.assert.isTrue(!emptyDate.success, "Empty date should fail validation");
+    
+    // Test schema-aligned date formats (Visit Date, Last Outreach Date, Next Steps Due Date)
+    var isoDate = ValidationUtils.validateDate('2026-01-15');
+    TestRunner.assert.isTrue(isoDate.success, "ISO date should be valid (schema-aligned)");
+    
+    var usDate = ValidationUtils.validateDate('01/15/2026');
+    TestRunner.assert.isTrue(usDate.success, "US date should be valid (schema-aligned)");
   },
 
   testEmailValidationEdgeCases: function() {
@@ -234,9 +328,18 @@ var UnitTests_Core = {
 
   testRequiredFieldsEdgeCases: function() {
     // Test required fields validation with edge cases
-    var objNullValues = { name: null, email: undefined };
-    var result = ValidationUtils.validateRequiredFields(objNullValues, ['name', 'email']);
+    var objNullValues = { 'Company Name': null, 'Contact Status': undefined };
+    var result = ValidationUtils.validateRequiredFields(objNullValues, ['Company Name', 'Contact Status']);
     TestRunner.assert.isTrue(!result.success, "Should fail when fields are null/undefined");
+    
+    // Test with valid schema-aligned data
+    var validProspect = {
+      'Company Name': 'Test Company',
+      'Contact Status': 'Interested (Hot)',
+      'Industry': 'Metal Fabrication'
+    };
+    var validResult = ValidationUtils.validateRequiredFields(validProspect, ['Company Name', 'Contact Status']);
+    TestRunner.assert.isTrue(validResult.success, "Should pass with valid schema-aligned data");
   },
 
   testStringValidationEdgeCases: function() {

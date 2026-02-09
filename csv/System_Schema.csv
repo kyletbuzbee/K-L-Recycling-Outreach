@@ -11,7 +11,7 @@ Prospects,lastOutreachDate,Last Outreach Date,Date,FALSE,,,FALSE
 Prospects,daysSinceLastContact,Days Since Last Contact,Text,FALSE,,,FALSE
 Prospects,nextStepDueCountdown,Next Step Due Countdown,Number,FALSE,,,FALSE
 Prospects,nextStepsDueDate,Next Steps Due Date,Date,FALSE,,,FALSE
-Prospects,contactStatus,Contact Status,Dropdown,FALSE,"Active, Cold, Disqualified, Interested (Hot), Interested (Warm), Lost, Nurture, Outreach, Prospect, Won",,FALSE
+Prospects,contactStatus,Contact Status,Dropdown,FALSE,"Active, Cold, Disqualified, Interested (Hot), Interested (Warm), Lost, Nurture, Outreach, Prospect, Won, Not Contacted",,FALSE
 Prospects,closeProbability,Close Probability,Text,FALSE,,,FALSE
 Prospects,priorityScore,Priority Score,Number,FALSE,,60,FALSE
 Prospects,urgencyBand,UrgencyBand,Dropdown,FALSE,"Overdue, High, Medium, Low",,FALSE
@@ -22,7 +22,7 @@ Outreach,companyID,Company ID,Text,FALSE,,,FALSE
 Outreach,company,Company,Text,FALSE,,,FALSE
 Outreach,visitDate,Visit Date,Date,FALSE,,,FALSE
 Outreach,notes,Notes,Text,FALSE,,,FALSE
-Outreach,outcome,Outcome,Dropdown,FALSE,"Account Won, Disqualified, Follow-Up, Initial Contact, Interested, Interested (Hot), Interested (Warm), No Answer, Not Contacted, Not Interested",,FALSE
+Outreach,outcome,Outcome,Dropdown,FALSE,"Account Won, Disqualified, Follow-Up, Initial Contact, Interested, Interested (Hot), Interested (Warm), Not Interested",,FALSE
 Outreach,stage,Stage,Dropdown,FALSE,"Disqualified, Lost, Nurture, Outreach, Prospect, Won",,FALSE
 Outreach,status,Status,Dropdown,FALSE,"Active, Cold, Disqualified, Hot, Interested (Hot), Interested (Warm), Lost, Warm, Won",,FALSE
 Outreach,nextVisitDate,Next Visit Date,Date,FALSE,,,FALSE

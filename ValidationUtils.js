@@ -181,9 +181,22 @@ var ValidationUtils = {
 
   /**
    * Check if a value is not empty (null, undefined, or empty string)
-   * FIX: Added missing function that code expects on ValidationUtils
    */
   isNotEmpty: function(value) {
     return value !== null && value !== undefined && value.toString().trim().length > 0;
+  },
+
+  /**
+   * Validate pipeline stage
+   */
+  isValidPipelineStage: function(stage) {
+    var validStages = ['Outreach', 'Prospect', 'Nurture', 'Won', 'Lost', 'Disqualified'];
+    if (!stage) {
+      return { success: false, error: 'Stage is required' };
+    }
+    if (validStages.indexOf(stage) === -1) {
+      return { success: false, error: 'Invalid stage: ' + stage + '. Valid stages: ' + validStages.join(', ') };
+    }
+    return { success: true, stage: stage };
   }
 };

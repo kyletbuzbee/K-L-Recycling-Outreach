@@ -1045,7 +1045,8 @@ function diversifyActionPlan(actions) {
 }
 
 /**
- * Safely parse dates for timezone bug prevention
+ * FIXED: parseDateSafely - Handles timezone correctly
+ * Prevents "off by one day" errors by using noon as the time
  * @param {string|Date} dateInput - Date to parse
  * @return {Date} Parsed date object
  */
@@ -1053,22 +1054,25 @@ function parseDateSafely(dateInput) {
   try {
     if (!dateInput) return null;
 
-    // If already a Date object, return a copy
+    // If already a Date object, return a copy set to noon
     if (dateInput instanceof Date) {
-      return new Date(dateInput.getTime());
+      var d = new Date(dateInput.getTime());
+      d.setHours(12, 0, 0, 0); // Set to noon to prevent timezone rollback
+      return d;
     }
 
     // Handle string inputs
     if (typeof dateInput === 'string') {
       var s = dateInput.trim();
 
-      // US format: MM/DD/YYYY or M/D/YYYY (most common in our data)
+      // US format: MM/DD/YYYY or M/D/YYYY
       var usMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
       if (usMatch) {
-        var monthUS = parseInt(usMatch[1], 10) - 1; // 0-based
+        var monthUS = parseInt(usMatch[1], 10) - 1;
         var dayUS = parseInt(usMatch[2], 10);
         var yearUS = parseInt(usMatch[3], 10);
-        var parsedDate = new Date(yearUS, monthUS, dayUS);
+        // Set to noon to prevent timezone issues
+        var parsedDate = new Date(yearUS, monthUS, dayUS, 12, 0, 0, 0);
         if (!isNaN(parsedDate.getTime())) return parsedDate;
       }
 
@@ -1076,9 +1080,10 @@ function parseDateSafely(dateInput) {
       var isoMatch = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
       if (isoMatch) {
         var year = parseInt(isoMatch[1], 10);
-        var month = parseInt(isoMatch[2], 10) - 1; // 0-based
+        var month = parseInt(isoMatch[2], 10) - 1;
         var day = parseInt(isoMatch[3], 10);
-        var parsedDate = new Date(year, month, day);
+        // Set to noon to prevent timezone issues
+        var parsedDate = new Date(year, month, day, 12, 0, 0, 0);
         if (!isNaN(parsedDate.getTime())) return parsedDate;
       }
 
@@ -1088,7 +1093,7 @@ function parseDateSafely(dateInput) {
         var month = parseInt(s.substring(0, 2), 10);
         var day = parseInt(s.substring(2, 4), 10);
         var year = parseInt(s.substring(4, 8), 10);
-        var parsedDate = new Date(year, month - 1, day);
+        var parsedDate = new Date(year, month - 1, day, 12, 0, 0, 0);
         if (!isNaN(parsedDate.getTime())) return parsedDate;
       }
     }
@@ -1097,16 +1102,22 @@ function parseDateSafely(dateInput) {
     if (typeof dateInput === 'number') {
       var excelEpoch = new Date(1899, 11, 30);
       var parsedDate = new Date(excelEpoch.getTime() + dateInput * 86400000);
+      parsedDate.setHours(12, 0, 0, 0); // Set to noon
       if (!isNaN(parsedDate.getTime())) return parsedDate;
     }
 
-    // Final fallback
+    // Final fallback - parse and set to noon
     var fallbackDate = new Date(dateInput);
-    return isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+    if (!isNaN(fallbackDate.getTime())) {
+      fallbackDate.setHours(12, 0, 0, 0);
+      return fallbackDate;
+    }
+    
+    return null;
 
   } catch (e) {
     console.error('Error parsing date in parseDateSafely:', e.message);
-    return null; // Safe fallback
+    return null;
   }
 }
 
@@ -1223,36 +1234,39 @@ function generatePlainTextReportForRange(startDate, endDate) {
 }
 
 /**
- * Parse date for report generation - returns Date object for ISO comparison
- * Used by tests expecting ISO format output
+ * FIXED: parseDateForReport - Handles timezone correctly
  * @param {string|Date|number} dateInput - Date to parse
- * @return {Date} Parsed date object (or current date if invalid)
+ * @return {Date} Parsed date object
  */
 function parseDateForReport(dateInput) {
   try {
     if (!dateInput) {
-      return new Date(); // Default to today for reports
+      var today = new Date();
+      today.setHours(12, 0, 0, 0);
+      return today;
     }
 
-    // If already a Date object, return a copy
+    // If already a Date object, set to noon
     if (dateInput instanceof Date) {
-      if (!isNaN(dateInput.getTime())) {
-        return new Date(dateInput.getTime());
-      }
-      return new Date();
+      var d = new Date(dateInput.getTime());
+      d.setHours(12, 0, 0, 0);
+      if (!isNaN(d.getTime())) return d;
+      var today = new Date();
+      today.setHours(12, 0, 0, 0);
+      return today;
     }
 
     // Handle string inputs
     if (typeof dateInput === 'string') {
       var s = dateInput.trim();
 
-      // US format: MM/DD/YYYY or M/D/YYYY
+      // US format: MM/DD/YYYY
       var usMatch = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
       if (usMatch) {
         var monthUS = parseInt(usMatch[1], 10) - 1;
         var dayUS = parseInt(usMatch[2], 10);
         var yearUS = parseInt(usMatch[3], 10);
-        var parsedDate = new Date(yearUS, monthUS, dayUS);
+        var parsedDate = new Date(yearUS, monthUS, dayUS, 12, 0, 0, 0);
         if (!isNaN(parsedDate.getTime())) return parsedDate;
       }
 
@@ -1262,17 +1276,17 @@ function parseDateForReport(dateInput) {
         var year = parseInt(isoMatch[1], 10);
         var month = parseInt(isoMatch[2], 10) - 1;
         var day = parseInt(isoMatch[3], 10);
-        var parsedDate = new Date(year, month, day);
+        var parsedDate = new Date(year, month, day, 12, 0, 0, 0);
         if (!isNaN(parsedDate.getTime())) return parsedDate;
       }
 
-      // Try MMDDYYYY format (no separators)
+      // Try MMDDYYYY format
       var compactMatch = s.match(/^(\d{8})$/);
       if (compactMatch) {
         var month = parseInt(s.substring(0, 2), 10);
         var day = parseInt(s.substring(2, 4), 10);
         var year = parseInt(s.substring(4, 8), 10);
-        var parsedDate = new Date(year, month - 1, day);
+        var parsedDate = new Date(year, month - 1, day, 12, 0, 0, 0);
         if (!isNaN(parsedDate.getTime())) return parsedDate;
       }
     }
@@ -1281,16 +1295,26 @@ function parseDateForReport(dateInput) {
     if (typeof dateInput === 'number') {
       var excelEpoch = new Date(1899, 11, 30);
       var parsedDate = new Date(excelEpoch.getTime() + dateInput * 86400000);
+      parsedDate.setHours(12, 0, 0, 0);
       if (!isNaN(parsedDate.getTime())) return parsedDate;
     }
 
     // Final fallback
     var fallbackDate = new Date(dateInput);
-    return isNaN(fallbackDate.getTime()) ? new Date() : fallbackDate;
+    if (!isNaN(fallbackDate.getTime())) {
+      fallbackDate.setHours(12, 0, 0, 0);
+      return fallbackDate;
+    }
+    
+    var today = new Date();
+    today.setHours(12, 0, 0, 0);
+    return today;
 
   } catch (e) {
     console.error('Error parsing date in parseDateForReport:', e.message);
-    return new Date(); // Safe fallback to today
+    var today = new Date();
+    today.setHours(12, 0, 0, 0);
+    return today;
   }
 }
 

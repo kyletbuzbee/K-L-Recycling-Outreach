@@ -161,7 +161,7 @@
         <div class="header">
             <h1>🚀 K&L Recycling CRM</h1>
             <p>Comprehensive Blueprint & Health Analysis Report</p>
-            <p>Generated: 2026-02-07 10:51:23</p>
+            <p>Generated: 2026-02-09 01:17:38</p>
             <div class="health-score"></div>
             <p>Overall Health Score</p>
         </div>
@@ -169,19 +169,19 @@
         <div class="content">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number">54</div>
+                    <div class="stat-number">68</div>
                     <div class="stat-label">Files Analyzed</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">0</div>
+                    <div class="stat-number">217</div>
                     <div class="stat-label">Functions</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">28,546</div>
+                    <div class="stat-number">33,575</div>
                     <div class="stat-label">Lines of Code</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">438</div>
+                    <div class="stat-number">496</div>
                     <div class="stat-label">Issues Found</div>
                 </div>
             </div>
@@ -195,23 +195,13 @@
             <div id="issues" class="tab-content active">
                 <div class="section">
                     <h2>🚨 Issues by Severity</h2>
-<h3 style="color: #fd7e14; margin: 20px 0 15px;">HIGH (34)</h3>
-                    <div class="issue-card high">
-                        <div class="issue-header">
-                            <span class="issue-severity" style="background: #fd7e14;">HIGH</span>
-                            <span>✨ Code Quality</span>
-                        </div>
-                        <div class="issue-location">📄 FuzzyMatchingUtils.js:0</div>
-                        <div class="issue-message">Required function 'normalizeCompanyName' not found in FuzzyMatchingUtils.js</div>
-                        <div class="issue-recommendation">💡 Implement normalizeCompanyName function in FuzzyMatchingUtils.js</div>
-                    </div>
-                    
+<h3 style="color: #fd7e14; margin: 20px 0 15px;">HIGH (33)</h3>
                     <div class="issue-card high">
                         <div class="issue-header">
                             <span class="issue-severity" style="background: #fd7e14;">HIGH</span>
                             <span>🔒 Security</span>
                         </div>
-                        <div class="issue-location">📄 CRM_Suite.html:204</div>
+                        <div class="issue-location">📄 CRM_Suite.html:968</div>
                         <div class="issue-message">innerHTML can lead to XSS vulnerabilities</div>
                         <div class="issue-recommendation">💡 Review and use safer alternatives</div>
                     </div>
@@ -221,17 +211,7 @@
                             <span class="issue-severity" style="background: #fd7e14;">HIGH</span>
                             <span>🔒 Security</span>
                         </div>
-                        <div class="issue-location">📄 CRM_Suite.html:583</div>
-                        <div class="issue-message">innerHTML can lead to XSS vulnerabilities</div>
-                        <div class="issue-recommendation">💡 Review and use safer alternatives</div>
-                    </div>
-                    
-                    <div class="issue-card high">
-                        <div class="issue-header">
-                            <span class="issue-severity" style="background: #fd7e14;">HIGH</span>
-                            <span>🔒 Security</span>
-                        </div>
-                        <div class="issue-location">📄 dashboard.html:2175</div>
+                        <div class="issue-location">📄 dashboard.html:2178</div>
                         <div class="issue-message">innerHTML can lead to XSS vulnerabilities</div>
                         <div class="issue-recommendation">💡 Review and use safer alternatives</div>
                     </div>
@@ -289,13 +269,43 @@
                     <div class="issue-card high">
                         <div class="issue-header">
                             <span class="issue-severity" style="background: #fd7e14;">HIGH</span>
+                            <span>🔒 Security</span>
+                        </div>
+                        <div class="issue-location">📄 test_runner.html:541</div>
+                        <div class="issue-message">innerHTML can lead to XSS vulnerabilities</div>
+                        <div class="issue-recommendation">💡 Review and use safer alternatives</div>
+                    </div>
+                    
+                    <div class="issue-card high">
+                        <div class="issue-header">
+                            <span class="issue-severity" style="background: #fd7e14;">HIGH</span>
                             <span>⚡ Performance</span>
                         </div>
                         <div class="issue-location">📄 BatchProcessor.js:459</div>
                         <div class="issue-message">Loading entire sheet into memory - consider batching for large datasets</div>
                         <div class="issue-recommendation">💡 Consider using batch operations or caching</div>
                     </div>
-                    <p style="text-align: center; color: #666; margin-top: 15px;">... and 24 more HIGH issues</p><h3 style="color: #ffc107; margin: 20px 0 15px;">MEDIUM (95)</h3>
+                    
+                    <div class="issue-card high">
+                        <div class="issue-header">
+                            <span class="issue-severity" style="background: #fd7e14;">HIGH</span>
+                            <span>⚡ Performance</span>
+                        </div>
+                        <div class="issue-location">📄 BusinessValidation.js:1315</div>
+                        <div class="issue-message">Loading entire sheet into memory - consider batching for large datasets</div>
+                        <div class="issue-recommendation">💡 Consider using batch operations or caching</div>
+                    </div>
+                    <p style="text-align: center; color: #666; margin-top: 15px;">... and 23 more HIGH issues</p><h3 style="color: #ffc107; margin: 20px 0 15px;">MEDIUM (102)</h3>
+                    <div class="issue-card medium">
+                        <div class="issue-header">
+                            <span class="issue-severity" style="background: #ffc107;">MEDIUM</span>
+                            <span>🔧 Maintainability</span>
+                        </div>
+                        <div class="issue-location">📄 test_workflow.js:26</div>
+                        <div class="issue-message">Function 'testOutreachWorkflowAutomation' appears to be orphaned (never called) but has high complexity</div>
+                        <div class="issue-recommendation">💡 Verify if this function is needed or remove if dead code</div>
+                    </div>
+                    
                     <div class="issue-card medium">
                         <div class="issue-header">
                             <span class="issue-severity" style="background: #ffc107;">MEDIUM</span>
@@ -385,17 +395,7 @@
                         <div class="issue-message">Function '_groupUpdatesByRange' lacks error handling</div>
                         <div class="issue-recommendation">💡 Add try/catch blocks for robust error handling</div>
                     </div>
-                    
-                    <div class="issue-card medium">
-                        <div class="issue-header">
-                            <span class="issue-severity" style="background: #ffc107;">MEDIUM</span>
-                            <span>🛡️ Error Handling</span>
-                        </div>
-                        <div class="issue-location">📄 BusinessValidation.js:241</div>
-                        <div class="issue-message">Function 'createProspectPipeline' lacks error handling</div>
-                        <div class="issue-recommendation">💡 Add try/catch blocks for robust error handling</div>
-                    </div>
-                    <p style="text-align: center; color: #666; margin-top: 15px;">... and 85 more MEDIUM issues</p><h3 style="color: #17a2b8; margin: 20px 0 15px;">LOW (306)</h3>
+                    <p style="text-align: center; color: #666; margin-top: 15px;">... and 92 more MEDIUM issues</p><h3 style="color: #17a2b8; margin: 20px 0 15px;">LOW (358)</h3>
                     <div class="issue-card low">
                         <div class="issue-header">
                             <span class="issue-severity" style="background: #17a2b8;">LOW</span>
@@ -495,7 +495,7 @@
                         <div class="issue-message">Function 'testAccountValidation' is 60 lines long</div>
                         <div class="issue-recommendation">💡 Functions should ideally be under 50 lines</div>
                     </div>
-                    <p style="text-align: center; color: #666; margin-top: 15px;">... and 296 more LOW issues</p><h3 style="color: #6c757d; margin: 20px 0 15px;">INFO (3)</h3>
+                    <p style="text-align: center; color: #666; margin-top: 15px;">... and 348 more LOW issues</p><h3 style="color: #6c757d; margin: 20px 0 15px;">INFO (3)</h3>
                     <div class="issue-card info">
                         <div class="issue-header">
                             <span class="issue-severity" style="background: #6c757d;">INFO</span>
@@ -566,12 +566,12 @@
                         
                         <div class="file-item">
                             <span class="file-name">CRM_Suite.html</span>
-                            <span class="file-stats">655 lines | 23 functions</span>
+                            <span class="file-stats">1392 lines | 21 functions</span>
                         </div>
                         
                         <div class="file-item">
                             <span class="file-name">DashboardBackend.js</span>
-                            <span class="file-stats">82 lines | 2 functions</span>
+                            <span class="file-stats">243 lines | 7 functions</span>
                         </div>
                         
                         <div class="file-item">
@@ -581,7 +581,7 @@
                         
                         <div class="file-item">
                             <span class="file-name">dashboard.html</span>
-                            <span class="file-stats">3679 lines | 63 functions</span>
+                            <span class="file-stats">3422 lines | 60 functions</span>
                         </div>
                         
                         <div class="file-item">
@@ -636,27 +636,87 @@
                         
                         <div class="file-item">
                             <span class="file-name">ValidationUtils.js</span>
-                            <span class="file-stats">189 lines | 11 functions</span>
+                            <span class="file-stats">202 lines | 12 functions</span>
                         </div>
                         <h3 style="margin: 20px 0 10px; color: #1e3c72;">🧪 Testing</h3>
+                        <div class="file-item">
+                            <span class="file-name">run_tests.js</span>
+                            <span class="file-stats">172 lines | 5 functions</span>
+                        </div>
+                        
                         <div class="file-item">
                             <span class="file-name">simple_test.js</span>
                             <span class="file-stats">8 lines | 1 functions</span>
                         </div>
                         
                         <div class="file-item">
-                            <span class="file-name">test_integration.js</span>
-                            <span class="file-stats">220 lines | 21 functions</span>
+                            <span class="file-name">test_autofill_implementation.js</span>
+                            <span class="file-stats">79 lines | 2 functions</span>
                         </div>
                         
                         <div class="file-item">
-                            <span class="file-name">test_runner.js</span>
-                            <span class="file-stats">73 lines | 9 functions</span>
+                            <span class="file-name">test_comprehensive_validation.js</span>
+                            <span class="file-stats">526 lines | 9 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_data_operations.js</span>
+                            <span class="file-stats">151 lines | 17 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_fixes.js</span>
+                            <span class="file-stats">288 lines | 8 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_integration.js</span>
+                            <span class="file-stats">268 lines | 23 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_normalization.js</span>
+                            <span class="file-stats">291 lines | 10 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_robust.js</span>
+                            <span class="file-stats">658 lines | 25 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_rowindex_fix.js</span>
+                            <span class="file-stats">238 lines | 3 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_runner.html</span>
+                            <span class="file-stats">546 lines | 8 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_runners.js</span>
+                            <span class="file-stats">148 lines | 9 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_runtime_fixes.js</span>
+                            <span class="file-stats">369 lines | 5 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_schema_alignment.js</span>
+                            <span class="file-stats">85 lines | 3 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">test_settings_validation.js</span>
+                            <span class="file-stats">221 lines | 8 functions</span>
                         </div>
                         
                         <div class="file-item">
                             <span class="file-name">test_unit.js</span>
-                            <span class="file-stats">113 lines | 14 functions</span>
+                            <span class="file-stats">251 lines | 32 functions</span>
                         </div>
                         
                         <div class="file-item">
@@ -666,7 +726,17 @@
                         
                         <div class="file-item">
                             <span class="file-name">test_workflow.js</span>
-                            <span class="file-stats">129 lines | 9 functions</span>
+                            <span class="file-stats">221 lines | 12 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">validate_tests.gs</span>
+                            <span class="file-stats">151 lines | 6 functions</span>
+                        </div>
+                        
+                        <div class="file-item">
+                            <span class="file-name">validate_tests.js</span>
+                            <span class="file-stats">185 lines | 5 functions</span>
                         </div>
                         <h3 style="margin: 20px 0 10px; color: #1e3c72;">🔧 Utilities</h3>
                         <div class="file-item">
@@ -676,7 +746,7 @@
                         
                         <div class="file-item">
                             <span class="file-name">FuzzyMatchingUtils.js</span>
-                            <span class="file-stats">125 lines | 3 functions</span>
+                            <span class="file-stats">160 lines | 4 functions</span>
                         </div>
                         
                         <div class="file-item">
@@ -686,7 +756,7 @@
                         
                         <div class="file-item">
                             <span class="file-name">SharedUtils.js</span>
-                            <span class="file-stats">684 lines | 6 functions</span>
+                            <span class="file-stats">702 lines | 6 functions</span>
                         </div>
                         
                         <div class="file-item">
@@ -761,7 +831,7 @@
                         
                         <div class="file-item">
                             <span class="file-name">PipelineService.js</span>
-                            <span class="file-stats">131 lines | 6 functions</span>
+                            <span class="file-stats">140 lines | 7 functions</span>
                         </div>
                         
                         <div class="file-item">

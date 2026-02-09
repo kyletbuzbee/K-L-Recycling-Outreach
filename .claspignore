@@ -1,0 +1,49 @@
+# Google Apps Script .claspignore
+# Files and directories to exclude from clasp push
+
+run_tests.js
+validate_tests.js
+# Python scripts - local development tools
+*.py
+scripts/
+
+# Reports and documentation - generated locally
+reports/
+plans/
+*.md
+
+# CSV data files - local data, not GAS code
+csv/
+*.csv
+*.tsv
+
+# AI and analysis artifacts
+ai_logic_review/
+.analyzer_cache/
+CRM_ANALYSIS_REPORT.json
+system-schema.json
+
+# HTML reports - not web app files
+CRM_BLUEPRINT_REPORT.html
+dateRangeReport.html
+report.html
+
+# Configuration and rules directories
+.clinerules/
+.kilocode/
+
+# Formulas directory (if it contains non-GAS files)
+Formulas/
+
+# Node.js modules and package files (if any)
+node_modules/
+package*.json
+
+# OS and editor files
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+node_modules/bundle-name/index.gs
+index.gs

@@ -1,89 +1,66 @@
-# Comprehensive Testing Implementation Plan - COMPLETED
+# Comprehensive Testing Implementation Plan
 
-## Implementation Summary
+## 1. Expand Unit Tests (test_unit.js)
+- [x] Add ValidationUtils tests (email, phone, required fields validation)
+- [x] Add StringUtils function tests
+- [ ] Add DataHelpers operation tests
+- [ ] Add SharedUtils additional function tests
+- [ ] Add error handling tests for utilities
 
-### ✅ Phase 1: Error Handling Tests (COMPLETED)
-Added to `test_unit.js`:
-- testNullInputHandling
-- testUndefinedInputHandling
-- testParseCurrencyNullUndefined
-- testGenerateCompanyIdEdgeCases
-- testValidateKeysEdgeCases
-- testDateValidationEdgeCases
-- testEmailValidationEdgeCases
-- testRequiredFieldsEdgeCases
-- testStringValidationEdgeCases
+## 2. Expand Integration Tests (test_integration.js)
+- [x] Add CSV import workflow tests
+- [x] Add data synchronization tests
+- [x] Add outreach function integration tests
+- [x] Add prospect scoring and pipeline tests
+- [x] Add error scenario tests
 
-### ✅ Phase 2: Test Runner Enhancement (COMPLETED)
-Updated `test_runner.js`:
-- Added execution timing metrics
-- Added pass rate calculation
-- Added suite-by-suite breakdown
-- Added failure details section
-- Enhanced console output with emojis
+## 3. Create New Test Suites
+- [x] Create test_validation.js for comprehensive validation testing
+- [ ] Create test_data_operations.js for data manipulation tests
+- [x] Create test_workflow.js for end-to-end workflow tests
 
-### ✅ Phase 3: Integration Tests Expansion (COMPLETED)
-Updated `test_integration.js`:
-- Replaced placeholder tests with actual logic tests
-- Added CSV duplicate header handling tests
-- Added empty row handling tests
-- Enhanced fuzzy matching tests
-- Added error scenario tests with try-catch
+## 4. Enhance Test Runner (test_runners.js)
+- [x] Add new test suites to runAll() method
+- [ ] Improve reporting with coverage metrics
+- [x] Add test categorization (unit, integration, workflow)
 
-### ✅ Phase 4: Workflow Tests Enhancement (COMPLETED)
-Updated `test_workflow.js`:
-- Replaced array checks with actual function tests
-- Added pipeline stage transition tests
-- Added urgency score calculation tests
-- Added account conversion workflow tests
-- Added workflow rule validation tests
+## 5. Test Fixes Applied (Debug Session)
+- [x] Fix FuzzyMatchingUtils.js - normalization for punctuation/spacing (key: `company` not `companyName`)
+- [x] Fix ValidationUtils.js - add `isValidPipelineStage` function
+- [x] Fix test_integration.js - resolve data access issues (array vs object access)
+- [x] Fix test_workflow.js - resolve `undefined expectedStatus` error
+- [x] Fix CSV parsing tests - change from object property access to array index access
 
-## Test Suite Summary
+## 6. HTML Analysis & Fixes (Completed)
+- [x] **CRITICAL FIX:** Removed server-side `SpreadsheetApp` and `HtmlService` code from `dashboard.html`
+  - Removed `displayPipelineModal`, `displayCalendarModal`, `displayAccountsModal` functions
+  - Replaced with backend delegation via `showPipelineModal()`, `showAccountsModal()`, `showCalendarModal()` API calls
+- [x] **CRITICAL FIX:** Fixed field ID mismatch in `dashboard.html`
+  - Changed `newCompetitor` → `competitor` in `handleSaveSuccess()` reset code
+  - Changed `newCompetitor` → `competitor` in `proceedWithSave()` data collection
+- [x] **ENHANCEMENT:** Added comprehensive form validation in `saveEntry()`
+  - Added validation for company name (required)
+  - Added validation for outcome selection (required)
+  - Added validation for status determination
+  - Added detailed error logging for debugging
+- [x] **ENHANCEMENT:** Improved error handling in `saveEntry()`
+  - Better error messages with server response details
+  - Console error logging for troubleshooting
 
-| File | Status | Test Count | Lines |
-|------|--------|------------|-------|
-| test_unit.js | ✅ Enhanced | ~45 tests | 206 lines |
-| test_validation.js | ✅ Complete | ~20 tests | 149 lines |
-| test_data_operations.js | ✅ Complete | ~20 tests | 150 lines |
-| test_integration.js | ✅ Enhanced | ~25 tests | 285 lines |
-| test_workflow.js | ✅ Enhanced | ~15 tests | 210 lines |
-| test_runner.js | ✅ Enhanced | N/A | 124 lines |
+## 7. Schema Alignment Tests (Completed)
+- [x] Created test_schema_alignment.js with comprehensive schema validation
+- [x] Added Outreach schema validation (19 fields, all dropdown options)
+- [x] Added Prospects schema validation (18 fields, industry scores, urgency bands)
+- [x] Added Accounts schema validation (13 fields, container sizes, handling options)
+- [x] Added Contacts schema validation (8 fields, account types)
+- [x] Added workflow rules alignment tests (9 outcomes with stage/status/days)
+- [x] Added global constants validation (Stale_Prospect_Days, Max_Batch_Size, etc.)
+- [x] Added HTML dashboard alignment tests (outcome buttons, workflow map, dropdowns)
+- [x] Validated all tests align with system-schema.json and System_Schema.csv
 
-## Running Tests
-
-```javascript
-// Run all tests
-EXECUTE_CRM_TESTS();
-
-// Run by category
-EXECUTE_CRM_TESTS_BY_CATEGORY('unit');
-EXECUTE_CRM_TESTS_BY_CATEGORY('integration');
-EXECUTE_CRM_TESTS_BY_CATEGORY('workflow');
-```
-
-## Expected Output
-
-```
-🚀 Starting K&L CRM Comprehensive Test Suite...
---- Running Suite: Core Utilities ---
-✅ PASS: testConfigSchemaIntegrity
-...
-================================================
-📊 TEST SUMMARY
-================================================
-Tests Run: 125
-Passed: 125
-Failed: 0
-Pass Rate: 100.0%
-Execution Time: 123ms
-================================================
-🎉 ALL SYSTEMS NOMINAL - 100% PASS RATE
-================================================
-```
-
-## Files Modified
-1. ✅ test_unit.js - Added error handling tests
-2. ✅ test_runner.js - Added coverage metrics
-3. ✅ test_integration.js - Expanded with real logic tests
-4. ✅ test_workflow.js - Enhanced with function tests
-5. ✅ TODO.md - Updated with completion status
+## 8. Followup Steps
+- [ ] Run the comprehensive test suite in Google Apps Script
+- [ ] Review test results and fix any remaining failures
+- [ ] Add test coverage reporting if needed
+- [ ] Verify HTML fixes work correctly in production environment
+- [ ] Test all quick action buttons (pipeline, accounts, calendar, reports)

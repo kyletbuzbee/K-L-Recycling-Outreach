@@ -1309,7 +1309,9 @@
         <!-- Company Search with Autocomplete -->
         <div class="form-group suggestions-container">
           <label for="companyInput" class="form-label">Company <span class="required">*</span></label>
-          <input type="text" id="companyInput" list="companyList" class="form-input" oninput="handleCompanySearchInput(this.value)" placeholder="Search or type new company..." autocomplete="off">
+          <input type="text" id="companyInput" list="companyList" class="form-input"
+            oninput="handleCompanySearchInput(this.value)" placeholder="Search or type new company..."
+            autocomplete="off">
           <datalist id="companyList"></datalist>
           <input type="hidden" id="selectedCompanyId">
         </div>
@@ -1478,11 +1480,11 @@
           </div>
           <div class="form-group">
             <label for="activityType" class="form-label">Type</label>
-          <select id="activityType" class="form-select">
-            <option value="Visit">Visit</option>
-            <option value="Phone">Phone</option>
-            <option value="Email">Email</option>
-          </select>
+            <select id="activityType" class="form-select">
+              <option value="Visit">Visit</option>
+              <option value="Phone">Phone</option>
+              <option value="Email">Email</option>
+            </select>
           </div>
         </div>
 
@@ -1558,131 +1560,132 @@
       <!-- Summary Tiles -->
       <div id="crm-summary" class="crm-summary-grid"></div>
 
-    <!-- Control Center - Collapsible Utility Panel -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title">
-          <span class="section-title-icon">⚙️</span>
-          Control Center
+      <!-- Control Center - Collapsible Utility Panel -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">⚙️</span>
+            Control Center
+          </div>
+          <button type="button" class="quick-link" style="padding: 4px 8px; font-size: 10px;"
+            onclick="toggleControlCenter()">
+            <span id="controlCenterToggleIcon">▼</span>
+          </button>
         </div>
-        <button type="button" class="quick-link" style="padding: 4px 8px; font-size: 10px;"
-          onclick="toggleControlCenter()">
-          <span id="controlCenterToggleIcon">▼</span>
-        </button>
+
+        <div id="controlCenterContent" class="control-center-content">
+          <!-- Control Center Tabs -->
+          <div class="control-center-tabs">
+            <button type="button" class="control-tab active" onclick="showTool('route', this)">
+              🗺️ Route
+            </button>
+            <button type="button" class="control-tab" onclick="showTool('quick-actions', this)">
+              ⚡ Quick Actions
+            </button>
+            <button type="button" class="control-tab" onclick="showTool('csv', this)">
+              📁 CSV Import
+            </button>
+            <button type="button" class="control-tab" onclick="showTool('report', this)">
+              📊 Reports
+            </button>
+          </div>
+
+          <!-- Route Planning Tool -->
+          <div id="tool-route" class="control-tool active">
+            <div class="date-grid">
+              <div class="form-group">
+                <label for="routeStart" class="form-label">Start</label>
+                <input type="date" id="routeStart" class="form-input">
+              </div>
+              <div class="form-group">
+                <label for="routeEnd" class="form-label">End</label>
+                <input type="date" id="routeEnd" class="form-input">
+              </div>
+            </div>
+            <button type="button" class="btn btn-warning" onclick="generateRoute()">
+              <span>🗺️</span> Generate Route
+            </button>
+          </div>
+
+          <!-- Quick Actions Tool -->
+          <div id="tool-quick-actions" class="control-tool">
+            <div class="quick-links">
+              <button type="button" class="quick-link" onclick="quickAction('pipeline')">
+                <span>📊</span> Pipeline
+              </button>
+              <button type="button" class="quick-link" onclick="quickAction('accounts')">
+                <span>🏢</span> Accounts
+              </button>
+              <button type="button" class="quick-link" onclick="quickAction('calendar')">
+                <span>📅</span> Calendar
+              </button>
+              <button type="button" class="quick-link" onclick="quickAction('reports')">
+                <span>📈</span> Reports
+              </button>
+            </div>
+          </div>
+
+          <!-- CSV Import Tool -->
+          <div id="tool-csv" class="control-tool">
+            <div class="form-group">
+              <label for="csvText" class="form-label">Paste CSV Data</label>
+              <textarea id="csvText" class="form-textarea" rows="4"
+                placeholder="Paste your CSV data here..."></textarea>
+            </div>
+            <div class="form-group">
+              <label for="importSheet" class="form-label">Target Sheet</label>
+              <select id="importSheet" class="form-select">
+                <option value="Outreach">Outreach</option>
+                <option value="Prospects">Prospects</option>
+                <option value="New Accounts">New Accounts</option>
+              </select>
+            </div>
+            <button type="button" class="btn btn-warning" onclick="importCSV()">
+              <span>📥</span> Import CSV
+            </button>
+          </div>
+
+          <!-- Report Generation Tool -->
+          <div id="tool-report" class="control-tool">
+            <!-- Quick Date Options -->
+            <div class="quick-date-options">
+              <button type="button" class="quick-date-btn" onclick="setReportDates('thisWeek')">This Week</button>
+              <button type="button" class="quick-date-btn" onclick="setReportDates('thisMonth')">This Month</button>
+              <button type="button" class="quick-date-btn" onclick="setReportDates('last7')">Last 7 Days</button>
+              <button type="button" class="quick-date-btn" onclick="setReportDates('last30')">Last 30 Days</button>
+            </div>
+
+            <div class="date-grid">
+              <div class="form-group">
+                <label for="reportStart" class="form-label">Start Date</label>
+                <input type="date" id="reportStart" class="form-input">
+              </div>
+              <div class="form-group">
+                <label for="reportEnd" class="form-label">End Date</label>
+                <input type="date" id="reportEnd" class="form-input">
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="generateDateRangeReport()">
+              <span>📊</span> Generate Report
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div id="controlCenterContent" class="control-center-content">
-        <!-- Control Center Tabs -->
-        <div class="control-center-tabs">
-          <button type="button" class="control-tab active" onclick="showTool('route', this)">
-            🗺️ Route
-          </button>
-          <button type="button" class="control-tab" onclick="showTool('quick-actions', this)">
-            ⚡ Quick Actions
-          </button>
-          <button type="button" class="control-tab" onclick="showTool('csv', this)">
-            📁 CSV Import
-          </button>
-          <button type="button" class="control-tab" onclick="showTool('report', this)">
-            📊 Reports
+      <!-- Report Output Section (hidden until report generated) -->
+      <div class="section" id="reportOutputSection" style="display: none;">
+        <div class="section-header">
+          <div class="section-title">
+            <span class="section-title-icon">📋</span>
+            Report Output
+          </div>
+          <button type="button" class="copy-report-btn" onclick="copyReportToClipboard()">
+            📋 Copy
           </button>
         </div>
-
-        <!-- Route Planning Tool -->
-        <div id="tool-route" class="control-tool active">
-          <div class="date-grid">
-            <div class="form-group">
-              <label for="routeStart" class="form-label">Start</label>
-              <input type="date" id="routeStart" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="routeEnd" class="form-label">End</label>
-              <input type="date" id="routeEnd" class="form-input">
-            </div>
-          </div>
-          <button type="button" class="btn btn-warning" onclick="generateRoute()">
-            <span>🗺️</span> Generate Route
-          </button>
-        </div>
-
-        <!-- Quick Actions Tool -->
-        <div id="tool-quick-actions" class="control-tool">
-          <div class="quick-links">
-            <button type="button" class="quick-link" onclick="quickAction('pipeline')">
-              <span>📊</span> Pipeline
-            </button>
-            <button type="button" class="quick-link" onclick="quickAction('accounts')">
-              <span>🏢</span> Accounts
-            </button>
-            <button type="button" class="quick-link" onclick="quickAction('calendar')">
-              <span>📅</span> Calendar
-            </button>
-            <button type="button" class="quick-link" onclick="quickAction('reports')">
-              <span>📈</span> Reports
-            </button>
-          </div>
-        </div>
-
-        <!-- CSV Import Tool -->
-        <div id="tool-csv" class="control-tool">
-          <div class="form-group">
-            <label for="csvText" class="form-label">Paste CSV Data</label>
-            <textarea id="csvText" class="form-textarea" rows="4" placeholder="Paste your CSV data here..."></textarea>
-          </div>
-          <div class="form-group">
-            <label for="importSheet" class="form-label">Target Sheet</label>
-            <select id="importSheet" class="form-select">
-              <option value="Outreach">Outreach</option>
-              <option value="Prospects">Prospects</option>
-              <option value="New Accounts">New Accounts</option>
-            </select>
-          </div>
-          <button type="button" class="btn btn-warning" onclick="importCSV()">
-            <span>📥</span> Import CSV
-          </button>
-        </div>
-
-        <!-- Report Generation Tool -->
-        <div id="tool-report" class="control-tool">
-          <!-- Quick Date Options -->
-          <div class="quick-date-options">
-            <button type="button" class="quick-date-btn" onclick="setReportDates('thisWeek')">This Week</button>
-            <button type="button" class="quick-date-btn" onclick="setReportDates('thisMonth')">This Month</button>
-            <button type="button" class="quick-date-btn" onclick="setReportDates('last7')">Last 7 Days</button>
-            <button type="button" class="quick-date-btn" onclick="setReportDates('last30')">Last 30 Days</button>
-          </div>
-
-          <div class="date-grid">
-            <div class="form-group">
-              <label for="reportStart" class="form-label">Start Date</label>
-              <input type="date" id="reportStart" class="form-input">
-            </div>
-            <div class="form-group">
-              <label for="reportEnd" class="form-label">End Date</label>
-              <input type="date" id="reportEnd" class="form-input">
-            </div>
-          </div>
-          <button type="button" class="btn btn-primary" onclick="generateDateRangeReport()">
-            <span>📊</span> Generate Report
-          </button>
-        </div>
+        <textarea id="reportOutput" class="report-textarea" readonly></textarea>
       </div>
     </div>
-
-    <!-- Report Output Section (hidden until report generated) -->
-    <div class="section" id="reportOutputSection" style="display: none;">
-      <div class="section-header">
-        <div class="section-title">
-          <span class="section-title-icon">📋</span>
-          Report Output
-        </div>
-        <button type="button" class="copy-report-btn" onclick="copyReportToClipboard()">
-          📋 Copy
-        </button>
-      </div>
-      <textarea id="reportOutput" class="report-textarea" readonly></textarea>
-    </div>
-  </div>
   </div>
 
   <!-- Toast Notification -->
@@ -1744,7 +1747,7 @@
     // ========================================
     function loadCompanyAutocompleteList() {
       google.script.run
-        .withSuccessHandler(function(companies) {
+        .withSuccessHandler(function (companies) {
           const list = document.getElementById('companyList');
           if (companies && companies.length > 0) {
             companies.forEach(c => {
@@ -1756,7 +1759,7 @@
             console.log('Loaded ' + companies.length + ' companies for autocomplete');
           }
         })
-        .withFailureHandler(function(error) {
+        .withFailureHandler(function (error) {
           console.warn('Failed to load company autocomplete list:', error);
         })
         .getCompanyAutocompleteList();
@@ -1788,7 +1791,7 @@
         // Fetch and autofill prospect data
         google.script.run
           .withSuccessHandler(fillProspectData)
-          .withFailureHandler(function(error) {
+          .withFailureHandler(function (error) {
             console.warn('Failed to get prospect details:', error);
           })
           .getProspectDetails(matchedCompanyId);
@@ -2750,345 +2753,67 @@
       }
     }
 
-    // Show pipeline overview with stats by stage
+    // Show pipeline overview - delegates to backend
     function showPipelineView() {
       showLoading(true);
+      showToast('📊 Loading pipeline...', 'info');
+      
       google.script.run
-        .withSuccessHandler(function (data) {
+        .withSuccessHandler(function (result) {
           showLoading(false);
-          if (data.success && data.data) {
-            displayPipelineModal(data.data);
+          if (result.success) {
+            showToast('✅ Pipeline view opened', 'success');
           } else {
-            showToast('❌ Failed to load pipeline data', 'error');
+            showToast('❌ ' + (result.error || 'Failed to open pipeline'), 'error');
           }
         })
         .withFailureHandler(function (error) {
           showLoading(false);
           showToast('❌ Pipeline error: ' + (error.message || 'Unknown error'), 'error');
         })
-        .getDashboardMetrics();
+        .showPipelineModal();
     }
 
-    // Show accounts management view
+    // Show accounts management view - delegates to backend
     function showAccountsView() {
       showLoading(true);
-
-      // First try to open the New Accounts sheet
-      try {
-        var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-        var sheet = spreadsheet.getSheetByName('New Accounts');
-        if (sheet) {
-          sheet.activate();
-          showLoading(false);
-          showToast('✅ New Accounts sheet opened', 'success');
-          return;
-        }
-      } catch (e) {
-        // Sheet not accessible, continue to show modal
-      }
-
-      // If sheet not accessible, show a summary modal instead
+      showToast('🏢 Opening accounts...', 'info');
+      
       google.script.run
         .withSuccessHandler(function (result) {
           showLoading(false);
-          if (result.success && result.data) {
-            displayAccountsModal(result.data);
+          if (result.success) {
+            showToast('✅ Accounts view opened', 'success');
           } else {
-            showToast('❌ Failed to load account data', 'error');
+            showToast('❌ ' + (result.error || 'Failed to open accounts'), 'error');
           }
         })
         .withFailureHandler(function (error) {
           showLoading(false);
           showToast('❌ Accounts error: ' + (error.message || 'Unknown error'), 'error');
         })
-        .getOutreachData(new Date().toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+        .showAccountsModal();
     }
 
-    // Show calendar view of upcoming follow-ups
+    // Show calendar view - delegates to backend
     function showCalendarView() {
       showLoading(true);
-
-      // Get today's date and future dates
-      const today = new Date();
-      const tomorrow = new Date(today);
-      tomorrow.setDate(today.getDate() + 1);
-      const nextWeek = new Date(today);
-      nextWeek.setDate(today.getDate() + 7);
-
-      // Get today's tasks
+      showToast('📅 Loading calendar...', 'info');
+      
       google.script.run
-        .withSuccessHandler(function (todayResult) {
-          // Get tomorrow's tasks
-          google.script.run
-            .withSuccessHandler(function (tomorrowResult) {
-              // Get this week's tasks
-              google.script.run
-                .withSuccessHandler(function (weekResult) {
-                  showLoading(false);
-                  displayCalendarModal({
-                    today: todayResult.success ? todayResult.data : [],
-                    tomorrow: tomorrowResult.success ? tomorrowResult.data : [],
-                    thisWeek: weekResult.success ? weekResult.data : []
-                  });
-                })
-                .withFailureHandler(function (error) {
-                  showLoading(false);
-                  showToast('❌ Calendar error: ' + (error.message || 'Unknown error'), 'error');
-                })
-                .getOutreachData(today.toISOString().split('T')[0], nextWeek.toISOString().split('T')[0]);
-            })
-            .withFailureHandler(function (error) {
-              showLoading(false);
-              showToast('❌ Calendar error: ' + (error.message || 'Unknown error'), 'error');
-            })
-            .getOutreachData(tomorrow.toISOString().split('T')[0], tomorrow.toISOString().split('T')[0]);
+        .withSuccessHandler(function (result) {
+          showLoading(false);
+          if (result.success) {
+            showToast('✅ Calendar view opened', 'success');
+          } else {
+            showToast('❌ ' + (result.error || 'Failed to open calendar'), 'error');
+          }
         })
         .withFailureHandler(function (error) {
           showLoading(false);
           showToast('❌ Calendar error: ' + (error.message || 'Unknown error'), 'error');
         })
-        .getOutreachData(today.toISOString().split('T')[0], today.toISOString().split('T')[0]);
-    }
-
-    // Display pipeline overview modal
-    function displayPipelineModal(data) {
-      const pipeline = data.pipeline || {};
-      const activity = data.activity || [];
-
-      let html = `
-        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0F2537; margin-bottom: 10px;">📊 Sales Pipeline Overview</h1>
-            <p style="color: #666;">Current status of all leads and opportunities</p>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-            <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${pipeline.totalActive || 0}</div>
-              <div style="font-size: 14px; opacity: 0.9;">Active Opportunities</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${(pipeline.byStage || {}).Lost || 0}</div>
-              <div style="font-size: 14px; opacity: 0.9;">Lost Deals</div>
-            </div>
-          </div>
-
-          <h3 style="color: #0F2537; margin-bottom: 15px;">📈 Pipeline by Stage</h3>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
-      `;
-
-      // Pipeline stages
-      const stages = ['Prospect', 'Nurture', 'Active Pursuit', 'Customer', 'Lost'];
-      stages.forEach(stage => {
-        const count = (pipeline.byStage || {})[stage] || 0;
-        const colors = {
-          'Prospect': '#3498db',
-          'Nurture': '#f39c12',
-          'Active Pursuit': '#e74c3c',
-          'Customer': '#27ae60',
-          'Lost': '#95a5a6'
-        };
-        html += `
-          <div style="background: ${colors[stage]}; color: white; padding: 15px; border-radius: 8px; text-align: center;">
-            <div style="font-size: 24px; font-weight: bold; margin-bottom: 5px;">${count}</div>
-            <div style="font-size: 12px;">${stage}</div>
-          </div>
-        `;
-      });
-
-      html += `
-          </div>
-
-          <h3 style="color: #0F2537; margin-bottom: 15px;">🔥 Recent Activity</h3>
-          <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-      `;
-
-      if (activity.length > 0) {
-        activity.slice(0, 5).forEach(item => {
-          html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;">
-              <div>
-                <div style="font-weight: 600; color: #2c3e50;">${item.company || 'Unknown Company'}</div>
-                <div style="font-size: 12px; color: #7f8c8d;">${item.outcome || 'No outcome'}</div>
-              </div>
-              <div style="font-size: 12px; color: #95a5a6;">${item.date || 'No date'}</div>
-            </div>
-          `;
-        });
-      } else {
-        html += '<p style="color: #666; text-align: center; margin: 20px 0;">No recent activity found</p>';
-      }
-
-      html += `
-          </div>
-        </div>
-      `;
-
-      const htmlOutput = HtmlService
-        .createHtmlOutput(html)
-        .setWidth(800)
-        .setHeight(600);
-
-      SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📊 Sales Pipeline');
-    }
-
-    // Display calendar modal with upcoming follow-ups
-    function displayCalendarModal(data) {
-      const today = new Date();
-      const nextWeek = new Date(today);
-      nextWeek.setDate(today.getDate() + 7);
-
-      let html = `
-        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0F2537; margin-bottom: 10px;">📅 Upcoming Follow-ups</h1>
-            <p style="color: #666;">Scheduled activities and reminders</p>
-          </div>
-
-          <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-            <h4 style="color: #856404; margin-bottom: 10px;">📋 Today's Tasks</h4>
-      `;
-
-      // Display today's tasks
-      if (data.today && data.today.length > 0) {
-        data.today.slice(0, 3).forEach(task => {
-          html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #ffeaa7;">
-              <div>
-                <div style="font-weight: 600; color: #856404;">${task.company || task['Company Name'] || 'Unknown Company'}</div>
-                <div style="font-size: 12px; color: #856404;">${task.Notes || 'No notes'}</div>
-              </div>
-              <div style="font-size: 12px; color: #856404; font-weight: 600;">${task.Status || 'Pending'}</div>
-            </div>
-          `;
-        });
-      } else {
-        html += `<p style="color: #856404; margin: 0;">No tasks scheduled for today</p>`;
-      }
-
-      html += `
-          </div>
-
-          <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
-            <h4 style="color: #0c5460; margin-bottom: 10px;">⏰ This Week</h4>
-      `;
-
-      // Display this week's tasks
-      if (data.thisWeek && data.thisWeek.length > 0) {
-        data.thisWeek.slice(0, 5).forEach(task => {
-          html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #bee5eb;">
-              <div>
-                <div style="font-weight: 600; color: #0c5460;">${task.company || task['Company Name'] || 'Unknown Company'}</div>
-                <div style="font-size: 12px; color: #0c5460;">${task.Notes || 'No notes'}</div>
-              </div>
-              <div style="font-size: 12px; color: #0c5460; font-weight: 600;">${task.Status || 'Pending'}</div>
-            </div>
-          `;
-        });
-      } else {
-        html += `<p style="color: #0c5460; margin: 0;">No follow-ups scheduled this week</p>`;
-      }
-
-      html += `
-          </div>
-
-          <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
-            <h4 style="color: #495057; margin-bottom: 10px;">📊 Activity Summary</h4>
-      `;
-
-      // Calculate summary statistics
-      const totalToday = data.today ? data.today.length : 0;
-      const totalThisWeek = data.thisWeek ? data.thisWeek.length : 0;
-      const totalActivities = totalToday + totalThisWeek;
-
-      if (totalActivities > 0) {
-        html += `<p style="color: #495057; margin: 0;">${totalActivities} scheduled activities this week (${totalToday} today, ${totalThisWeek} remaining)</p>`;
-      } else {
-        html += `<p style="color: #6c757d; margin: 0;">No scheduled activities found</p>`;
-      }
-
-      html += `
-          </div>
-        </div>
-      `;
-
-      const htmlOutput = HtmlService
-        .createHtmlOutput(html)
-        .setWidth(750)
-        .setHeight(600);
-
-      SpreadsheetApp.getUi().showModalDialog(htmlOutput, '📅 Calendar View');
-    }
-
-    // Display accounts summary modal
-    function displayAccountsModal(data) {
-      // Calculate account statistics
-      const totalAccounts = data.length;
-      const deployedAccounts = data.filter(a => a.Status && a.Status.toUpperCase().includes('DEPLOYED')).length;
-      const pendingAccounts = totalAccounts - deployedAccounts;
-
-      let html = `
-        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #0F2537; margin-bottom: 10px;">🏢 Account Management</h1>
-            <p style="color: #666;">New account deployments and status</p>
-          </div>
-
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 30px;">
-            <div style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${totalAccounts}</div>
-              <div style="font-size: 14px; opacity: 0.9;">Total Accounts</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${deployedAccounts}</div>
-              <div style="font-size: 14px; opacity: 0.9;">Deployed</div>
-            </div>
-            <div style="background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%); color: white; padding: 20px; border-radius: 12px; text-align: center;">
-              <div style="font-size: 32px; font-weight: bold; margin-bottom: 8px;">${pendingAccounts}</div>
-              <div style="font-size: 14px; opacity: 0.9;">Pending</div>
-            </div>
-          </div>
-
-          <h3 style="color: #0F2537; margin-bottom: 15px;">📋 Recent Account Activity</h3>
-          <div style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-      `;
-
-      if (data && data.length > 0) {
-        // Show last 5 accounts
-        data.slice(-5).reverse().forEach(account => {
-          const statusColor = account.Status && account.Status.toUpperCase().includes('DEPLOYED') ? '#27ae60' : '#f39c12';
-          html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
-              <div>
-                <div style="font-weight: 600; color: #2c3e50;">${account.company || account['Company Name'] || 'Unknown Company'}</div>
-                <div style="font-size: 12px; color: #7f8c8d;">${account.Notes || 'No notes available'}</div>
-              </div>
-              <div style="font-size: 12px; color: ${statusColor}; font-weight: 600;">${account.Status || 'Pending'}</div>
-            </div>
-          `;
-        });
-      } else {
-        html += '<p style="color: #666; text-align: center; margin: 20px 0;">No account data available</p>';
-      }
-
-      html += `
-          </div>
-
-          <div style="margin-top: 20px; text-align: center;">
-            <button onclick="window.open('', '_blank').close();" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
-              📊 Open Full Accounts Sheet
-            </button>
-          </div>
-        </div>
-      `;
-
-      const htmlOutput = HtmlService
-        .createHtmlOutput(html)
-        .setWidth(750)
-        .setHeight(600);
-
-      SpreadsheetApp.getUi().showModalDialog(htmlOutput, '🏢 Account Management');
+        .showCalendarModal();
     }
 
     // ========================================
@@ -3189,12 +2914,12 @@
     // ========================================
     // HTML SAFE RENDERER INTEGRATION
     // ========================================
-    
+
     /**
      * HtmlSafeRenderer - Prevents XSS vulnerabilities
      * Provides safe DOM manipulation methods
      */
-    var HtmlSafeRenderer = (function() {
+    var HtmlSafeRenderer = (function () {
       // Escape HTML special characters to prevent XSS
       function escapeHtml(str) {
         if (str === null || str === undefined) return '';
@@ -3202,18 +2927,18 @@
         div.textContent = String(str);
         return div.innerHTML;
       }
-      
+
       // Escape HTML attributes more restrictively
       function escapeAttribute(str) {
         if (str === null || str === undefined) return '';
         return String(str)
           .replace(/&/g, '&amp;')
-          .replace(/"/g, '&quot;')
+          .replace(/"/g, '"')
           .replace(/'/g, '&#39;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
+          .replace(/</g, '<')
+          .replace(/>/g, '>');
       }
-      
+
       // Sanitize HTML by removing dangerous tags and attributes
       function sanitizeHtml(html) {
         if (!html || typeof html !== 'string') return '';
@@ -3223,7 +2948,7 @@
         html = html.replace(/href\s*=\s*(['"])\s*javascript:[^'"]*\1/gi, 'href="#"');
         return html;
       }
-      
+
       // Build safe list item
       function buildListItem(primary, secondary, options) {
         options = options || {};
@@ -3231,13 +2956,13 @@
         var secondaryEscaped = escapeHtml(secondary || '');
         var style = escapeAttribute(options.style || '');
         return '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; ' + style + '">' +
-                 '<div>' +
-                   '<div style="font-weight: 600; color: #2c3e50;">' + primaryEscaped + '</div>' +
-                   (secondary ? '<div style="font-size: 12px; color: #7f8c8d;">' + secondaryEscaped + '</div>' : '') +
-                 '</div>' +
-               '</div>';
+          '<div>' +
+          '<div style="font-weight: 600; color: #2c3e50;">' + primaryEscaped + '</div>' +
+          (secondary ? '<div style="font-size: 12px; color: #7f8c8d;">' + secondaryEscaped + '</div>' : '') +
+          '</div>' +
+          '</div>';
       }
-      
+
       return {
         escapeHtml: escapeHtml,
         escapeAttribute: escapeAttribute,
@@ -3546,20 +3271,36 @@
      */
     function saveEntry() {
       const company = document.getElementById('companyInput').value.trim();
-      if (!company || !state.selectedStatus) {
-        showToast('⚠️ Company and Status required', 'warning');
+      
+      // Enhanced validation per schema requirements
+      if (!company) {
+        showToast('⚠️ Company name is required', 'warning');
+        document.getElementById('companyInput').focus();
+        return;
+      }
+      
+      if (!state.selectedOutcome) {
+        showToast('⚠️ Please select a visit outcome', 'warning');
+        return;
+      }
+      
+      if (!state.selectedStatus) {
+        showToast('❌ Status could not be determined from outcome', 'error');
+        console.error('Workflow mapping failed for outcome:', state.selectedOutcome);
         return;
       }
 
       showLoading(true);
       const formData = {
         company: company,
+        companyName: company,
         outcome: state.selectedOutcome,
         stage: state.selectedStage,
         status: state.selectedStatus,
         notes: document.getElementById('notes').value,
         nextVisitDate: document.getElementById('nextDate').value,
-        activityType: document.getElementById('activityType').value
+        activityType: document.getElementById('activityType').value,
+        outreachId: document.getElementById('outreachId').value.trim()
       };
 
       google.script.run
@@ -3570,12 +3311,13 @@
             resetForm();
             loadStats();
           } else {
-            showToast('❌ ' + res.error, 'error');
+            showToast('❌ ' + (res.error || 'Save failed'), 'error');
           }
         })
         .withFailureHandler(e => {
           showLoading(false);
-          showToast('❌ Server error during save', 'error');
+          showToast('❌ Server error during save: ' + (e.message || 'Unknown error'), 'error');
+          console.error('Save error:', e);
         })
         .addOutreachComplete(formData);
     }
@@ -3585,7 +3327,7 @@
       document.getElementById('notes').value = '';
       document.querySelectorAll('.outcome-btn').forEach(b => b.classList.remove('active'));
       document.getElementById('workflowDisplay').style.display = 'none';
-      
+
       // Reset other form elements to ensure no white text issues
       const formInputs = document.querySelectorAll('.form-input, .form-select, .form-textarea');
       formInputs.forEach(input => {
@@ -3656,7 +3398,7 @@
           contactName: document.getElementById('newContact').value,
           phone: document.getElementById('newPhone').value,
           email: document.getElementById('newEmail').value,
-          competitor: document.getElementById('newCompetitor').value
+          competitor: document.getElementById('competitor').value
         };
       }
 

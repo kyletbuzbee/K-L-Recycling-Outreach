@@ -46,7 +46,7 @@ function fuzzyMatchCompany(outreachData, prospectsData) {
       var prospectName = (p['company name'] || '').toString().toLowerCase().trim();
       var score = calculateStringSimilarity(outreachName, prospectName);
 
-      if (score > bestScore && score >= 0.6) { // Lowered threshold to 60% for better matching
+      if (score > bestScore && score >= 0.75) { // Threshold at 75% for better matching
         bestScore = score;
         bestMatch = p;
       }
@@ -75,14 +75,20 @@ function calculateStringSimilarity(str1, str2) {
   if (!str1 || !str2) return 0;
   if (str1 === str2) return 1;
   
-  var len1 = str1.length;
-  var len2 = str2.length;
+  // Normalize strings for better comparison
+  var norm1 = normalizeCompanyName(str1);
+  var norm2 = normalizeCompanyName(str2);
+  
+  if (norm1 === norm2) return 1;
+  
+  var len1 = norm1.length;
+  var len2 = norm2.length;
   var maxLen = Math.max(len1, len2);
   
   if (maxLen === 0) return 1;
   
-  // Calculate Levenshtein distance
-  var distance = levenshteinDistance(str1, str2);
+  // Calculate Levenshtein distance on normalized strings
+  var distance = levenshteinDistance(norm1, norm2);
   var similarity = 1 - (distance / maxLen);
   
   return similarity;
@@ -121,4 +127,33 @@ function levenshteinDistance(str1, str2) {
   }
   
   return matrix[str1.length][str2.length];
+}
+
+/**
+ * Normalize company name for comparison
+ * Removes common suffixes, punctuation, and standardizes format
+ * @param {string} name - Company name to normalize
+ * @return {string} Normalized company name
+ */
+function normalizeCompanyName(name) {
+  if (!name || typeof name !== 'string') return '';
+  
+  return name
+    .toLowerCase()
+    .trim()
+    // Remove common company suffixes
+    .replace(/\s+(llc|inc|ltd|corp|corporation|company|co\.?)$/gi, '')
+    // Remove punctuation except spaces
+    .replace(/[.,#&!@$%^*(){}[\]|\\:;"'<>,?/~`]/g, '')
+    // Normalize spaces
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Export for use in other files
+if (typeof exports !== 'undefined') {
+  exports.fuzzyMatchCompany = fuzzyMatchCompany;
+  exports.calculateStringSimilarity = calculateStringSimilarity;
+  exports.levenshteinDistance = levenshteinDistance;
+  exports.normalizeCompanyName = normalizeCompanyName;
 }

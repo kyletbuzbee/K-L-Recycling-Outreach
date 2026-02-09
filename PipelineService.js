@@ -10,6 +10,7 @@ var PipelineService = {
       var prospects = SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, ['Contact Status']);
       var outreach = SharedUtils.getSafeSheetData(CONFIG.SHEETS.OUTREACH, ['Outcome']);
 
+      // DEFENSIVE: Ensure arrays are never null
       if (!prospects) { prospects = []; }
       if (!outreach) { outreach = []; }
 
@@ -27,10 +28,10 @@ var PipelineService = {
       }).length;
 
       return {
-        total: prospects.length,
-        hot: hotCount,
-        warm: warmCount,
-        won: wonCount
+        total: prospects.length || 0,
+        hot: hotCount || 0,
+        warm: warmCount || 0,
+        won: wonCount || 0
       };
     } catch (e) {
       console.error('Error in calculateFunnel:', e);
@@ -127,5 +128,13 @@ var PipelineService = {
       console.error('Error in getAllProspects:', e);
       return [];
     }
+  },
+
+  /**
+   * Alias for getRecentWins - maintains API compatibility
+   * @returns {Array} Recently won accounts
+   */
+  getWonAccounts: function() {
+    return this.getRecentWins();
   }
 };

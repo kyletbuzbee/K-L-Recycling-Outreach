@@ -3,8 +3,772 @@
 
 <head>
   <base target="_top">
-  <?!= HtmlService.createHtmlOutputFromFile('CRM_Styles').getContent(); ?>
+  <meta charset="UTF-8">
+  <title>K&L Recycling CRM Suite</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* ===== CSS Variables & Theme ===== */
+    :root {
+        /* Primary Palette - K&L Green Inspired */
+        --primary: #10b981;
+        --primary-dark: #059669;
+        --primary-light: #34d399;
+        --primary-bg: #ecfdf5;
+        
+        /* Accent Colors */
+        --accent-hot: #ef4444;
+        --accent-warm: #f59e0b;
+        --accent-cold: #3b82f6;
+        --accent-won: #10b981;
+        
+        /* Neutral Palette */
+        --bg-main: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-card: #ffffff;
+        --bg-hover: #f1f5f9;
+        
+        /* Text Colors */
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --text-inverse: #ffffff;
+        
+        /* Semantic Colors */
+        --success: #10b981;
+        --warning: #f59e0b;
+        --error: #ef4444;
+        --info: #3b82f6;
+        
+        /* Shadows */
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.3);
+        
+        /* Spacing */
+        --spacing-xs: 0.25rem;
+        --spacing-sm: 0.5rem;
+        --spacing-md: 1rem;
+        --spacing-lg: 1.5rem;
+        --spacing-xl: 2rem;
+        
+        /* Border Radius */
+        --radius-sm: 0.375rem;
+        --radius-md: 0.5rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+        --radius-full: 9999px;
+        
+        /* Transitions */
+        --transition-fast: 150ms ease;
+        --transition-normal: 250ms ease;
+        --transition-slow: 350ms ease;
+        
+        /* Sidebar Width */
+        --sidebar-width: 280px;
+    }
+
+    /* ===== Base Reset ===== */
+    *, *::before, *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        font-size: 16px;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: var(--bg-main);
+        color: var(--text-primary);
+        line-height: 1.6;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ===== Scrollbar Styling ===== */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+        border-radius: var(--radius-full);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: var(--radius-full);
+        transition: var(--transition-fast);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-light);
+    }
+
+    /* ===== Layout ===== */
+    .suite-wrapper {
+        display: flex;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+    }
+
+    /* ===== Sidebar Navigation ===== */
+    .suite-nav {
+        width: var(--sidebar-width);
+        background: linear-gradient(180deg, var(--bg-secondary) 0%, #0f172a 100%);
+        color: var(--text-inverse);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 100;
+        box-shadow: var(--shadow-xl);
+    }
+
+    .suite-nav::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent);
+    }
+
+    .brand {
+        padding: var(--spacing-xl) var(--spacing-lg);
+        font-weight: 800;
+        font-size: 1.25rem;
+        letter-spacing: 2px;
+        color: var(--primary);
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        position: relative;
+    }
+
+    .brand::before {
+        content: '';
+    }
+
+    .brand::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: var(--spacing-lg);
+        right: var(--spacing-lg);
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-links {
+        flex: 1;
+        padding: var(--spacing-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        overflow-y: auto;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        color: var(--text-muted);
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .nav-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 0;
+        background: var(--primary);
+        border-radius: var(--radius-full);
+        transition: height var(--transition-normal);
+    }
+
+    .nav-item:hover {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--text-inverse);
+        transform: translateX(4px);
+    }
+
+    .nav-item:hover::before {
+        height: 24px;
+    }
+
+    .nav-item.active {
+        background: linear-gradient(90deg, rgba(16, 185, 129, 0.2), transparent);
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    .nav-item.active::before {
+        height: 32px;
+        box-shadow: var(--shadow-glow);
+    }
+
+    .nav-item i {
+        width: 24px;
+        text-align: center;
+        font-size: 1.1rem;
+    }
+
+    .nav-footer {
+        padding: var(--spacing-lg);
+        text-align: center;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+    }
+
+    .nav-footer::before {
+        content: '';
+        position: absolute;
+        top: -1px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 2px;
+        background: var(--primary);
+        border-radius: var(--radius-full);
+    }
+
+    /* ===== Main Content Area ===== */
+    .suite-main {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+
+    .suite-header {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .suite-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        position: relative;
+        padding-left: var(--spacing-md);
+    }
+
+    .suite-header h1::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 24px;
+        background: var(--primary);
+        border-radius: var(--radius-full);
+    }
+
+    .user-profile {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        background: var(--bg-card);
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-sm);
+        font-weight: 500;
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+
+    .user-profile::before {
+        content: '';
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
+        border-radius: var(--radius-full);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.875rem;
+    }
+
+    /* ===== Tab Content ===== */
+    .tab-content {
+        padding: var(--spacing-xl);
+        flex: 1;
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ===== Stats Grid ===== */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .stat-card {
+        background: var(--bg-card);
+        padding: var(--spacing-xl);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        transition: all var(--transition-normal);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--primary);
+        opacity: 0;
+        transition: opacity var(--transition-normal);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card.accent {
+        border-top: none;
+    }
+
+    .stat-card.accent::before {
+        background: linear-gradient(90deg, var(--accent-hot), #fca5a5);
+        opacity: 1;
+    }
+
+    .stat-card.win::before {
+        background: linear-gradient(90deg, var(--accent-won), #6ee7b7);
+        opacity: 1;
+    }
+
+    .stat-card h4 {
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .stat-card h2 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--text-primary), var(--primary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-card .trend {
+        position: absolute;
+        bottom: var(--spacing-lg);
+        right: var(--spacing-lg);
+        font-size: 0.75rem;
+        color: var(--success);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .stat-card .trend.down {
+        color: var(--error);
+    }
+
+    /* ===== Content Split ===== */
+    .content-split {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: var(--spacing-xl);
+    }
+
+    .card {
+        background: var(--bg-card);
+        padding: var(--spacing-xl);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .card h3 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: var(--spacing-lg);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .card h3 i {
+        color: var(--primary);
+    }
+
+    .data-list {
+        margin-top: var(--spacing-md);
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+        cursor: pointer;
+    }
+
+    .list-item:hover {
+        background: var(--bg-hover);
+        transform: translateX(4px);
+    }
+
+    .list-item span:first-child {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+
+    .list-item small {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+    }
+
+    /* ===== Badge System ===== */
+    .badge {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--radius-full);
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .badge.overdue {
+        background: linear-gradient(135deg, #000000, #333333);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .badge.high, .badge.hot {
+        background: linear-gradient(135deg, #fee2e2, #fecaca);
+        color: #b91c1c;
+    }
+
+    .badge.medium, .badge.warm {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #d97706;
+    }
+
+    .badge.low, .badge.cold {
+        background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+        color: #1d4ed8;
+    }
+
+    .badge.won, .badge.active {
+        background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+        color: #059669;
+    }
+
+    /* ===== Pipeline View ===== */
+    .pipeline-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-lg);
+        height: calc(100vh - 200px);
+    }
+
+    .pipeline-stage {
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-lg);
+        display: flex;
+        flex-direction: column;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all var(--transition-normal);
+    }
+
+    .pipeline-stage:hover {
+        box-shadow: var(--shadow-md);
+    }
+
+    .pipeline-stage h4 {
+        margin: 0 0 var(--spacing-lg) 0;
+        padding-bottom: var(--spacing-md);
+        border-bottom: 2px solid;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+
+    .pipeline-stage h4::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: var(--radius-full);
+    }
+
+    #pipeline-hot h4 { border-color: var(--accent-hot); color: var(--accent-hot); }
+    #pipeline-hot h4::before { background: var(--accent-hot); box-shadow: 0 0 10px var(--accent-hot); }
+    
+    #pipeline-warm h4 { border-color: var(--accent-warm); color: var(--accent-warm); }
+    #pipeline-warm h4::before { background: var(--accent-warm); box-shadow: 0 0 10px var(--accent-warm); }
+    
+    #pipeline-cold h4 { border-color: var(--accent-cold); color: var(--accent-cold); }
+    #pipeline-cold h4::before { background: var(--accent-cold); box-shadow: 0 0 10px var(--accent-cold); }
+    
+    #pipeline-won h4 { border-color: var(--accent-won); color: var(--accent-won); }
+    #pipeline-won h4::before { background: var(--accent-won); box-shadow: 0 0 10px var(--accent-won); }
+
+    .pipeline-deals {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-sm);
+        overflow-y: auto;
+        padding-right: var(--spacing-xs);
+    }
+
+    .pipeline-deal {
+        background: linear-gradient(135deg, #f8fafc, #ffffff);
+        padding: var(--spacing-md);
+        border-radius: var(--radius-lg);
+        border-left: 4px solid;
+        transition: all var(--transition-fast);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .pipeline-deal:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    #pipeline-hot .pipeline-deal { border-left-color: var(--accent-hot); }
+    #pipeline-warm .pipeline-deal { border-left-color: var(--accent-warm); }
+    #pipeline-cold .pipeline-deal { border-left-color: var(--accent-cold); }
+    #pipeline-won .pipeline-deal { border-left-color: var(--accent-won); }
+
+    .pipeline-deal strong {
+        display: block;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .pipeline-deal small {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .empty-state i {
+        font-size: 2rem;
+        margin-bottom: var(--spacing-md);
+        opacity: 0.5;
+    }
+
+    /* ===== Prospects View ===== */
+    .prospects-toolbar {
+        display: flex;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-xl);
+        background: var(--bg-card);
+        padding: var(--spacing-lg);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .prospects-toolbar input {
+        flex: 1;
+        padding: var(--spacing-md) var(--spacing-lg);
+        border: 2px solid transparent;
+        border-radius: var(--radius-lg);
+        font-size: 0.9rem;
+        background: var(--bg-hover);
+        transition: all var(--transition-fast);
+    }
+
+    .prospects-toolbar input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: var(--bg-card);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+
+    .prospects-toolbar select {
+        padding: var(--spacing-md) var(--spacing-lg);
+        border: 2px solid transparent;
+        border-radius: var(--radius-lg);
+        font-size: 0.9rem;
+        background: var(--bg-hover);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-width: 150px;
+    }
+
+    .prospects-toolbar select:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: var(--bg-card);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    }
+
+    .prospects-table-container {
+        background: var(--bg-card);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .prospects-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .prospects-table thead {
+        background: linear-gradient(135deg, var(--bg-secondary), #0f172a);
+    }
+
+    .prospects-table th {
+        background: transparent;
+        padding: var(--spacing-lg);
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .prospects-table td {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--bg-hover);
+        vertical-align: middle;
+    }
+
+    .prospects-table tbody tr {
+        transition: all var(--transition-fast);
+        cursor: pointer;
+    }
+
+    .prospects-table tbody tr:hover {
+        background: var(--bg-hover);
+    }
+
+    /* ===== Responsive Design ===== */
+    @media (max-width: 1400px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .pipeline-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 1024px) {
+        .suite-nav {
+            width: 80px;
+        }
+        .brand span, .nav-item span {
+            display: none;
+        }
+        .nav-item {
+            justify-content: center;
+            padding: var(--spacing-md);
+        }
+        .content-split {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        .pipeline-container {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+        .prospects-toolbar {
+            flex-direction: column;
+        }
+    }
+  </style>
 </head>
 
 <body>
@@ -13,13 +777,13 @@
       <div class="brand">K&L RECYCLING</div>
       <div class="nav-links">
         <div class="nav-item active" onclick="switchTab('dashboard', this)">
-          <i class="fas fa-th-large"></i> Dashboard
+          <i class="fas fa-th-large"></i> <span>Dashboard</span>
         </div>
         <div class="nav-item" onclick="switchTab('pipeline', this)">
-          <i class="fas fa-filter"></i> Pipeline
+          <i class="fas fa-filter"></i> <span>Pipeline</span>
         </div>
         <div class="nav-item" onclick="switchTab('prospects', this)">
-          <i class="fas fa-address-book"></i> Prospects
+          <i class="fas fa-address-book"></i> <span>Prospects</span>
         </div>
       </div>
       <div class="nav-footer">System v2.6.0</div>
@@ -37,11 +801,11 @@
 
         <div class="content-split">
           <div class="card">
-            <h3>🔥 Urgent Follow-ups</h3>
+            <h3><i class="fas fa-fire"></i> Urgent Follow-ups</h3>
             <div id="urgent-list" class="data-list">Loading...</div>
           </div>
           <div class="card">
-            <h3>✅ Recent Wins</h3>
+            <h3><i class="fas fa-trophy"></i> Recent Wins</h3>
             <div id="wins-list" class="data-list">Loading...</div>
           </div>
         </div>
@@ -50,19 +814,19 @@
       <div id="view-pipeline" class="tab-content" style="display: none;">
         <div class="pipeline-container" id="pipeline-container">
           <div class="pipeline-stage">
-            <h4>🔥 Hot</h4>
+            <h4><i class="fas fa-fire"></i> Hot</h4>
             <div id="pipeline-hot" class="pipeline-deals">Loading...</div>
           </div>
           <div class="pipeline-stage">
-            <h4>☀️ Warm</h4>
+            <h4><i class="fas fa-sun"></i> Warm</h4>
             <div id="pipeline-warm" class="pipeline-deals">Loading...</div>
           </div>
           <div class="pipeline-stage">
-            <h4>❄️ Cold</h4>
+            <h4><i class="fas fa-snowflake"></i> Cold</h4>
             <div id="pipeline-cold" class="pipeline-deals">Loading...</div>
           </div>
           <div class="pipeline-stage">
-            <h4>✅ Won</h4>
+            <h4><i class="fas fa-check"></i> Won</h4>
             <div id="pipeline-won" class="pipeline-deals">Loading...</div>
           </div>
         </div>
@@ -249,14 +1013,13 @@
               }
               
               if (isSafe) {
-                // For className, use class
                 var attrName = key === 'className' ? 'class' : key;
                 el.setAttribute(attrName, value);
               }
             }
           }
         }
-        
+          
         if (textContent !== undefined && textContent !== null) {
           el.textContent = textContent;
         }
@@ -379,41 +1142,60 @@
       prospects: null
     };
 
-    function callAPI(action, payload = {}) {
-      return new Promise((resolve, reject) => {
+    function callAPI(action, payload) {
+      return new Promise(function(resolve, reject) {
         google.script.run
-          .withSuccessHandler(resolve)
-          .withFailureHandler(reject)
-          .crmGateway({ action, payload });
+          .withSuccessHandler(function(res) {
+            // DEFENSIVE: Ensure response is always an object with success property
+            if (res === null || res === undefined) {
+              console.warn('API returned null/undefined for action:', action);
+              resolve({ success: false, error: 'No data returned', data: null });
+              return;
+            }
+            // DEFENSIVE: Check if response has success property
+            if (typeof res.success === 'undefined') {
+              console.warn('API returned object without success property for action:', action, res);
+              // Assume success if data is present
+              resolve({ success: true, data: res, error: null });
+              return;
+            }
+            resolve(res);
+          })
+          .withFailureHandler(function(error) {
+            console.error('API call failed for action:', action, error);
+            reject({ success: false, error: error.message || 'Unknown error', data: null });
+          })
+          .crmGateway({ action: action, payload: payload || {} });
       });
     }
 
-    async function init() {
+    function init() {
       console.log('CRM Dashboard initializing...');
-      try {
-        console.log('Calling GET_DASHBOARD_STATS...');
-        const res = await callAPI('GET_DASHBOARD_STATS');
-        console.log('API Response:', res);
-        if (res.success) {
-          console.log('Dashboard data loaded successfully, rendering...');
-          crmData.dashboard = res;
-          renderDashboard(res);
-        } else {
-          console.error('Failed to load dashboard stats:', res.error);
-          showError('Failed to load dashboard data: ' + (res.error || 'Unknown error'));
-        }
-      } catch (e) {
-        console.error('Error initializing dashboard:', e);
-        console.error('Error stack:', e.stack);
-        showError('Error loading dashboard: ' + (e.message || 'Unknown error'));
-      }
-      
-      // Load company names for autocomplete
-      loadCompanySuggestions();
+      callAPI('GET_DASHBOARD_STATS')
+        .then(function(res) {
+          console.log('API Response:', res);
+          // DEFENSIVE: Check for null/undefined response
+          if (!res || res === null) {
+            console.error('init: API response was null');
+            showError('No data returned from server');
+            return;
+          }
+          if (res.success === true && res.data) {
+            console.log('Dashboard data loaded successfully, rendering...');
+            crmData.dashboard = res;
+            renderDashboard(res.data);
+          } else {
+            console.error('Failed to load dashboard stats:', res.error);
+            showError('Failed to load dashboard data: ' + (res.error || 'Unknown error'));
+          }
+        })
+        .catch(function(e) {
+          console.error('Error initializing dashboard:', e);
+          showError('Error loading dashboard: ' + (e.message || 'Unknown error'));
+        });
     }
 
     function showError(message) {
-      // Use HtmlSafeRenderer for safe innerHTML
       var safeMessage = HtmlSafeRenderer.escapeHtml(message);
       HtmlSafeRenderer.setInnerHtml('stat-cards', 
         '<div style="color: red; padding: 10px;">' + safeMessage + '</div>');
@@ -424,15 +1206,13 @@
     }
 
     function renderDashboard(data) {
-      // Guard against null/undefined data
       if (!data) {
         console.error('renderDashboard: data is null or undefined');
         showError('No data available');
         return;
       }
 
-      // Render Stat Cards with null checks
-      const stats = data.pipeline || { total: 0, hot: 0, warm: 0, won: 0 };
+      var stats = data.pipeline || { total: 0, hot: 0, warm: 0, won: 0 };
       
       var statCardsHtml = 
         HtmlSafeRenderer.buildStatCard('PROSPECTS', stats.total || 0, {}) +
@@ -442,7 +1222,6 @@
       
       HtmlSafeRenderer.setInnerHtml('stat-cards', statCardsHtml);
 
-      // Render Urgent List with null checks
       if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0) {
         var urgentHtml = data.prospects.map(function(p) {
           return HtmlSafeRenderer.buildListItem(
@@ -457,7 +1236,6 @@
           '<div style="padding: 10px; color: #666;">No urgent prospects</div>');
       }
 
-      // Render Wins with null checks
       if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
         var winsHtml = data.accounts.map(function(a) {
           return HtmlSafeRenderer.buildListItem(
@@ -473,43 +1251,41 @@
     }
 
     function renderPipeline(data) {
-      // Guard against null/undefined data
       if (!data) {
         console.error('renderPipeline: data is null or undefined');
         return;
       }
 
-      const stages = {
+      var stages = {
         hot: data.hot || [],
         warm: data.warm || [],
         cold: data.cold || [],
         won: data.won || []
       };
 
-      // Use HtmlSafeRenderer for safe innerHTML
       var hotHtml = stages.hot.length > 0 ? 
         stages.hot.map(function(p) { 
           return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
         }).join('') : 
-        '<div style="color: #999; padding: 10px; text-align: center;">No hot prospects</div>';
+        '<div class="empty-state"><i class="fas fa-inbox"></i>No hot prospects</div>';
       
       var warmHtml = stages.warm.length > 0 ? 
         stages.warm.map(function(p) { 
           return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
         }).join('') : 
-        '<div style="color: #999; padding: 10px; text-align: center;">No warm prospects</div>';
+        '<div class="empty-state"><i class="fas fa-inbox"></i>No warm prospects</div>';
       
       var coldHtml = stages.cold.length > 0 ? 
         stages.cold.map(function(p) { 
           return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
         }).join('') : 
-        '<div style="color: #999; padding: 10px; text-align: center;">No cold prospects</div>';
+        '<div class="empty-state"><i class="fas fa-inbox"></i>No cold prospects</div>';
       
       var wonHtml = stages.won.length > 0 ? 
         stages.won.map(function(p) { 
           return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'timestamp']); 
         }).join('') : 
-        '<div style="color: #999; padding: 10px; text-align: center;">No wins yet</div>';
+        '<div class="empty-state"><i class="fas fa-trophy"></i>No wins yet</div>';
       
       HtmlSafeRenderer.setInnerHtml('pipeline-hot', hotHtml);
       HtmlSafeRenderer.setInnerHtml('pipeline-warm', warmHtml);
@@ -528,7 +1304,6 @@
     }
 
     function updateProspectsTable(prospects) {
-      const tbody = document.getElementById('prospects-table-body');
       if (!prospects || prospects.length === 0) {
         HtmlSafeRenderer.setInnerHtml('prospects-table-body', 
           '<tr><td colspan="5" style="text-align: center; color: #666;">No prospects found</td></tr>');
@@ -549,80 +1324,43 @@
     }
 
     function filterProspects() {
-      const searchTerm = document.getElementById('prospects-search').value.toLowerCase();
-      const filterStatus = document.getElementById('prospects-filter').value;
+      var searchTerm = document.getElementById('prospects-search').value.toLowerCase();
+      var filterStatus = document.getElementById('prospects-filter').value;
 
       if (!crmData.prospects) return;
 
-      let filtered = crmData.prospects.filter(p => {
-        const matchesSearch = (p['company name'] || '').toLowerCase().includes(searchTerm);
-        const status = (p['contact status'] || '').toLowerCase();
-        const matchesFilter = filterStatus === 'all' || status === filterStatus;
+      var filtered = crmData.prospects.filter(function(p) {
+        var matchesSearch = (p['company name'] || '').toLowerCase().includes(searchTerm);
+        var status = (p['contact status'] || '').toLowerCase();
+        var matchesFilter = filterStatus === 'all' || status === filterStatus;
         return matchesSearch && matchesFilter;
       });
 
       updateProspectsTable(filtered);
     }
 
-    // Load company names for autocomplete suggestions
-    function loadCompanySuggestions() {
-      google.script.run
-        .withSuccessHandler(populateCompanySuggestions)
-        .withFailureHandler(function(error) {
-          console.error('Failed to load company suggestions:', error);
-        })
-        .getCompanyNamesForAutocomplete();
-    }
-
-    // Populate the datalist with company names (safe)
-    function populateCompanySuggestions(names) {
-      var datalist = document.getElementById('company-suggestions');
-      if (!datalist) return;
-      
-      // Clear existing options using safe method
-      datalist.innerHTML = '';
-      
-      if (!names || !Array.isArray(names)) {
-        console.warn('No company names received for autocomplete');
-        return;
-      }
-      
-      names.forEach(function(name) {
-        if (name) {
-          var option = document.createElement('option');
-          option.value = HtmlSafeRenderer.escapeHtml(name);
-          datalist.appendChild(option);
-        }
-      });
-      
-      console.log('Loaded ' + names.length + ' company suggestions');
-    }
-
     async function switchTab(view, el) {
       // Update nav state
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
       el.classList.add('active');
       
-      // Use textContent for safer text updates
       var tabTitle = document.getElementById('tab-title');
       tabTitle.textContent = view.charAt(0).toUpperCase() + view.slice(1);
 
       // Hide all views
-      document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+      document.querySelectorAll('.tab-content').forEach(function(c) { c.style.display = 'none'; });
 
-      // Show selected view
-      const viewEl = document.getElementById('view-' + view);
+      var viewEl = document.getElementById('view-' + view);
       if (viewEl) {
         viewEl.style.display = 'block';
       }
 
-      // Load data for non-dashboard views
       if (view === 'pipeline' && !crmData.pipeline) {
         try {
-          const res = await callAPI('GET_PIPELINE');
+          var res = await callAPI('GET_PIPELINE');
           if (res.success) {
-            crmData.pipeline = res;
-            renderPipeline(res);
+            crmData.pipeline = res.data;
+            renderPipeline(res.data);
           } else {
             console.error('Failed to load pipeline:', res.error);
           }
@@ -635,9 +1373,9 @@
 
       if (view === 'prospects' && !crmData.prospects) {
         try {
-          const res = await callAPI('GET_PROSPECTS');
+          var res = await callAPI('GET_PROSPECTS');
           if (res.success) {
-            renderProspects(res);
+            renderProspects(res.data);
           } else {
             console.error('Failed to load prospects:', res.error);
           }

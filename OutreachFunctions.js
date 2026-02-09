@@ -616,11 +616,11 @@ function mapStatusToStage(status) {
   if (!status) return 'Prospect';
 
   var statusMapping = {
-    'Interested (Hot)': 'Nurture',
+    'Interested (Hot)': 'Active Pursuit',
     'Interested (Warm)': 'Nurture',
-    'Hot': 'Nurture',
+    'Hot': 'Active Pursuit',
     'Warm': 'Nurture',
-    'Cold': 'Prospect',
+    'Cold': 'Outreach',
     'Account Won': 'Won',
     'Won': 'Won',
     'Disqualified': 'Lost',
@@ -629,7 +629,7 @@ function mapStatusToStage(status) {
     'Not Interested': 'Lost',
     'Follow-Up': 'Nurture',
     'Initial Contact': 'Outreach',
-    'Active': 'Nurture',
+    'Active': 'Won',
     'Outreach': 'Outreach',
     'Prospect': 'Prospect'
   };

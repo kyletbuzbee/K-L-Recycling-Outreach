@@ -1,0 +1,25 @@
+{
+  "name": "kl-recycling-crm",
+  "version": "1.0.0",
+  "description": "K&L Recycling CRM - Google Apps Script based CRM system",
+  "main": "run_tests.js",
+  "scripts": {
+    "test": "node run_tests.js",
+    "test:browser": "node run_tests.js",
+    "test:help": "node -e \"console.log('Available commands:\\nnpm run test - Open browser test runner\\nnpm run test:help - Show this help')\""
+  },
+  "keywords": [
+    "crm",
+    "google-apps-script",
+    "spreadsheet",
+    "recycling"
+  ],
+  "author": "K&L Recycling",
+  "license": "MIT",
+  "dependencies": {
+    "open": "^10.2.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

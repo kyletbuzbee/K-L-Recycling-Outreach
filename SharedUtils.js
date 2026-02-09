@@ -545,6 +545,24 @@ SharedUtils.formatDate = function(date, options, context) {
     var timezone = options.timezone || (typeof CONFIG !== 'undefined' ? CONFIG.TIMEZONE : 'America/Chicago') || 'America/Chicago';
     var dateFormat = options.dateFormat || (typeof CONFIG !== 'undefined' ? CONFIG.DATE_FORMAT : 'MM/dd/yyyy') || 'MM/dd/yyyy';
     
+    // Handle test environment where SpreadsheetApp may not be available
+    if (typeof SpreadsheetApp === 'undefined') {
+      // Test environment fallback: use simple date formatting
+      var month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+      var day = dateObj.getDate().toString().padStart(2, '0');
+      var year = dateObj.getFullYear();
+      
+      if (dateFormat === 'MM/dd/yyyy') {
+        return month + '/' + day + '/' + year;
+      } else if (dateFormat === 'yyyy-MM-dd') {
+        return year + '-' + month + '-' + day;
+      } else if (dateFormat === 'ISO') {
+        return dateObj.toISOString().split('T')[0];
+      }
+      // Default fallback
+      return month + '/' + day + '/' + year;
+    }
+    
     // Add null check for spreadsheet before using Utilities.formatDate
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     if (!ss) {
