@@ -1,132 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<style>
-  /* General Styles for Browser Viewing */
-  body { font-family: 'Segoe UI', Arial, sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 20px; background-color: #f4f4f4; }
-  .container { max-width: 800px; margin: 0 auto; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-  
-  /* Header */
-  .header { background-color: #003366; color: #ffffff; padding: 20px; text-align: center; }
-  .header h1 { margin: 0; font-size: 24px; }
-  .header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K&L Daily Operations Report</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; color: #333; }
+        .app-header { background: #1a472a; color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .app-title { font-size: 24px; font-weight: bold; }
+        .app-meta { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+        
+        .kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+        .kpi-box { background: white; padding: 15px; border-radius: 10px; text-align: center; border-bottom: 4px solid #ddd; }
+        .kpi-val { font-size: 22px; font-weight: bold; display: block; }
+        .kpi-label { font-size: 12px; text-transform: uppercase; color: #666; }
+        
+        .visit-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 8px solid #ccc; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .company-name { font-weight: bold; font-size: 18px; color: #1a472a; }
+        
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .visit-card.won { border-left-color: #27ae60; } .status-won { background: #eafaf1; color: #27ae60; }
+        .visit-card.hot { border-left-color: #e67e22; } .status-hot { background: #fdf5e6; color: #e67e22; }
+        .visit-card.warm { border-left-color: #3498db; } .status-warm { background: #ebf5fb; color: #3498db; }
+        .visit-card.cold { border-left-color: #95a5a6; } .status-cold { background: #f2f4f4; color: #95a5a6; }
+        
+        .section-label { font-size: 11px; text-transform: uppercase; color: #999; margin-top: 10px; font-weight: bold; }
+        .notes-text { font-size: 14px; line-height: 1.4; margin-top: 4px; color: #444; }
+        .action-box { background: #f9f9f9; padding: 8px; border-radius: 6px; margin-top: 5px; border: 1px dashed #ddd; }
+        .action-text { font-size: 13px; color: #2c3e50; font-style: italic; }
 
-  /* KPI Section */
-  .kpi-row { display: flex; justify-content: center; background-color: #eef2f5; padding: 15px 0; border-bottom: 2px solid #ddd; flex-wrap: wrap; }
-  .kpi-box { text-align: center; width: 120px; margin: 0 10px; }
-  .kpi-label { display: block; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-  .kpi-value { display: block; font-size: 20px; font-weight: bold; margin-top: 5px; }
-  .hot-lead { color: #d35400; } /* Burnt Orange for Hot Leads */
-
-  /* Data Table */
-  table { width: 100%; border-collapse: collapse; margin-top: 0; }
-  th { background-color: #f8f9fa; color: #444; font-size: 12px; text-transform: uppercase; padding: 12px; text-align: left; border-bottom: 2px solid #ddd; }
-  td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: top; }
-  tr:last-child td { border-bottom: none; }
-  
-  /* Outcome Badges */
-  .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; white-space: nowrap; }
-  .b-interested { background-color: #e6fffa; color: #047857; border: 1px solid #047857; }
-  .b-disqualified { background-color: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
-  .b-cold { background-color: #eff6ff; color: #1e40af; border: 1px solid #1e40af; }
-  .b-contact { background-color: #fff7ed; color: #c2410c; border: 1px solid #c2410c; }
-</style>
+        .export-section { margin-top: 30px; text-align: center; padding-bottom: 50px; }
+        .export-btn { background: #1a472a; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .csv-data { display: none; text-align: left; background: #222; color: #0f0; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 11px; overflow-x: auto; margin-top: 15px; white-space: pre; }
+    </style>
+    <script>
+        function toggleCSV() {
+            var x = document.getElementById("csvData");
+            x.style.display = (x.style.display === "none" || x.style.display === "") ? "block" : "none";
+        }
+    </script>
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <h1>🚀 K&L Recycling</h1>
-    <p>Enterprise Operations Report | 01/14/2026 - 01/14/2026</p>
-  </div>
+<div class="app-header">
+    <div class="app-title">♻️ K&L Daily Report</div>
+    <div class="app-meta">📅 2026-02-06 • 👤 Kyle Buzbee</div>
+</div>
 
-  <div class="kpi-row">
-    <div class="kpi-box">
-      <span class="kpi-label">Total Visits</span>
-      <span class="kpi-value">11</span>
-    </div>
-    <div class="kpi-box">
-      <span class="kpi-label">New Wins</span>
-      <span class="kpi-value">0</span>
-    </div>
-    <div class="kpi-box">
-      <span class="kpi-label">🔥 Hot Leads</span>
-      <span class="kpi-value hot-lead">2</span>
-    </div>
-  </div>
+<div class="kpi-grid">
+    <div class="kpi-box" style="border-bottom-color: #3498db;"><span class="kpi-val">11</span><span class="kpi-label">Total Visits</span></div>
+    <div class="kpi-box" style="border-bottom-color: #27ae60;"><span class="kpi-val">1</span><span class="kpi-label">Wins</span></div>
+    <div class="kpi-box" style="border-bottom-color: #e67e22;"><span class="kpi-val">0</span><span class="kpi-label">Hot Leads</span></div>
+    <div class="kpi-box" style="border-bottom-color: #95a5a6;"><span class="kpi-val">2</span><span class="kpi-label">Cold/DQ</span></div>
+</div>
 
-  <table width="100%" cellpadding="0" cellspacing="0">
-    <thead>
-      <tr>
-        <th width="20%">Company</th>
-        <th width="12%">Date</th>
-        <th width="15%">Outcome</th>
-        <th>Notes</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><strong>Generac</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-disqualified">Disqualified</span></td>
-        <td>Spoke to GM. Not enough scrap to warrant a roll off. Front office confusion regarding scrap definition.</td>
-      </tr>
-      <tr>
-        <td><strong>Raney Appliance Service</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-disqualified">Disqualified</span></td>
-        <td>Low volume, but upcoming clean up. Will call when ready.</td>
-      </tr>
-      <tr>
-        <td><strong>Pro Custom Auto Works</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-interested">Interested</span></td>
-        <td><strong>Target:</strong> Owner needs large cleanup/roll off. Currently uses Huntwell but interested in switching. Will call next week.</td>
-      </tr>
-      <tr>
-        <td><strong>Larry Cathy</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-contact">Initial Contact</span></td>
-        <td>Owner out of office; office locked. Plan to visit tomorrow morning.</td>
-      </tr>
-      <tr>
-        <td><strong>Goodyear</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-disqualified">Disqualified</span></td>
-        <td>Insufficient scrap volume.</td>
-      </tr>
-      <tr>
-        <td><strong>C. Davis Heating And Air</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-cold">Cold</span></td>
-        <td>Currently allows unknown pickup without contact info. Left card for next interaction.</td>
-      </tr>
-      <tr>
-        <td><strong>Northwest Collision Center</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-cold">Cold</span></td>
-        <td>Employees take scrap (low volume). Left card with receptionist regarding premium pricing.</td>
-      </tr>
-      <tr>
-        <td><strong>Watson Plumbing</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-cold">Cold</span></td>
-        <td>Follow-up visit. Still unable to locate contact info for current scrap collector.</td>
-      </tr>
-      <tr>
-        <td><strong>Tyler Building Systems</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-contact">Contacted</span></td>
-        <td>No answer. Left 2 voicemails. Sending text tomorrow morning.</td>
-      </tr>
-      <tr>
-        <td><strong>Faith Co</strong></td>
-        <td>01/14</td>
-        <td><span class="badge b-interested">Interested</span></td>
-        <td>Spoke to receptionist; message left for owner/manager regarding outreach.</td>
-      </tr>
-    </tbody>
-  </table>
+<div class="visit-card cold">
+    <div class="card-header">
+        <div class="company-name">Calibur Collision</div>
+        <span class="status-pill status-cold">❄️ Not Interested</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Was not able to speak to anyone who could do anything, but I did get his card and so I will send them an email today.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">Try again</div></div>
+    </div>
+</div>
+
+<div class="visit-card warm">
+    <div class="card-header">
+        <div class="company-name">Joe Hudson</div>
+        <span class="status-pill status-warm">⏳ Follow-Up</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">They are being bought out by Gerber and are going to let me know once everything is finalized if they want to continue doing what they have been doing or switch to something new</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">Check periodic</div></div>
+    </div>
+</div>
+
+<div class="visit-card warm">
+    <div class="card-header">
+        <div class="company-name">Cox Construction</div>
+        <span class="status-pill status-warm">⏳ Follow-Up</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Spoke to Joey and because Waskom is about 70 miles from Madfos, Corey told me to charge a $125 dump fee. He said that it was fine and so we will get it delivered as soon as one is available.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">See Notes</div></div>
+    </div>
+</div>
+
+<div class="visit-card warm">
+    <div class="card-header">
+        <div class="company-name">TDI Air Condition</div>
+        <span class="status-pill status-warm">⏳ Follow-Up</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Talked to the receptionist and was not able to talk to a manager or anything because they were all on service calls, but I did get his card so I will send him an email first thing in the morning.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">Try again</div></div>
+    </div>
+</div>
+
+<div class="visit-card cold">
+    <div class="card-header">
+        <div class="company-name">Barbin Fence Inc</div>
+        <span class="status-pill status-cold">🚫 Disqualified</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Only has enough scrap to fill a trailer and take it to the scrap yard about twice a year so I have disqualified them as a prospect.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">See Notes</div></div>
+    </div>
+</div>
+
+<div class="visit-card cold">
+    <div class="card-header">
+        <div class="company-name">Champion Fence</div>
+        <span class="status-pill status-cold">🚫 Disqualified</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Reached out via email letting them know that I am interested in buying their metal. They are currently with Athens Iron and Metal so we will see.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">Try again</div></div>
+    </div>
+</div>
+
+<div class="visit-card won">
+    <div class="card-header">
+        <div class="company-name">Glenwood Blind & Awning</div>
+        <span class="status-pill status-won">🏆 Account Won</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Visited him this morning and won the account and he is wanting a 30 yard container, but might switch to a 20 yard container if needed. Pricing is as follows: "AL 5052: $1.50 (Clean) / $1.40 (Painted) AL 6063: $1.10 (Clean) / $1.00 (Painted) Siding: $0.68 | Break: $0.10"</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">Onboard Account</div></div>
+    </div>
+</div>
+
+<div class="visit-card warm">
+    <div class="card-header">
+        <div class="company-name">Dealer's Collision</div>
+        <span class="status-pill status-warm">⏳ Follow-Up</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Sent Dealer's Collision an email touching base about my interest in getting them a roll-off container.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">General follow</div></div>
+    </div>
+</div>
+
+<div class="visit-card warm">
+    <div class="card-header">
+        <div class="company-name">One-Ten Welding</div>
+        <span class="status-pill status-warm">⏳ Follow-Up</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Sent One-Ten Welding an email to see if he had a chance to look at the agreement I gave him.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">General follow</div></div>
+    </div>
+</div>
+
+<div class="visit-card warm">
+    <div class="card-header">
+        <div class="company-name">Rub-A-Dub Plumbing</div>
+        <span class="status-pill status-warm">⏳ Follow-Up</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Sent Ashley an email letting her know that we can drop off a container at one of their project sites since the last time I talked to her she said that they had several big jobs coming up.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">General follow</div></div>
+    </div>
+</div>
+
+<div class="visit-card warm">
+    <div class="card-header">
+        <div class="company-name">Holliday Sheet Metal</div>
+        <span class="status-pill status-warm">⏳ Follow-Up</span>
+    </div>
+    <div class="card-body">
+        <div class="section-label">Visit Notes</div>
+        <div class="notes-text">Sent him an email even though he rushed m out the last time I was there and did not respond to my previous email. I am hoping to get a response because they do produce a fair amount of scrap metal.</div>
+        <div class="section-label">Follow-Up Action</div>
+        <div class="action-box"><div class="action-text">General follow</div></div>
+    </div>
+</div>
+
+<div class="export-section">
+    <div class="section-label">Export CRM Data</div>
+    <button class="export-btn" onclick="toggleCSV()">📥 Show CSV Export</button>
+    <pre class="csv-data" id="csvData">outreachID,companyID,company,visitDate,notes,outcome,stage,status,nextVisitDate,daysSinceLastVisit,nextVisitCountdown,outcomeCategory,followUpAction,owner,prospectsMatch,contactType,emailSent,competitor
+LID-001,CID-CAL001,Calibur Collision,2026-02-06,"Was not able to speak to anyone who could do anything, but I did get his card and so I will send them an email today.",Not Interested,Lost,Disqualified,2026-08-05,,,Negative,Try again,Kyle Buzbee,,Visit,FALSE,None
+LID-002,CID-JOE001,Joe Hudson,2026-02-06,"They are being bought out by Gerber and are going to let me know once everything is finalized if they want to continue doing what they have been doing or switch to something new",Follow-Up,Nurture,Interested (Warm),2026-02-20,,,Neutral,Check periodic,Kyle Buzbee,,Visit,FALSE,None
+LID-003,CID-COX001,Cox Construction,2026-02-06,"Spoke to Joey and because Waskom is about 70 miles from Madfos, Corey told me to charge a $125 dump fee. He said that it was fine and so we will get it delivered as soon as one is available.",Follow-Up,Nurture,Interested (Warm),2026-02-20,,,Neutral,See Notes,Kyle Buzbee,,Visit,FALSE,None
+LID-004,CID-TDI001,TDI Air Condition,2026-02-06,"Talked to the receptionist and was not able to talk to a manager or anything because they were all on service calls, but I did get his card so I will send him an email first thing in the morning.",Follow-Up,Nurture,Interested (Warm),2026-02-20,,,Neutral,Try again,Kyle Buzbee,,Visit,FALSE,None
+LID-005,CID-BAR001,Barbin Fence Inc,2026-02-06,"Only has enough scrap to fill a trailer and take it to the scrap yard about twice a year so I have disqualified them as a prospect.",Disqualified,Lost,Disqualified,2026-02-06,,,Negative,See Notes,Kyle Buzbee,,Visit,FALSE,None
+LID-006,CID-CHA001,Champion Fence,2026-02-06,"Reached out via email letting them know that I am interested in buying their metal. They are currently with Athens Iron and Metal so we will see.",Disqualified,Lost,Disqualified,2026-02-06,,,Negative,Try again,Kyle Buzbee,,Visit,FALSE,AIM
+LID-007,CID-GLE001,Glenwood Blind & Awning,2026-02-06,"Visited him this morning and won the account and he is wanting a 30 yard container, but might switch to a 20 yard container if needed. Pricing is as follows: ""AL 5052: $1.50 (Clean) / $1.40 (Painted) AL 6063: $1.10 (Clean) / $1.00 (Painted) Siding: $0.68 | Break: $0.10""",Account Won,Won,Active,2026-02-07,,,Positive,Onboard Account,Kyle Buzbee,,Visit,FALSE,None
+LID-008,CID-DEA001,Dealer's Collision,2026-02-06,"Sent Dealer's Collision an email touching base about my interest in getting them a roll-off container.",Follow-Up,Nurture,Interested (Warm),2026-02-20,,,Neutral,General follow,Kyle Buzbee,,Visit,FALSE,None
+LID-009,CID-ONE001,One-Ten Welding,2026-02-06,"Sent One-Ten Welding an email to see if he had a chance to look at the agreement I gave him.",Follow-Up,Nurture,Interested (Warm),2026-02-20,,,Neutral,General follow,Kyle Buzbee,,Visit,FALSE,None
+LID-010,CID-RUB001,Rub-A-Dub Plumbing,2026-02-06,"Sent Ashley an email letting her know that we can drop off a container at one of their project sites since the last time I talked to her she said that they had several big jobs coming up.",Follow-Up,Nurture,Interested (Warm),2026-02-20,,,Neutral,General follow,Kyle Buzbee,,Visit,FALSE,None
+LID-011,CID-HOL001,Holliday Sheet Metal,2026-02-06,"Sent him an email even though he rushed m out the last time I was there and did not respond to my previous email. I am hoping to get a response because they do produce a fair amount of scrap metal.",Follow-Up,Nurture,Interested (Warm),2026-02-20,,,Neutral,General follow,Kyle Buzbee,,Visit,FALSE,None</pre>
 </div>
 
 </body>

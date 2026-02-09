@@ -1,0 +1,61 @@
+=== K&L RECYCLING CRM LOGIC ANALYSIS ===
+
+--- CROSS-FILE DEPENDENCIES ---
+AccountFunction.js calls: ['ValidationUtils', 'SharedUtils', 'CONFIG']
+AlertingService.js calls: ['ValidationUtils', 'SharedUtils', 'CONFIG']
+apply-fixes.js calls: ['ValidationUtils', 'SharedUtils', 'CONFIG']
+BusinessValidation.js calls: ['ValidationUtils', 'SharedUtils', 'CONFIG']
+ColumnMapper.js calls: ['SharedUtils']
+ComprehensiveValidationSystem.js calls: ['CONFIG']
+Config.js calls: ['ValidationUtils', 'SharedUtils', 'CONFIG']
+CRM_BLUEPRINT_REPORT.html calls: ['ProspectFunctions', 'ValidationUtils', 'OutreachFunctions', 'SharedUtils']
+CSVImport.js calls: ['SharedUtils']
+DataHelpers.js calls: ['SharedUtils', 'CONFIG']
+DataValidation.js calls: ['SharedUtils', 'CONFIG']
+ErrorHandling.js calls: ['CONFIG']
+Normalization.js calls: ['CONFIG']
+OutreachFunctions.js calls: ['SharedUtils', 'CONFIG']
+OutreachSyncFunctions.js calls: ['SharedUtils', 'CONFIG']
+PerformanceUtils.js calls: ['ValidationUtils', 'SharedUtils']
+PipelineService.js calls: ['SharedUtils', 'CONFIG']
+ProspectFunctions.js calls: ['ValidationUtils', 'SharedUtils', 'CONFIG']
+ProspectScoringService.js calls: ['SharedUtils', 'CONFIG']
+ReportFunctions.js calls: ['SharedUtils', 'CONFIG']
+RouteFunction.js calls: ['SharedUtils', 'CONFIG']
+Settings.js calls: ['SharedUtils', 'CONFIG']
+SettingsValidation.js calls: ['SharedUtils', 'CONFIG']
+SharedUtils.js calls: ['ValidationUtils', 'SharedUtils', 'CONFIG']
+test_autofill_implementation.js calls: ['ProspectFunctions']
+test_fixes.js calls: ['ValidationUtils', 'ProspectFunctions']
+test_integration.js calls: ['ProspectFunctions', 'OutreachFunctions', 'SharedUtils', 'CONFIG']
+test_normalization.js calls: ['CONFIG']
+test_robust.js calls: ['OutreachFunctions', 'SharedUtils']
+test_rowindex_fix.js calls: ['SharedUtils', 'CONFIG']
+test_runner.js calls: ['OutreachFunctions', 'SharedUtils', 'CONFIG']
+test_runtime_fixes.js calls: ['ValidationUtils', 'SharedUtils']
+test_unit.js calls: ['SharedUtils']
+WorkflowAutomationService.js calls: ['CONFIG']
+
+--- CRITICAL BUG DETECTION: _rowIndex Injection ---
+[PASS] SharedUtils.js contains _rowIndex injection.
+
+--- CONSOLIDATED LOGIC GROUPS ---
+
+>> GROUP: DATA_ENGINE
+   - SharedUtils.js
+   - DataHelpers.js
+   - Config.js
+   - Normalization.js
+
+>> GROUP: BUSINESS_LOGIC
+   - ProspectFunctions.js
+   - OutreachFunctions.js
+   - AccountFunction.js
+   - ProspectScoringService.js
+
+>> GROUP: VALIDATION
+   - ValidationUtils.js
+   - BusinessValidation.js
+   - DataValidation.js
+
+>> GROUP: UI_BACKEND

@@ -1,84 +1,775 @@
 /**
- * Business Validation Utilities
- * Centralized business rule validation functions for K&L Recycling CRM.
- * Ensures data integrity and business logic consistency across the application.
+ * Business Validation Utilities - FunctionRefactorer Integration
+ * Centralized business rule validation functions with FunctionRefactorer patterns.
+ * Provides decomposed, testable pipeline components using withLogging and withErrorHandling wrappers.
  */
 
-var BusinessValidation = {
-  /**
-   * Validates prospect data against business rules with enhanced error handling
-   */
-  validateProspectWithErrorHandling: function(prospectData, options) {
-    try {
-      return this.validateProspect(prospectData, options);
-    } catch (e) {
-      return ErrorHandling.handleError(e, {
-        functionName: 'validateProspect',
-        entityType: 'prospect',
-        data: prospectData
-      });
-    }
-  },
+var BusinessValidation = (function() {
+  'use strict';
 
+  // ============================================================================
+  // INFRASTRUCTURE INTEGRATION
+  // ============================================================================
+  
   /**
-   * Validates outreach data against business rules with enhanced error handling
+   * Get FunctionRefactorer instance with fallback
+   * @returns {Object} FunctionRefactorer or null
    */
-  validateOutreachWithErrorHandling: function(outreachData, options) {
+  function getFunctionRefactorer() {
     try {
-      return this.validateOutreach(outreachData, options);
+      return typeof FunctionRefactorer !== 'undefined' ? FunctionRefactorer : null;
     } catch (e) {
-      return ErrorHandling.handleError(e, {
-        functionName: 'validateOutreach',
-        entityType: 'outreach',
-        data: outreachData
-      });
-    }
-  },
-
-  /**
-   * Validates new account data against business rules with enhanced error handling
-   */
-  validateNewAccountWithErrorHandling: function(accountData, options) {
-    try {
-      return this.validateNewAccount(accountData, options);
-    } catch (e) {
-      return ErrorHandling.handleError(e, {
-        functionName: 'validateNewAccount',
-        entityType: 'account',
-        data: accountData
-      });
-    }
-  },
-
-  /**
-   * Validates business logic with enhanced error handling
-   */
-  validateBusinessLogicWithErrorHandling: function(data, options) {
-    try {
-      return this.validateBusinessLogic(data, options);
-    } catch (e) {
-      return ErrorHandling.handleError(e, {
-        functionName: 'validateBusinessLogic',
-        data: data
-      });
-    }
-  },
-
-  /**
-   * Validates complete submission with enhanced error handling
-   */
-  validateCompleteSubmissionWithErrorHandling: function(entityType, data, options) {
-    try {
-      return this.validateCompleteSubmission(entityType, data, options);
-    } catch (e) {
-      return ErrorHandling.handleError(e, {
-        functionName: 'validateCompleteSubmission',
-        entityType: entityType,
-        data: data
-      });
+      return null;
     }
   }
-};
+
+  /**
+   * Get ErrorBoundary instance with fallback
+   * @returns {Object} ErrorBoundary or null
+   */
+  function getErrorBoundary() {
+    try {
+      return typeof ErrorBoundary !== 'undefined' ? ErrorBoundary : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * Get LoggerInjector instance with fallback
+   * @returns {Object} LoggerInjector or null
+   */
+  function getLoggerInjector() {
+    try {
+      return typeof LoggerInjector !== 'undefined' ? LoggerInjector : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ============================================================================
+  // FOCUSED FIELD VALIDATORS (FunctionRefactorer Pattern)
+  // ============================================================================
+  
+  var FieldValidators = {
+    // Required field validator
+    required: function(value, fieldName, errors) {
+      if (value === undefined || value === null || String(value).trim() === '') {
+        errors.push(SharedUtils.capitalizeFirst(fieldName) + ' is required');
+        return false;
+      }
+      return true;
+    },
+    
+    // Company name validator
+    validateCompanyName: function(value, errors, options) {
+      options = options || {};
+      if (!value) {
+        if (!options.allowEmpty) {
+          errors.push('Company name is required');
+        }
+        return false;
+      }
+      var companyName = String(value).trim();
+      if (companyName.length < 2) {
+        errors.push('Company name must be at least 2 characters long');
+        return false;
+      }
+      if (companyName.length > 200) {
+        errors.push('Company name exceeds maximum length of 200 characters');
+      }
+      return true;
+    },
+    
+    // Contact name validator
+    validateContactName: function(value, errors) {
+      if (!value) return true;
+      var contactName = String(value).trim();
+      if (contactName.length < 2) {
+        errors.push('Contact name seems unusually short');
+      }
+      return true;
+    },
+    
+    // Address validator
+    validateAddress: function(value, errors) {
+      if (!value) return true;
+      var address = String(value).trim();
+      if (address.length < 5) {
+        errors.push('Address seems unusually short');
+      }
+      return true;
+    },
+    
+    // Priority score validator
+    validatePriorityScore: function(value, errors) {
+      if (value === undefined || value === null) return true;
+      var priorityScore = Number(value);
+      if (isNaN(priorityScore) || priorityScore < 0 || priorityScore > 100) {
+        errors.push('Priority score must be between 0 and 100');
+        return false;
+      }
+      return true;
+    },
+    
+    // Urgency score validator
+    validateUrgencyScore: function(value, errors) {
+      if (value === undefined || value === null) return true;
+      var urgencyScore = Number(value);
+      if (isNaN(urgencyScore) || urgencyScore < 0 || urgencyScore > 150) {
+        errors.push('Urgency score must be between 0 and 150');
+        return false;
+      }
+      return true;
+    },
+    
+    // Roll-off fee validator
+    validateRollOffFee: function(value, errors, options) {
+      options = options || {};
+      var minFee = options.minFee || 0;
+      var maxFee = options.maxFee || 10000;
+      if (value === undefined || value === null) return true;
+      var fee = Number(value);
+      if (isNaN(fee)) {
+        errors.push('Roll-off fee must be a valid number');
+        return false;
+      }
+      if (fee < minFee || fee > maxFee) {
+        errors.push('Roll-off fee must be between ' + minFee + ' and ' + maxFee);
+        return false;
+      }
+      return true;
+    },
+    
+    // Company ID format validator
+    validateCompanyId: function(value, errors) {
+      if (!value) return true;
+      var companyId = String(value).trim();
+      var companyIdPattern = /^CID-[A-Z0-9]{3}\d{2}$/;
+      if (!companyIdPattern.test(companyId)) {
+        errors.push('Company ID format may be invalid (expected: CID-XXX##)');
+      }
+      return true;
+    },
+    
+    // Roll-off container size validator
+    validateContainerSize: function(value, errors, validSizes) {
+      if (!value) return true;
+      var containerSize = String(value).trim();
+      var validSizes = validSizes || ['10 yd', '20 yd', '30 yd', '40 yd', 'Lugger'];
+      if (validSizes.indexOf(containerSize) === -1) {
+        errors.push('Invalid container size: ' + containerSize + ' (valid: ' + validSizes.join(', ') + ')');
+      }
+      return true;
+    },
+    
+    // Outcome validator
+    validateOutcome: function(value, errors, validOutcomes) {
+      if (!value) return true;
+      var outcome = String(value).trim();
+      var validOutcomes = validOutcomes || ['Account Won', 'Disqualified', 'Follow-Up', 'Initial Contact', 'Interested', 'Interested (Hot)', 'Interested (Warm)', 'No Answer', 'Not Interested'];
+      if (validOutcomes.indexOf(outcome) === -1) {
+        errors.push('Unrecognized outcome: ' + outcome + ' (valid: ' + validOutcomes.join(', ') + ')');
+      }
+      return true;
+    },
+    
+    // Stage validator
+    validateStage: function(value, errors, validStages) {
+      if (!value) return true;
+      var stage = String(value).trim();
+      var validStages = validStages || ['Disqualified', 'Lost', 'Nurture', 'Outreach', 'Prospect', 'Won'];
+      if (validStages.indexOf(stage) === -1) {
+        errors.push('Unrecognized stage: ' + stage + ' (valid: ' + validStages.join(', ') + ')');
+      }
+      return true;
+    },
+    
+    // Status validator
+    validateStatus: function(value, errors, validStatuses) {
+      if (!value) return true;
+      var status = String(value).trim();
+      var validStatuses = validStatuses || ['Active', 'Cold', 'Disqualified', 'Hot', 'Interested (Hot)', 'Interested (Warm)', 'Lost', 'Warm', 'Won'];
+      if (validStatuses.indexOf(status) === -1) {
+        errors.push('Unrecognized status: ' + status + ' (valid: ' + validStatuses.join(', ') + ')');
+      }
+      return true;
+    },
+    
+    // Notes length validator
+    validateNotesLength: function(value, errors, maxLength) {
+      if (!value) return true;
+      var notes = String(value);
+      var maxLength = maxLength || 1000;
+      if (notes.length > maxLength) {
+        errors.push('Notes exceed maximum length of ' + maxLength + ' characters');
+        return false;
+      }
+      return true;
+    },
+    
+    // Date validator
+    validateDate: function(value, errors, options) {
+      if (!value) return true;
+      options = options || {};
+      var parsedDate = DateValidationUtils.parseDate(
+        value,
+        {
+          minYear: options.minYear || 1900,
+          maxYear: options.maxYear || 2100,
+          allowFuture: options.allowFuture !== undefined ? options.allowFuture : true,
+          allowPast: options.allowPast !== undefined ? options.allowPast : true
+        },
+        options.fieldName || 'date'
+      );
+      if (!parsedDate) {
+        errors.push('Invalid ' + (options.fieldName || 'date') + ' format');
+        return false;
+      }
+      return true;
+    }
+  };
+
+  // ============================================================================
+  // VALIDATION PIPELINES (FunctionRefactorer Pattern)
+  // ============================================================================
+  
+  /**
+   * Create prospect validation pipeline
+   * @returns {Function} Pipeline function
+   */
+  function createProspectPipeline() {
+    var validationSteps = [
+      function prospectRequiredFields(data, options) {
+        var errors = [];
+        var requiredFields = ['company name', 'address'];
+        requiredFields.forEach(function(field) {
+          var value = data[field];
+          if (!value || String(value).trim() === '') {
+            errors.push('Missing required field: ' + SharedUtils.capitalizeFirst(field));
+          }
+        });
+        return { isValid: errors.length === 0, errors: errors };
+      },
+      function prospectCompanyName(data) {
+        var errors = [];
+        FieldValidators.validateCompanyName(data['company name'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: [] };
+      },
+      function prospectAddress(data) {
+        var errors = [];
+        FieldValidators.validateAddress(data['address'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: [] };
+      },
+      function prospectScores(data) {
+        var errors = [];
+        FieldValidators.validatePriorityScore(data['priority score'], errors);
+        FieldValidators.validateUrgencyScore(data['urgency score'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: [] };
+      },
+      function prospectDates(data) {
+        var errors = [];
+        var warnings = [];
+        if (data['last outreach date']) {
+          if (!FieldValidators.validateDate(data['last outreach date'], errors, {
+            maxYear: new Date().getFullYear() + 1,
+            allowFuture: false,
+            fieldName: 'last outreach date'
+          })) {
+            warnings.push('Invalid last outreach date format');
+          }
+        }
+        if (data['next steps due date']) {
+          FieldValidators.validateDate(data['next steps due date'], errors, {
+            fieldName: 'next steps due date'
+          });
+        }
+        return { isValid: errors.length === 0, errors: errors, warnings: warnings };
+      }
+    ];
+    
+    return function pipeline(data, options) {
+      var fr = getFunctionRefactorer();
+      if (fr && fr.createPipeline) {
+        var pipeline = fr.createPipeline(validationSteps);
+        return pipeline(data, options);
+      }
+      
+      // Fallback if FunctionRefactorer not available
+      var allErrors = [];
+      var allWarnings = [];
+      var isValid = true;
+      
+      validationSteps.forEach(function(step) {
+        var result = step(data, options);
+        if (result.errors && result.errors.length > 0) {
+          allErrors = allErrors.concat(result.errors);
+          if (result.isValid === false) isValid = false;
+        }
+        if (result.warnings) {
+          allWarnings = allWarnings.concat(result.warnings);
+        }
+      });
+      
+      return { isValid: isValid, errors: allErrors, warnings: allWarnings };
+    };
+  }
+
+  /**
+   * Create outreach validation pipeline
+   * @returns {Function} Pipeline function
+   */
+  function createOutreachPipeline() {
+    var validationSteps = [
+      function outreachRequiredFields(data) {
+        var errors = [];
+        var requiredFields = ['company', 'visit date', 'outcome'];
+        requiredFields.forEach(function(field) {
+          var value = data[field];
+          if (!value || String(value).trim() === '') {
+            errors.push('Missing required field: ' + SharedUtils.capitalizeFirst(field));
+          }
+        });
+        return { isValid: errors.length === 0, errors: errors };
+      },
+      function outreachVisitDate(data) {
+        var errors = [];
+        FieldValidators.validateDate(data['visit date'], errors, {
+          fieldName: 'visit date',
+          allowFuture: true
+        });
+        return { isValid: errors.length === 0, errors: errors };
+      },
+      function outreachOutcome(data) {
+        var errors = [];
+        FieldValidators.validateOutcome(data['outcome'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: errors };
+      },
+      function outreachStage(data) {
+        var errors = [];
+        FieldValidators.validateStage(data['stage'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: errors };
+      },
+      function outreachStatus(data) {
+        var errors = [];
+        FieldValidators.validateStatus(data['status'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: errors };
+      },
+      function outreachCompanyId(data) {
+        var errors = [];
+        FieldValidators.validateCompanyId(data['company id'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: errors };
+      },
+      function outreachNotes(data) {
+        var errors = [];
+        FieldValidators.validateNotesLength(data['notes'], errors);
+        return { isValid: errors.length === 0, errors: errors };
+      }
+    ];
+    
+    return function pipeline(data, options) {
+      var fr = getFunctionRefactorer();
+      if (fr && fr.createPipeline) {
+        var pipeline = fr.createPipeline(validationSteps);
+        return pipeline(data, options);
+      }
+      
+      // Fallback
+      var allErrors = [];
+      var allWarnings = [];
+      var isValid = true;
+      
+      validationSteps.forEach(function(step) {
+        var result = step(data, options);
+        if (result.errors && result.errors.length > 0) {
+          allErrors = allErrors.concat(result.errors);
+          if (result.isValid === false) isValid = false;
+        }
+        if (result.warnings) {
+          allWarnings = allWarnings.concat(result.warnings);
+        }
+      });
+      
+      return { isValid: isValid, errors: allErrors, warnings: allWarnings };
+    };
+  }
+
+  /**
+   * Create account validation pipeline
+   * @returns {Function} Pipeline function
+   */
+  function createAccountPipeline() {
+    var validationSteps = [
+      function accountRequiredFields(data) {
+        var errors = [];
+        var requiredFields = ['company name', 'contact name', 'site location'];
+        requiredFields.forEach(function(field) {
+          var value = data[field];
+          if (!value || String(value).trim() === '') {
+            errors.push('Missing required field: ' + SharedUtils.capitalizeFirst(field));
+          }
+        });
+        return { isValid: errors.length === 0, errors: errors };
+      },
+      function accountCompanyName(data) {
+        var errors = [];
+        FieldValidators.validateCompanyName(data['company name'], errors);
+        return { isValid: errors.length === 0, errors: errors };
+      },
+      function accountContactName(data) {
+        var errors = [];
+        FieldValidators.validateContactName(data['contact name'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: errors };
+      },
+      function accountSiteLocation(data) {
+        var errors = [];
+        var location = data['site location'];
+        if (location && String(location).trim().length < 5) {
+          errors.push('Site location seems unusually short');
+        }
+        return { isValid: errors.length === 0, errors: errors, warnings: errors };
+      },
+      function accountContainerSize(data) {
+        var errors = [];
+        FieldValidators.validateContainerSize(data['roll off container size'], errors);
+        return { isValid: errors.length === 0, errors: errors, warnings: errors };
+      },
+      function accountFees(data) {
+        var errors = [];
+        FieldValidators.validateRollOffFee(data['roll-off fee'], errors);
+        if (data['payout price'] !== undefined) {
+          var payout = Number(data['payout price']);
+          if (payout < 0) {
+            errors.push('Payout price cannot be negative');
+          }
+        }
+        return { isValid: errors.length === 0, errors: errors };
+      },
+      function accountHandlingMethod(data) {
+        var errors = [];
+        var handling = data['handling of metal'];
+        if (handling) {
+          var validMethods = ['All together', 'Separate', 'Employees take', 'Scrap guy picks up', 'Haul themselves', 'Roll-off vendor', 'Unknown'];
+          if (validMethods.indexOf(String(handling).trim()) === -1) {
+            errors.push('Unrecognized handling method: ' + handling + ' (valid: ' + validMethods.join(', ') + ')');
+          }
+        }
+        return { isValid: errors.length === 0, errors: errors, warnings: errors };
+      }
+    ];
+    
+    return function pipeline(data, options) {
+      var fr = getFunctionRefactorer();
+      if (fr && fr.createPipeline) {
+        var pipeline = fr.createPipeline(validationSteps);
+        return pipeline(data, options);
+      }
+      
+      // Fallback
+      var allErrors = [];
+      var allWarnings = [];
+      var isValid = true;
+      
+      validationSteps.forEach(function(step) {
+        var result = step(data, options);
+        if (result.errors && result.errors.length > 0) {
+          allErrors = allErrors.concat(result.errors);
+          if (result.isValid === false) isValid = false;
+        }
+        if (result.warnings) {
+          allWarnings = allWarnings.concat(result.warnings);
+        }
+      });
+      
+      return { isValid: isValid, errors: allErrors, warnings: allWarnings };
+    };
+  }
+
+  // ============================================================================
+  // WRAPPED VALIDATION FUNCTIONS (withErrorHandling + withLogging)
+  // ============================================================================
+  
+  /**
+   * Get wrapped validator with error handling and logging
+   * @param {Function} validator - Original validator function
+   * @param {string} validatorName - Name for logging
+   * @returns {Function} Wrapped validator
+   */
+  function getWrappedValidator(validator, validatorName) {
+    var fr = getFunctionRefactorer();
+    var eb = getErrorBoundary();
+    var li = getLoggerInjector();
+    
+    var wrappedFn = function(data, options) {
+      // Create log entry
+      var logEntry = {
+        validator: validatorName,
+        timestamp: new Date().toISOString(),
+        dataKeys: data ? Object.keys(data).length : 0
+      };
+      
+      try {
+        var result = validator(data, options);
+        logEntry.success = true;
+        
+        if (li && li.log) {
+          li.log(validatorName + ' validation completed', logEntry);
+        }
+        
+        return result;
+      } catch (e) {
+        logEntry.success = false;
+        logEntry.error = e.message;
+        
+        if (li && li.log) {
+          li.log(validatorName + ' validation failed', logEntry);
+        }
+        
+        if (eb && eb.handleError) {
+          return eb.handleError(e, { validator: validatorName, data: data });
+        }
+        
+        // Fallback error handling
+        return {
+          success: false,
+          errors: ['Validation error in ' + validatorName + ': ' + e.message],
+          warnings: []
+        };
+      }
+    };
+    
+    // Apply FunctionRefactorer wrappers if available
+    if (fr) {
+      if (fr.withErrorHandling) {
+        wrappedFn = fr.withErrorHandling(wrappedFn, validatorName);
+      }
+      if (fr.withLogging) {
+        wrappedFn = fr.withLogging(wrappedFn, 'info');
+      }
+    }
+    
+    return wrappedFn;
+  }
+
+  // ============================================================================
+  // PIPELINE VALIDATORS (Pre-built wrapped versions)
+  // ============================================================================
+  
+  var ProspectPipeline = null;
+  var OutreachPipeline = null;
+  var AccountPipeline = null;
+  
+  function getProspectPipeline() {
+    if (!ProspectPipeline) {
+      ProspectPipeline = createProspectPipeline();
+    }
+    return ProspectPipeline;
+  }
+  
+  function getOutreachPipeline() {
+    if (!OutreachPipeline) {
+      OutreachPipeline = createOutreachPipeline();
+    }
+    return OutreachPipeline;
+  }
+  
+  function getAccountPipeline() {
+    if (!AccountPipeline) {
+      AccountPipeline = createAccountPipeline();
+    }
+    return AccountPipeline;
+  }
+
+  // ============================================================================
+  // COMPLEXITY ANALYSIS
+  // ============================================================================
+  
+  /**
+   * Analyze validation function complexity
+   * @param {Function} fn - Function to analyze
+   * @returns {Object} Analysis results
+   */
+  function analyzeValidationComplexity(fn) {
+    var fr = getFunctionRefactorer();
+    if (fr && fr.analyze) {
+      return fr.analyze(fn);
+    }
+    
+    // Fallback complexity calculation
+    var source = fn.toString();
+    var complexity = 1;
+    var patterns = [/\bif\b/g, /\belse\s+if\b/g, /\bwhile\b/g, /\bfor\b/g, /\bswitch\b/g];
+    
+    patterns.forEach(function(pattern) {
+      var matches = source.match(pattern);
+      if (matches) complexity += matches.length;
+    });
+    
+    return {
+      name: fn.name || 'validation',
+      complexity: complexity,
+      needsRefactoring: complexity > 15
+    };
+  }
+
+  // ============================================================================
+  // PUBLIC API
+  // ============================================================================
+  
+  return {
+    // Version info
+    VERSION: '2.0.0',
+    
+    /**
+     * Get FunctionRefactorer integration helpers
+     */
+    getFunctionRefactorer: getFunctionRefactorer,
+    
+    /**
+     * Get ErrorBoundary instance
+     */
+    getErrorBoundary: getErrorBoundary,
+    
+    /**
+     * Get LoggerInjector instance
+     */
+    getLoggerInjector: getLoggerInjector,
+    
+    /**
+     * Get field validators
+     */
+    FieldValidators: FieldValidators,
+    
+    /**
+     * Get prospect validation pipeline
+     */
+    getProspectPipeline: getProspectPipeline,
+    
+    /**
+     * Get outreach validation pipeline
+     */
+    getOutreachPipeline: getOutreachPipeline,
+    
+    /**
+     * Get account validation pipeline
+     */
+    getAccountPipeline: getAccountPipeline,
+    
+    /**
+     * Analyze validation complexity
+     */
+    analyzeComplexity: analyzeValidationComplexity,
+    
+    /**
+     * Create wrapped validator with logging and error handling
+     */
+    wrapValidator: getWrappedValidator,
+    
+    /**
+     * Validate prospect using pipeline
+     */
+    validateProspectPipeline: function(data, options) {
+      var logEntry = { validator: 'validateProspectPipeline', timestamp: new Date().toISOString() };
+      try {
+        var result = getProspectPipeline()(data, options);
+        result.pipeline = 'prospect';
+        return result;
+      } catch (e) {
+        logEntry.error = e.message;
+        return { isValid: false, errors: [e.message], warnings: [], pipeline: 'prospect' };
+      }
+    },
+    
+    /**
+     * Validate outreach using pipeline
+     */
+    validateOutreachPipeline: function(data, options) {
+      try {
+        var result = getOutreachPipeline()(data, options);
+        result.pipeline = 'outreach';
+        return result;
+      } catch (e) {
+        return { isValid: false, errors: [e.message], warnings: [], pipeline: 'outreach' };
+      }
+    },
+    
+    /**
+     * Validate account using pipeline
+     */
+    validateAccountPipeline: function(data, options) {
+      try {
+        var result = getAccountPipeline()(data, options);
+        result.pipeline = 'account';
+        return result;
+      } catch (e) {
+        return { isValid: false, errors: [e.message], warnings: [], pipeline: 'account' };
+      }
+    },
+    
+    // Original API (backward compatibility)
+    validateProspectWithErrorHandling: function(prospectData, options) {
+      try {
+        return this.validateProspect(prospectData, options);
+      } catch (e) {
+        return ErrorHandling.handleError(e, {
+          functionName: 'validateProspect',
+          entityType: 'prospect',
+          data: prospectData
+        });
+      }
+    },
+    
+    validateOutreachWithErrorHandling: function(outreachData, options) {
+      try {
+        return this.validateOutreach(outreachData, options);
+      } catch (e) {
+        return ErrorHandling.handleError(e, {
+          functionName: 'validateOutreach',
+          entityType: 'outreach',
+          data: outreachData
+        });
+      }
+    },
+    
+    validateNewAccountWithErrorHandling: function(accountData, options) {
+      try {
+        return this.validateNewAccount(accountData, options);
+      } catch (e) {
+        return ErrorHandling.handleError(e, {
+          functionName: 'validateNewAccount',
+          entityType: 'account',
+          data: accountData
+        });
+      }
+    },
+    
+    validateBusinessLogicWithErrorHandling: function(data, options) {
+      try {
+        return this.validateBusinessLogic(data, options);
+      } catch (e) {
+        return ErrorHandling.handleError(e, {
+          functionName: 'validateBusinessLogic',
+          data: data
+        });
+      }
+    },
+    
+    validateCompleteSubmissionWithErrorHandling: function(entityType, data, options) {
+      try {
+        return this.validateCompleteSubmission(entityType, data, options);
+      } catch (e) {
+        return ErrorHandling.handleError(e, {
+          functionName: 'validateCompleteSubmission',
+          entityType: entityType,
+          data: data
+        });
+      }
+    }
+  };
+})();
+
+// Make BusinessValidation available globally
+var BusinessValidation = BusinessValidation;
 
 /**
  * Business rule validation constants and configurations

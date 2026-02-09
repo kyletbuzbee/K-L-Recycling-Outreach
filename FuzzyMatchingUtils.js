@@ -12,49 +12,56 @@
  * @return {Object} Match result with match, matchType, and confidence
  */
 function fuzzyMatchCompany(outreachData, prospectsData) {
-  var outreachName = (outreachData.company || outreachData.companyName || '').toString().toLowerCase().trim();
-  var outreachId = (outreachData.companyId || '').toString().trim();
-  
-  // Try exact ID match first (most reliable)
-  if (outreachId) {
-    var idMatch = prospectsData.find(function(p) {
-      var prospectId = (p['company id'] || '').toString().trim();
-      return prospectId === outreachId;
+  try {
+    var outreachName = (outreachData.company || outreachData.companyName || '').toString().toLowerCase().trim();
+    var outreachId = (outreachData.companyId || '').toString().trim();
+
+    // Try exact ID match first (most reliable)
+    if (outreachId) {
+      var idMatch = prospectsData.find(function(p) {
+        var prospectId = (p['company id'] || '').toString().trim();
+        return prospectId === outreachId;
+      });
+      if (idMatch) {
+        return { match: idMatch, matchType: 'EXACT_ID', confidence: 1.0 };
+      }
+    }
+
+    // Try exact name match (after normalization)
+    var normalizedOutreachName = normalizeCompanyName(outreachName);
+    var nameMatch = prospectsData.find(function(p) {
+      var prospectName = (p['company name'] || '').toString().toLowerCase().trim();
+      var normalizedProspectName = normalizeCompanyName(prospectName);
+      return normalizedProspectName === normalizedOutreachName && normalizedOutreachName.length > 0;
     });
-    if (idMatch) {
-      return { match: idMatch, matchType: 'EXACT_ID', confidence: 1.0 };
+    if (nameMatch) {
+      return { match: nameMatch, matchType: 'EXACT_NAME', confidence: 1.0 };
     }
-  }
-  
-  // Try exact name match
-  var nameMatch = prospectsData.find(function(p) {
-    var prospectName = (p['company name'] || '').toString().toLowerCase().trim();
-    return prospectName === outreachName;
-  });
-  if (nameMatch) {
-    return { match: nameMatch, matchType: 'EXACT_NAME', confidence: 1.0 };
-  }
-  
-  // Try fuzzy name match (handles typos, spacing, punctuation)
-  var bestMatch = null;
-  var bestScore = 0;
-  
-  prospectsData.forEach(function(p) {
-    var prospectName = (p['company name'] || '').toString().toLowerCase().trim();
-    var score = calculateStringSimilarity(outreachName, prospectName);
-    
-    if (score > bestScore && score >= 0.7) { // 70% similarity threshold
-      bestScore = score;
-      bestMatch = p;
+
+    // Try fuzzy name match (handles typos, spacing, punctuation)
+    var bestMatch = null;
+    var bestScore = 0;
+
+    prospectsData.forEach(function(p) {
+      var prospectName = (p['company name'] || '').toString().toLowerCase().trim();
+      var score = calculateStringSimilarity(outreachName, prospectName);
+
+      if (score > bestScore && score >= 0.6) { // Lowered threshold to 60% for better matching
+        bestScore = score;
+        bestMatch = p;
+      }
+    });
+
+    if (bestMatch) {
+      return { match: bestMatch, matchType: 'FUZZY_NAME', confidence: bestScore };
     }
-  });
-  
-  if (bestMatch) {
-    return { match: bestMatch, matchType: 'FUZZY_NAME', confidence: bestScore };
+
+    // No match found
+    return { match: null, matchType: 'NONE', confidence: 0 };
+  } catch (error) {
+    console.error('Error in fuzzyMatchCompany:', error);
+    return { match: null, matchType: 'ERROR', confidence: 0 };
   }
-  
-  // No match found
-  return { match: null, matchType: 'NONE', confidence: 0 };
 }
 
 /**

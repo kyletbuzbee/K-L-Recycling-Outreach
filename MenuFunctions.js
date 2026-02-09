@@ -9,7 +9,8 @@ function onOpen() {
   ui.createMenu('K&L CRM')
     // Primary CRM Views
     .addItem('📋 Show Dashboard (Sidepanel)', 'showSidebar')
-    .addItem('🚀 Open SuiteCRM (Full Screen)', 'openSuiteCRM')
+    .addItem('🚀 Open CRM Suite (Full Screen)', 'showCRMSuite')
+    .addItem('📱 Open CRM Suite (Sidebar)', 'showCRMSuiteSidebar')
     .addSeparator()
     
     // Automation & Maintenance

@@ -22,7 +22,7 @@
           <i class="fas fa-address-book"></i> Prospects
         </div>
       </div>
-      <div class="nav-footer">System v2.5.0</div>
+      <div class="nav-footer">System v2.6.0</div>
     </nav>
 
     <main class="suite-main">
@@ -100,6 +100,278 @@
   </div>
 
   <script>
+    // ============================================================================
+    // HTML SAFE RENDERER INTEGRATION
+    // ============================================================================
+    
+    /**
+     * HtmlSafeRenderer - Prevents XSS vulnerabilities
+     * Provides safe DOM manipulation methods
+     */
+    var HtmlSafeRenderer = (function() {
+      // ============================================================================
+      // ESCAPE FUNCTIONS
+      // ============================================================================
+      
+      /**
+       * Escape HTML special characters to prevent XSS
+       * @param {string} str - String to escape
+       * @return {string} Escaped string
+       */
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        var div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+      }
+      
+      /**
+       * Escape HTML attributes (more restrictive than escapeHtml)
+       * @param {string} str - String to escape
+       * @return {string} Escaped string for attributes
+       */
+      function escapeAttribute(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+      
+      /**
+       * Sanitize HTML by removing dangerous tags and attributes
+       * @param {string} html - HTML string to sanitize
+       * @return {string} Sanitized HTML
+       */
+      function sanitizeHtml(html) {
+        if (!html || typeof html !== 'string') return '';
+        
+        // Remove script tags and their contents
+        html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        
+        // Remove event handlers
+        html = html.replace(/\s+on\w+\s*=\s*(['"])[^'"]*\1/gi, '');
+        html = html.replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '');
+        
+        // Remove javascript: URLs
+        html = html.replace(/href\s*=\s*(['"])\s*javascript:[^'"]*\1/gi, 'href="#"');
+        html = html.replace(/href\s*=\s*javascript:[^\s>]+/gi, 'href="#"');
+        
+        // Remove data: URLs (can contain JavaScript)
+        html = html.replace(/src\s*=\s*(['"])\s*data:[^'"]*\1/gi, 'src=""');
+        
+        return html;
+      }
+      
+      // ============================================================================
+      // DOM MANIPULATION FUNCTIONS
+      // ============================================================================
+      
+      /**
+       * Safely set text content of an element (replaces innerHTML for text-only)
+       * @param {string} elementId - ID of the element
+       * @param {string} text - Text to set
+       */
+      function setText(elementId, text) {
+        var el = document.getElementById(elementId);
+        if (el) {
+          el.textContent = text || '';
+        }
+      }
+      
+      /**
+       * Safely append text to an element
+       * @param {string} elementId - ID of the element
+       * @param {string} text - Text to append
+       */
+      function appendText(elementId, text) {
+        var el = document.getElementById(elementId);
+        if (el) {
+          el.textContent += text || '';
+        }
+      }
+      
+      /**
+       * Safely set innerHTML with escaping (safeInnerHTML)
+       * @param {string} elementId - ID of the element
+       * @param {string} html - HTML string (will be sanitized)
+       */
+      function setInnerHtml(elementId, html) {
+        var el = document.getElementById(elementId);
+        if (el) {
+          el.innerHTML = sanitizeHtml(html);
+        }
+      }
+      
+      /**
+       * Safely append innerHTML with escaping
+       * @param {string} elementId - ID of the element
+       * @param {string} html - HTML string to append (will be sanitized)
+       */
+      function appendInnerHtml(elementId, html) {
+        var el = document.getElementById(elementId);
+        if (el) {
+          el.innerHTML += sanitizeHtml(html);
+        }
+      }
+      
+      /**
+       * Create an element with safe properties
+       * @param {string} tagName - Tag name of the element
+       * @param {Object} attributes - Attributes to set
+       * @param {string} textContent - Text content (optional)
+       * @return {HTMLElement} Created element
+       */
+      function createElement(tagName, attributes, textContent) {
+        var el = document.createElement(tagName);
+        
+        if (attributes && typeof attributes === 'object') {
+          for (var key in attributes) {
+            if (attributes.hasOwnProperty(key)) {
+              var value = attributes[key];
+              
+              // Only set safe attributes
+              var safeAttributes = ['class', 'className', 'id', 'title', 'style', 'href', 'target', 
+                                   'src', 'alt', 'data-*', 'role', 'aria-*'];
+              
+              var isSafe = false;
+              for (var i = 0; i < safeAttributes.length; i++) {
+                var safeAttr = safeAttributes[i];
+                if (safeAttr === key || 
+                    (safeAttr.endsWith('-*') && key.startsWith(safeAttr.slice(0, -2))) ||
+                    key.startsWith('data-') ||
+                    key.startsWith('aria-')) {
+                  isSafe = true;
+                  break;
+                }
+              }
+              
+              if (isSafe) {
+                // For className, use class
+                var attrName = key === 'className' ? 'class' : key;
+                el.setAttribute(attrName, value);
+              }
+            }
+          }
+        }
+        
+        if (textContent !== undefined && textContent !== null) {
+          el.textContent = textContent;
+        }
+        
+        return el;
+      }
+      
+      /**
+       * Safely build a list item
+       * @param {string} primary - Primary text (company name)
+       * @param {string} secondary - Secondary text (badge/status)
+       * @param {Object} options - Options for the list item
+       * @return {string} HTML string for list item
+       */
+      function buildListItem(primary, secondary, options) {
+        options = options || {};
+        var primaryEscaped = escapeHtml(primary || 'Unknown');
+        var secondaryEscaped = escapeHtml(secondary || '');
+        
+        var badgeClass = escapeAttribute((options.badgeClass || secondary || '').toLowerCase());
+        var onclick = options.onclick ? 'onclick="' + escapeAttribute(options.onclick) + '"' : '';
+        
+        return '<div class="list-item" ' + onclick + '>' +
+                 '<span><strong>' + primaryEscaped + '</strong></span>' +
+                 (secondary ? '<span class="badge ' + badgeClass + '">' + secondaryEscaped + '</span>' : '') +
+               '</div>';
+      }
+      
+      /**
+       * Safely build a table row
+       * @param {Array} cells - Array of cell data objects
+       * @return {string} HTML string for table row
+       */
+      function buildTableRow(cells) {
+        if (!Array.isArray(cells)) return '';
+        
+        var html = '<tr>';
+        cells.forEach(function(cell) {
+          var text = escapeHtml(cell.text || cell || 'N/A');
+          var colspan = cell.colspan ? ' colspan="' + escapeAttribute(String(cell.colspan)) + '"' : '';
+          var className = cell.className ? ' class="' + escapeAttribute(cell.className) + '"' : '';
+          html += '<td' + colspan + className + '>' + text + '</td>';
+        });
+        html += '</tr>';
+        
+        return html;
+      }
+      
+      /**
+       * Safely build a pipeline deal card
+       * @param {Object} deal - Deal data object
+       * @param {Array} fields - Fields to display
+       * @return {string} HTML string for deal card
+       */
+      function buildPipelineDeal(deal, fields) {
+        fields = fields || ['company name', 'urgencyband'];
+        
+        var html = '<div class="pipeline-deal">';
+        fields.forEach(function(field) {
+          var value = deal[field] || '';
+          var escaped = escapeHtml(value);
+          if (field === 'company name') {
+            html += '<strong>' + escaped + '</strong><br>';
+          } else {
+            html += '<small>' + escaped + '</small><br>';
+          }
+        });
+        html += '</div>';
+        
+        return html;
+      }
+      
+      /**
+       * Safely build stat card HTML
+       * @param {string} title - Card title
+       * @param {string|number} value - Card value
+       * @param {Object} options - Card options
+       * @return {string} HTML string for stat card
+       */
+      function buildStatCard(title, value, options) {
+        options = options || {};
+        var titleEscaped = escapeHtml(title || '');
+        var valueEscaped = escapeHtml(String(value || 0));
+        var className = 'stat-card' + (options.accent ? ' ' + options.accent : '') + (options.win ? ' win' : '');
+        
+        return '<div class="' + escapeAttribute(className) + '">' +
+                 '<h4>' + titleEscaped + '</h4>' +
+                 '<h2>' + valueEscaped + '</h2>' +
+               '</div>';
+      }
+      
+      // ============================================================================
+      // PUBLIC API
+      // ============================================================================
+      
+      return {
+        escapeHtml: escapeHtml,
+        escapeAttribute: escapeAttribute,
+        sanitizeHtml: sanitizeHtml,
+        setText: setText,
+        appendText: appendText,
+        setInnerHtml: setInnerHtml,
+        appendInnerHtml: appendInnerHtml,
+        createElement: createElement,
+        buildListItem: buildListItem,
+        buildTableRow: buildTableRow,
+        buildPipelineDeal: buildPipelineDeal,
+        buildStatCard: buildStatCard
+      };
+    })();
+
+    // ============================================================================
+    // CRM APPLICATION CODE
+    // ============================================================================
+
     // Global data storage
     var crmData = {
       dashboard: null,
@@ -141,9 +413,14 @@
     }
 
     function showError(message) {
-      document.getElementById('stat-cards').innerHTML = '<div style="color: red; padding: 10px;">' + message + '</div>';
-      document.getElementById('urgent-list').innerHTML = '<div style="color: red; padding: 10px;">' + message + '</div>';
-      document.getElementById('wins-list').innerHTML = '<div style="color: red; padding: 10px;">' + message + '</div>';
+      // Use HtmlSafeRenderer for safe innerHTML
+      var safeMessage = HtmlSafeRenderer.escapeHtml(message);
+      HtmlSafeRenderer.setInnerHtml('stat-cards', 
+        '<div style="color: red; padding: 10px;">' + safeMessage + '</div>');
+      HtmlSafeRenderer.setInnerHtml('urgent-list', 
+        '<div style="color: red; padding: 10px;">' + safeMessage + '</div>');
+      HtmlSafeRenderer.setInnerHtml('wins-list', 
+        '<div style="color: red; padding: 10px;">' + safeMessage + '</div>');
     }
 
     function renderDashboard(data) {
@@ -156,35 +433,42 @@
 
       // Render Stat Cards with null checks
       const stats = data.pipeline || { total: 0, hot: 0, warm: 0, won: 0 };
-      document.getElementById('stat-cards').innerHTML = `
-        <div class="stat-card"><h4>PROSPECTS</h4><h2>${stats.total || 0}</h2></div>
-        <div class="stat-card accent"><h4>HOT LEADS</h4><h2>${stats.hot || 0}</h2></div>
-        <div class="stat-card"><h4>WARM LEADS</h4><h2>${stats.warm || 0}</h2></div>
-        <div class="stat-card win"><h4>TOTAL WINS</h4><h2>${stats.won || 0}</h2></div>
-      `;
+      
+      var statCardsHtml = 
+        HtmlSafeRenderer.buildStatCard('PROSPECTS', stats.total || 0, {}) +
+        HtmlSafeRenderer.buildStatCard('HOT LEADS', stats.hot || 0, { accent: 'accent' }) +
+        HtmlSafeRenderer.buildStatCard('WARM LEADS', stats.warm || 0, {}) +
+        HtmlSafeRenderer.buildStatCard('TOTAL WINS', stats.won || 0, { win: true });
+      
+      HtmlSafeRenderer.setInnerHtml('stat-cards', statCardsHtml);
 
       // Render Urgent List with null checks
       if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0) {
-        document.getElementById('urgent-list').innerHTML = data.prospects.map(p => `
-          <div class="list-item">
-            <span><strong>${p['company name'] || 'Unknown'}</strong></span>
-            <span class="badge ${(p.urgencyband || '').toLowerCase()}">${p.urgencyband || 'N/A'}</span>
-          </div>
-        `).join('');
+        var urgentHtml = data.prospects.map(function(p) {
+          return HtmlSafeRenderer.buildListItem(
+            p['company name'] || 'Unknown',
+            p.urgencyband || 'N/A',
+            { badgeClass: (p.urgencyband || '').toLowerCase() }
+          );
+        }).join('');
+        HtmlSafeRenderer.setInnerHtml('urgent-list', urgentHtml);
       } else {
-        document.getElementById('urgent-list').innerHTML = '<div style="padding: 10px; color: #666;">No urgent prospects</div>';
+        HtmlSafeRenderer.setInnerHtml('urgent-list', 
+          '<div style="padding: 10px; color: #666;">No urgent prospects</div>');
       }
 
       // Render Wins with null checks
       if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
-        document.getElementById('wins-list').innerHTML = data.accounts.map(a => `
-          <div class="list-item">
-            <span>${a['company name'] || 'Unknown Company'}</span>
-            <small>${a['roll off container size'] || 'N/A'}</small>
-          </div>
-        `).join('');
+        var winsHtml = data.accounts.map(function(a) {
+          return HtmlSafeRenderer.buildListItem(
+            a['company name'] || 'Unknown Company',
+            a['roll off container size'] || 'N/A'
+          );
+        }).join('');
+        HtmlSafeRenderer.setInnerHtml('wins-list', winsHtml);
       } else {
-        document.getElementById('wins-list').innerHTML = '<div style="padding: 10px; color: #666;">No recent wins</div>';
+        HtmlSafeRenderer.setInnerHtml('wins-list', 
+          '<div style="padding: 10px; color: #666;">No recent wins</div>');
       }
     }
 
@@ -202,21 +486,35 @@
         won: data.won || []
       };
 
-      document.getElementById('pipeline-hot').innerHTML = stages.hot.length > 0 ? 
-        stages.hot.map(p => `<div class="pipeline-deal"><strong>${p['company name'] || 'Unknown'}</strong><br><small>${p['urgencyband'] || ''}</small></div>`).join('') : 
+      // Use HtmlSafeRenderer for safe innerHTML
+      var hotHtml = stages.hot.length > 0 ? 
+        stages.hot.map(function(p) { 
+          return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
+        }).join('') : 
         '<div style="color: #999; padding: 10px; text-align: center;">No hot prospects</div>';
-
-      document.getElementById('pipeline-warm').innerHTML = stages.warm.length > 0 ? 
-        stages.warm.map(p => `<div class="pipeline-deal"><strong>${p['company name'] || 'Unknown'}</strong><br><small>${p['urgencyband'] || ''}</small></div>`).join('') : 
+      
+      var warmHtml = stages.warm.length > 0 ? 
+        stages.warm.map(function(p) { 
+          return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
+        }).join('') : 
         '<div style="color: #999; padding: 10px; text-align: center;">No warm prospects</div>';
-
-      document.getElementById('pipeline-cold').innerHTML = stages.cold.length > 0 ? 
-        stages.cold.map(p => `<div class="pipeline-deal"><strong>${p['company name'] || 'Unknown'}</strong><br><small>${p['urgencyband'] || ''}</small></div>`).join('') : 
+      
+      var coldHtml = stages.cold.length > 0 ? 
+        stages.cold.map(function(p) { 
+          return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
+        }).join('') : 
         '<div style="color: #999; padding: 10px; text-align: center;">No cold prospects</div>';
-
-      document.getElementById('pipeline-won').innerHTML = stages.won.length > 0 ? 
-        stages.won.map(p => `<div class="pipeline-deal"><strong>${p['company name'] || 'Unknown'}</strong><br><small>${p['timestamp'] || ''}</small></div>`).join('') : 
+      
+      var wonHtml = stages.won.length > 0 ? 
+        stages.won.map(function(p) { 
+          return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'timestamp']); 
+        }).join('') : 
         '<div style="color: #999; padding: 10px; text-align: center;">No wins yet</div>';
+      
+      HtmlSafeRenderer.setInnerHtml('pipeline-hot', hotHtml);
+      HtmlSafeRenderer.setInnerHtml('pipeline-warm', warmHtml);
+      HtmlSafeRenderer.setInnerHtml('pipeline-cold', coldHtml);
+      HtmlSafeRenderer.setInnerHtml('pipeline-won', wonHtml);
     }
 
     function renderProspects(data) {
@@ -232,18 +530,22 @@
     function updateProspectsTable(prospects) {
       const tbody = document.getElementById('prospects-table-body');
       if (!prospects || prospects.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">No prospects found</td></tr>';
+        HtmlSafeRenderer.setInnerHtml('prospects-table-body', 
+          '<tr><td colspan="5" style="text-align: center; color: #666;">No prospects found</td></tr>');
         return;
       }
-      tbody.innerHTML = prospects.map(p => `
-        <tr>
-          <td><strong>${p['company name'] || 'Unknown'}</strong></td>
-          <td><span class="badge ${(p['contact status'] || '').toLowerCase()}">${p['contact status'] || 'N/A'}</span></td>
-          <td>${p['urgencyband'] || 'N/A'}</td>
-          <td>${p['priority score'] || 'N/A'}</td>
-          <td>${p['last outreach date'] || 'N/A'}</td>
-        </tr>
-      `).join('');
+      
+      var rowsHtml = prospects.map(function(p) {
+        return HtmlSafeRenderer.buildTableRow([
+          { text: p['company name'] || 'Unknown', className: '' },
+          { text: p['contact status'] || 'N/A', className: 'badge ' + (p['contact status'] || '').toLowerCase() },
+          { text: p['urgencyband'] || 'N/A', className: '' },
+          { text: p['priority score'] || 'N/A', className: '' },
+          { text: p['last outreach date'] || 'N/A', className: '' }
+        ]);
+      }).join('');
+      
+      HtmlSafeRenderer.setInnerHtml('prospects-table-body', rowsHtml);
     }
 
     function filterProspects() {
@@ -272,12 +574,13 @@
         .getCompanyNamesForAutocomplete();
     }
 
-    // Populate the datalist with company names
+    // Populate the datalist with company names (safe)
     function populateCompanySuggestions(names) {
       var datalist = document.getElementById('company-suggestions');
       if (!datalist) return;
       
-      datalist.innerHTML = ''; // Clear existing
+      // Clear existing options using safe method
+      datalist.innerHTML = '';
       
       if (!names || !Array.isArray(names)) {
         console.warn('No company names received for autocomplete');
@@ -287,7 +590,7 @@
       names.forEach(function(name) {
         if (name) {
           var option = document.createElement('option');
-          option.value = name;
+          option.value = HtmlSafeRenderer.escapeHtml(name);
           datalist.appendChild(option);
         }
       });
@@ -299,7 +602,10 @@
       // Update nav state
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       el.classList.add('active');
-      document.getElementById('tab-title').innerText = view.charAt(0).toUpperCase() + view.slice(1);
+      
+      // Use textContent for safer text updates
+      var tabTitle = document.getElementById('tab-title');
+      tabTitle.textContent = view.charAt(0).toUpperCase() + view.slice(1);
 
       // Hide all views
       document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');

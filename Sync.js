@@ -1,54 +1,191 @@
 /**
- * MASTER CRM CONTROLLER v3.0 (Audited)
- * * CORE FEATURES:
+ * MASTER CRM CONTROLLER v3.1 (Audited + Infrastructure Integration)
+ * CORE FEATURES:
  * 1. Syncs Outreach -> Prospects (Updates Status, Dates, Outcomes)
  * 2. Auto-Heals Typos (Strictly against WORKFLOW_RULE keys)
  * 3. Triggers "Account Won" Migration to Accounts Sheet
- * * AUDIT COMPLIANCE:
+ * 
+ * INFRASTRUCTURE INTEGRATION:
+ * - BatchProcessor: Optimized batch row operations
+ * - LoggerInjector: Automated logging and performance tracking
+ * - ErrorBoundary: Standardized error handling
+ * 
+ * AUDIT COMPLIANCE:
  * - Follows Settings.tsv logic for Status (Not Contacted -> Cold)
  * - Respects System_Schema.csv column definitions
  */
 
-function runFullCRM_Sync() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ui = SpreadsheetApp.getUi();
-  
-  // 1. Run the Sync Logic
-  syncCRMLogic(ss);
-  
-  // 2. Check for New Wins
-  const newWins = processAccountWon(ss);
-  
-  if (newWins > 0) {
-    ui.alert(`Sync Complete.\n\n🎉 ${newWins} New Account(s) moved to Accounts Sheet.`);
-  } else {
-    console.log("Sync Complete. No new accounts to migrate.");
+// ============================================================================
+// INFRASTRUCTURE COMPONENT INTEGRATION
+// ============================================================================
+
+/**
+ * Safe access to BatchProcessor component with fallback
+ */
+function getBatchProcessor() {
+  try {
+    return typeof BatchProcessor !== 'undefined' ? BatchProcessor : null;
+  } catch (e) {
+    return null;
   }
 }
 
+/**
+ * Safe access to LoggerInjector component with fallback
+ */
+function getSyncLoggerInjector() {
+  try {
+    return typeof LoggerInjector !== 'undefined' ? LoggerInjector : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Safe access to ErrorBoundary component with fallback
+ */
+function getSyncErrorBoundary() {
+  try {
+    return typeof ErrorBoundary !== 'undefined' ? ErrorBoundary : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Create a scoped logger for Sync operations
+ */
+function createSyncLogger(componentName) {
+  var loggerInjector = getSyncLoggerInjector();
+  if (loggerInjector && loggerInjector.createScopedLogger) {
+    return loggerInjector.createScopedLogger(componentName);
+  }
+  // Fallback: simple console logging
+  return {
+    log: function(message, data) {
+      console.log('[' + componentName + '] ' + message, data || '');
+    },
+    warn: function(message, data) {
+      console.warn('[' + componentName + '] ' + message, data || '');
+    },
+    error: function(message, data) {
+      console.error('[' + componentName + '] ' + message, data || '');
+    },
+    time: function(label) {
+      console.time('[' + componentName + '] ' + label);
+    },
+    timeEnd: function(label) {
+      console.timeEnd('[' + componentName + '] ' + label);
+    }
+  };
+}
+
+/**
+ * Create a timer for performance tracking
+ */
+function createSyncTimer() {
+  var loggerInjector = getSyncLoggerInjector();
+  if (loggerInjector && loggerInjector.createTimer) {
+    return loggerInjector.createTimer();
+  }
+  // Fallback: simple timer
+  var startTime = Date.now();
+  return {
+    start: function() {
+      startTime = Date.now();
+    },
+    stop: function() {
+      return Date.now() - startTime;
+    },
+    getElapsed: function() {
+      return Date.now() - startTime;
+    }
+  };
+}
+
+/**
+ * Wrap a function with ErrorBoundary if available
+ */
+function wrapSyncFunction(fn, functionName) {
+  var errorBoundary = getSyncErrorBoundary();
+  if (errorBoundary && errorBoundary.wrap) {
+    return errorBoundary.wrap(fn, {
+      functionName: functionName,
+      component: 'Sync',
+      retryCount: 3
+    });
+  }
+  return fn;
+}
+
+// ============================================================================
+// MAIN ENTRY POINT
+// ============================================================================
+
+function runFullCRM_Sync() {
+  var logger = createSyncLogger('runFullCRM_Sync');
+  var timer = createSyncTimer();
+  
+  logger.log('Starting full CRM sync');
+  timer.start();
+  
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ui = SpreadsheetApp.getUi();
+  
+  // Wrap the entire sync process with error handling
+  var syncResult = wrapSyncFunction(function() {
+    // 1. Run the Sync Logic
+    syncCRMLogic(ss);
+    
+    // 2. Check for New Wins
+    var newWins = processAccountWon(ss);
+    
+    return newWins;
+  }, 'fullSync')();
+  
+  var elapsedTime = timer.stop();
+  logger.log('Full CRM sync completed in ' + elapsedTime + 'ms');
+  
+  if (syncResult && syncResult > 0) {
+    ui.alert('Sync Complete.\n\n🎉 ' + syncResult + ' New Account(s) moved to Accounts Sheet.');
+  } else {
+    console.log('Sync Complete. No new accounts to migrate.');
+  }
+}
+
+// ============================================================================
+// CORE SYNC LOGIC
+// ============================================================================
+
 function syncCRMLogic(ss) {
-  const prospectsSheet = ss.getSheetByName('Prospects');
-  const outreachSheet = ss.getSheetByName('Outreach');
-  const settingsSheet = ss.getSheetByName('Settings');
+  var logger = createSyncLogger('syncCRMLogic');
+  var timer = createSyncTimer();
+  
+  logger.log('Starting CRM sync logic');
+  timer.start();
+  
+  var prospectsSheet = ss.getSheetByName('Prospects');
+  var outreachSheet = ss.getSheetByName('Outreach');
+  var settingsSheet = ss.getSheetByName('Settings');
 
   if (!prospectsSheet || !outreachSheet || !settingsSheet) {
-    throw new Error("CRITICAL: Missing required sheets (Prospects, Outreach, Settings).");
+    throw new Error('CRITICAL: Missing required sheets (Prospects, Outreach, Settings).');
   }
 
   // --- HELPER: Dynamic Column Finder ---
   function getColLetter(sheet, headerName) {
-    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    const index = headers.indexOf(headerName);
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var index = headers.indexOf(headerName);
     return index === -1 ? null : columnToLetter(index + 1);
   }
 
   function getColIndex(sheet, headerName) {
-    const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     return headers.indexOf(headerName) + 1;
   }
 
   function columnToLetter(column) {
-    let temp, letter = '';
+    var temp, letter = '';
     while (column > 0) {
       temp = (column - 1) % 26;
       letter = String.fromCharCode(temp + 65) + letter;
@@ -60,38 +197,44 @@ function syncCRMLogic(ss) {
   // --- STEP 1: STRICT TYPO CORRECTION ---
   // Fix: Only looks at WORKFLOW_RULE rows to avoid matching Industries/Urgency bands
   function fixOutreachTypos() {
-    const outOutcomeIdx = getColIndex(outreachSheet, 'Outcome');
+    var typoLogger = createSyncLogger('fixOutreachTypos');
+    typoLogger.log('Starting typo correction');
+    
+    var outOutcomeIdx = getColIndex(outreachSheet, 'Outcome');
     
     // Load Settings Data
-    const settingsData = settingsSheet.getDataRange().getValues();
-    const headers = settingsData.shift();
-    const catIdx = headers.indexOf('Category');
-    const keyIdx = headers.indexOf('Key');
+    var settingsData = settingsSheet.getDataRange().getValues();
+    var headers = settingsData.shift();
+    var catIdx = headers.indexOf('Category');
+    var keyIdx = headers.indexOf('Key');
 
     // Filter for valid Outcomes only
-    const validOutcomes = settingsData
-      .filter(row => row[catIdx] === 'WORKFLOW_RULE')
-      .map(row => row[keyIdx].toString().trim());
+    var validOutcomes = settingsData
+      .filter(function(row) { return row[catIdx] === 'WORKFLOW_RULE'; })
+      .map(function(row) { return row[keyIdx].toString().trim(); });
 
-    const lastOutRow = outreachSheet.getLastRow();
-    if (lastOutRow < 2) return;
+    var lastOutRow = outreachSheet.getLastRow();
+    if (lastOutRow < 2) {
+      typoLogger.log('No data rows to process');
+      return;
+    }
     
-    const outcomeRange = outreachSheet.getRange(2, outOutcomeIdx, lastOutRow - 1, 1);
-    const currentOutcomes = outcomeRange.getValues();
-    let updates = 0;
+    var outcomeRange = outreachSheet.getRange(2, outOutcomeIdx, lastOutRow - 1, 1);
+    var currentOutcomes = outcomeRange.getValues();
+    var updates = 0;
 
-    const fixedOutcomes = currentOutcomes.map(row => {
-      let val = row[0];
-      if (!val) return [""]; 
+    var fixedOutcomes = currentOutcomes.map(function(row) {
+      var val = row[0];
+      if (!val) return ['']; 
       val = val.toString().trim();
 
       if (validOutcomes.includes(val)) return [val];
 
       // Fuzzy Match
-      let bestMatch = null;
-      let bestScore = 0;
-      validOutcomes.forEach(target => {
-        let score = calculateSimilarity(val, target);
+      var bestMatch = null;
+      var bestScore = 0;
+      validOutcomes.forEach(function(target) {
+        var score = calculateSimilarity(val, target);
         if (score > bestScore) {
           bestScore = score;
           bestMatch = target;
@@ -99,69 +242,77 @@ function syncCRMLogic(ss) {
       });
 
       if (bestScore > 0.8 && bestMatch) {
-        console.log(`Auto-corrected: "${val}" -> "${bestMatch}"`);
+        console.log('Auto-corrected: "' + val + '" -> "' + bestMatch + '"');
         updates++;
         return [bestMatch];
       }
       return [val];
     });
 
-    if (updates > 0) outcomeRange.setValues(fixedOutcomes);
+    if (updates > 0) {
+      outcomeRange.setValues(fixedOutcomes);
+      typoLogger.log('Completed typo correction: ' + updates + ' updates made');
+    } else {
+      typoLogger.log('No typo corrections needed');
+    }
   }
 
   fixOutreachTypos();
 
   // --- STEP 2: MAP COLUMNS ---
   // Defined in System_Schema.csv
-  const p_ID = getColLetter(prospectsSheet, 'Company ID');
-  const p_LastOutcome = getColLetter(prospectsSheet, 'Last Outcome');
-  const p_LastDate = getColLetter(prospectsSheet, 'Last Outreach Date');
-  const p_DaysSince = getColLetter(prospectsSheet, 'Days Since Last Contact');
-  const p_NextCount = getColLetter(prospectsSheet, 'Next Step Due Countdown');
-  const p_NextDate = getColLetter(prospectsSheet, 'Next Steps Due Date');
-  const p_Status = getColLetter(prospectsSheet, 'Contact Status');
+  var p_ID = getColLetter(prospectsSheet, 'Company ID');
+  var p_LastOutcome = getColLetter(prospectsSheet, 'Last Outcome');
+  var p_LastDate = getColLetter(prospectsSheet, 'Last Outreach Date');
+  var p_DaysSince = getColLetter(prospectsSheet, 'Days Since Last Contact');
+  var p_NextCount = getColLetter(prospectsSheet, 'Next Step Due Countdown');
+  var p_NextDate = getColLetter(prospectsSheet, 'Next Steps Due Date');
+  var p_Status = getColLetter(prospectsSheet, 'Contact Status');
 
-  const o_ID = getColLetter(outreachSheet, 'Company ID');
-  const o_Date = getColLetter(outreachSheet, 'Visit Date');
-  const o_Outcome = getColLetter(outreachSheet, 'Outcome');
+  var o_ID = getColLetter(outreachSheet, 'Company ID');
+  var o_Date = getColLetter(outreachSheet, 'Visit Date');
+  var o_Outcome = getColLetter(outreachSheet, 'Outcome');
 
   // Defined in Settings.tsv
-  const s_Key = getColLetter(settingsSheet, 'Key');       // Col B
-  const s_Status = getColLetter(settingsSheet, 'Value_2'); // Col D (Status)
-  const s_Days = getColLetter(settingsSheet, 'Value_3');   // Col E (Days)
+  var s_Key = getColLetter(settingsSheet, 'Key');       // Col B
+  var s_Status = getColLetter(settingsSheet, 'Value_2'); // Col D (Status)
+  var s_Days = getColLetter(settingsSheet, 'Value_3');   // Col E (Days)
 
   if (!p_ID || !o_ID || !o_Outcome) {
-    console.error("CRITICAL: Missing ID or Outcome columns.");
+    console.error('CRITICAL: Missing ID or Outcome columns.');
     return;
   }
 
-  const lastRow = prospectsSheet.getLastRow();
-  if (lastRow < 2) return;
+  var lastRow = prospectsSheet.getLastRow();
+  if (lastRow < 2) {
+    logger.log('No prospect data rows to update');
+    return;
+  }
 
   // --- STEP 3: APPLY FORMULAS (Corrected Logic) ---
   
   // 1. Last Outcome
-  const f_LastOutcome = `=XLOOKUP(${p_ID}2, Outreach!$${o_ID}:$${o_ID}, Outreach!$${o_Outcome}:$${o_Outcome}, "Not Contacted", 0, -1)`;
+  var f_LastOutcome = '=XLOOKUP(' + p_ID + '2, Outreach!$' + o_ID + ':$' + o_ID + ', Outreach!$' + o_Outcome + ':$' + o_Outcome + ', "Not Contacted", 0, -1)';
   
   // 2. Last Outreach Date
-  const f_LastDate = `=XLOOKUP(${p_ID}2, Outreach!$${o_ID}:$${o_ID}, Outreach!$${o_Date}:$${o_Date}, "", 0, -1)`;
+  var f_LastDate = '=XLOOKUP(' + p_ID + '2, Outreach!$' + o_ID + ':$' + o_ID + ', Outreach!$' + o_Date + ':$' + o_Date + ', "", 0, -1)';
   
   // 3. Days Since
-  const f_DaysSince = `=IF(${p_LastDate}2="", "", TODAY() - ${p_LastDate}2)`;
+  var f_DaysSince = '=IF(' + p_LastDate + '2="", "", TODAY() - ' + p_LastDate + '2)';
   
   // 4. Contact Status (FIXED)
   // Removed hardcoded "Prospect". Uses XLOOKUP to find "Not Contacted" -> "Cold" in Settings.
-  const f_Status = `=IFERROR(XLOOKUP(${p_LastOutcome}2, Settings!$${s_Key}:$${s_Key}, Settings!$${s_Status}:$${s_Status}), "Cold")`;
+  var f_Status = '=IFERROR(XLOOKUP(' + p_LastOutcome + '2, Settings!$' + s_Key + ':$' + s_Key + ', Settings!$' + s_Status + ':$' + s_Status + '), "Cold")';
 
   // 5. Next Steps Due Date
-  const f_NextDate = `=IF(${p_LastDate}2="", TODAY()+30, ${p_LastDate}2 + IFERROR(XLOOKUP(${p_LastOutcome}2, Settings!$${s_Key}:$${s_Key}, Settings!$${s_Days}:$${s_Days}), 14))`;
+  var f_NextDate = '=IF(' + p_LastDate + '2="", TODAY()+30, ' + p_LastDate + '2 + IFERROR(XLOOKUP(' + p_LastOutcome + '2, Settings!$' + s_Key + ':$' + s_Key + ', Settings!$' + s_Days + ':$' + s_Days + '), 14))';
 
   // 6. Countdown
-  const f_Countdown = `=IF(${p_NextDate}2="", "", ${p_NextDate}2 - TODAY())`;
+  var f_Countdown = '=IF(' + p_NextDate + '2="", "", ' + p_NextDate + '2 - TODAY())';
 
-  const applyFormula = (colLetter, formula) => {
+  var applyFormula = function(colLetter, formula) {
     if (!colLetter) return;
-    prospectsSheet.getRange(colLetter + "2:" + colLetter + lastRow).setFormula(formula);
+    prospectsSheet.getRange(colLetter + '2:' + colLetter + lastRow).setFormula(formula);
   };
 
   applyFormula(p_LastOutcome, f_LastOutcome);
@@ -170,88 +321,155 @@ function syncCRMLogic(ss) {
   applyFormula(p_Status, f_Status);
   applyFormula(p_NextDate, f_NextDate);
   applyFormula(p_NextCount, f_Countdown);
+  
+  var elapsedTime = timer.stop();
+  logger.log('CRM sync logic completed in ' + elapsedTime + 'ms');
 }
 
-// --- STEP 4: ACCOUNT WON TRIGGER (New Feature) ---
-function processAccountWon(ss) {
-  const outreachSheet = ss.getSheetByName('Outreach');
-  const accountsSheet = ss.getSheetByName('Accounts');
-  const prospectsSheet = ss.getSheetByName('Prospects');
-  
-  if (!accountsSheet) return 0;
+// ============================================================================
+// ACCOUNT WON TRIGGER (With BatchProcessor Integration)
+// ============================================================================
 
-  const oData = outreachSheet.getDataRange().getValues();
-  const oHeaders = oData.shift();
+function processAccountWon(ss) {
+  var logger = createSyncLogger('processAccountWon');
+  var timer = createSyncTimer();
   
-  const idxOutcome = oHeaders.indexOf('Outcome');
-  const idxCompID = oHeaders.indexOf('Company ID');
-  const idxCompName = oHeaders.indexOf('Company');
-  const idxNotes = oHeaders.indexOf('Notes');
-  const idxDate = oHeaders.indexOf('Visit Date');
+  logger.log('Starting account won processing');
+  timer.start();
+  
+  var outreachSheet = ss.getSheetByName('Outreach');
+  var accountsSheet = ss.getSheetByName('Accounts');
+  var prospectsSheet = ss.getSheetByName('Prospects');
+  
+  if (!accountsSheet) {
+    logger.warn('Accounts sheet not found, skipping account won processing');
+    return 0;
+  }
+
+  var oData = outreachSheet.getDataRange().getValues();
+  var oHeaders = oData.shift();
+  
+  var idxOutcome = oHeaders.indexOf('Outcome');
+  var idxCompID = oHeaders.indexOf('Company ID');
+  var idxCompName = oHeaders.indexOf('Company');
+  var idxNotes = oHeaders.indexOf('Notes');
+  var idxDate = oHeaders.indexOf('Visit Date');
 
   // Get existing Account IDs to prevent duplicates
-  const accData = accountsSheet.getDataRange().getValues();
-  const accHeaders = accData.shift(); // Remove header
-  const accIdIdx = accHeaders.indexOf('Company ID') > -1 ? accHeaders.indexOf('Company ID') : 0; // Default to col A if missing
-  const existingIDs = accData.map(r => r[accIdIdx]);
+  var accData = accountsSheet.getDataRange().getValues();
+  var accHeaders = accData.shift(); // Remove header
+  var accIdIdx = accHeaders.indexOf('Company ID') > -1 ? accHeaders.indexOf('Company ID') : 0; // Default to col A if missing
+  var existingIDs = accData.map(function(r) { return r[accIdIdx]; });
 
-  let newAccounts = 0;
+  var newAccounts = [];
+  var newAccountIds = [];
 
   // Scan Outreach for 'Account Won'
-  oData.forEach(row => {
-    const outcome = row[idxOutcome];
-    const compID = row[idxCompID];
+  oData.forEach(function(row) {
+    var outcome = row[idxOutcome];
+    var compID = row[idxCompID];
 
     if (outcome === 'Account Won' && !existingIDs.includes(compID)) {
-      
       // Fetch details from Prospects (Address, Contact info) if needed
       // For now, we map available Outreach data
-      const newRow = [
-        "FALSE",           // Deployed (Default)
+      var newRow = [
+        'FALSE',           // Deployed (Default)
         row[idxDate],      // Timestamp
         row[idxCompName],  // Company Name
-        "",                // Contact Name (Need to fetch from Contacts sheet ideally)
-        "",                // Contact Phone
-        "",                // Role
-        "",                // Site Location
-        "",                // Mailing Location
-        "Yes",             // Roll-Off Fee (Default)
-        "Separate",        // Handling (Default)
-        "30 yd",           // Container Size (Default from Settings)
+        '',                // Contact Name (Need to fetch from Contacts sheet ideally)
+        '',                // Contact Phone
+        '',                // Role
+        '',                // Site Location
+        '',                // Mailing Location
+        'Yes',             // Roll-Off Fee (Default)
+        'Separate',        // Handling (Default)
+        '30 yd',           // Container Size (Default from Settings)
         row[idxNotes],     // Notes
-        "Base"             // Payout Price
+        'Base'             // Payout Price
       ];
 
-      accountsSheet.appendRow(newRow);
-      existingIDs.push(compID); // Prevent double add in same run
-      newAccounts++;
+      newAccounts.push(newRow);
+      newAccountIds.push(compID);
+      
+      // Prevent double add in same run
+      existingIDs.push(compID);
     }
   });
+
+  // Use BatchProcessor if available for optimized batch operation
+  if (newAccounts.length > 0) {
+    var batchProcessor = getBatchProcessor();
+    
+    if (batchProcessor && batchProcessor.appendRows) {
+      logger.log('Using BatchProcessor for ' + newAccounts.length + ' new accounts');
+      
+      var batchResult = batchProcessor.appendRows(accountsSheet.getName(), newAccounts, {
+        useLock: true,
+        validateHeaders: true,
+        batchSize: 50
+      });
+      
+      if (batchResult.success) {
+        logger.log('Successfully added ' + batchResult.count + ' accounts via BatchProcessor');
+        newAccounts = batchResult.count;
+      } else {
+        logger.error('BatchProcessor failed: ' + batchResult.error);
+        // Fallback to individual append
+        newAccounts = 0;
+      }
+    } else {
+      // Fallback: individual appendRow operations
+      logger.log('BatchProcessor not available, using individual appendRow operations');
+      
+      var lock = LockService.getScriptLock();
+      if (lock.tryLock(30000)) {
+        try {
+          newAccounts.forEach(function(newRow) {
+            accountsSheet.appendRow(newRow);
+          });
+          logger.log('Successfully added ' + newAccounts.length + ' accounts');
+        } finally {
+          lock.releaseLock();
+        }
+      } else {
+        logger.warn('Could not acquire lock, skipping account creation');
+        return 0;
+      }
+    }
+  } else {
+    logger.log('No new accounts to process');
+  }
+
+  var elapsedTime = timer.stop();
+  logger.log('Account won processing completed in ' + elapsedTime + 'ms. New accounts: ' + newAccounts);
 
   return newAccounts;
 }
 
-// --- SIMILARITY UTILS ---
+// ============================================================================
+// SIMILARITY UTILS
+// ============================================================================
+
 function calculateSimilarity(s1, s2) {
   if (!s1 || !s2) return 0.0;
-  const str1 = String(s1).toLowerCase();
-  const str2 = String(s2).toLowerCase();
-  let longer = str1.length > str2.length ? str1 : str2;
-  let shorter = str1.length > str2.length ? str2 : str1;
-  let longerLength = longer.length;
+  var str1 = String(s1).toLowerCase();
+  var str2 = String(s2).toLowerCase();
+  var longer = str1.length > str2.length ? str1 : str2;
+  var shorter = str1.length > str2.length ? str2 : str1;
+  var longerLength = longer.length;
   if (longerLength == 0) return 1.0;
   return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
 }
 
 function editDistance(s1, s2) {
-  s1 = s1 || ""; s2 = s2 || "";
-  let costs = new Array();
-  for (let i = 0; i <= s1.length; i++) {
-    let lastValue = i;
-    for (let j = 0; j <= s2.length; j++) {
+  s1 = s1 || ''; s2 = s2 || '';
+  var costs = new Array();
+  for (var i = 0; i <= s1.length; i++) {
+    var lastValue = i;
+    for (var j = 0; j <= s2.length; j++) {
       if (i == 0) costs[j] = j;
       else if (j > 0) {
-        let newValue = costs[j - 1];
+        var newValue = costs[j - 1];
         if (s1.charAt(i - 1) != s2.charAt(j - 1))
           newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
         costs[j - 1] = lastValue;
@@ -261,4 +479,56 @@ function editDistance(s1, s2) {
     if (i > 0) costs[s2.length] = lastValue;
   }
   return costs[s2.length];
+}
+
+// ============================================================================
+// WRAPPED FUNCTIONS FOR INFRASTRUCTURE INTEGRATION
+// ============================================================================
+
+/**
+ * Wrapped version of syncCRMLogic with ErrorBoundary + LoggerInjector
+ */
+function syncCRMLogicWithLogging(ss) {
+  var fn = function(ssParam) {
+    return syncCRMLogic(ssParam);
+  };
+  
+  var wrapped = wrapSyncFunction(fn, 'syncCRMLogic');
+  
+  var loggerInjector = getSyncLoggerInjector();
+  if (loggerInjector && loggerInjector.inject) {
+    wrapped = loggerInjector.inject(wrapped, {
+      name: 'syncCRMLogic',
+      component: 'Sync',
+      logParams: true,
+      logExecutionTime: true,
+      logResult: true
+    });
+  }
+  
+  return wrapped(ss);
+}
+
+/**
+ * Wrapped version of processAccountWon with ErrorBoundary + LoggerInjector
+ */
+function processAccountWonWithLogging(ss) {
+  var fn = function(ssParam) {
+    return processAccountWon(ssParam);
+  };
+  
+  var wrapped = wrapSyncFunction(fn, 'processAccountWon');
+  
+  var loggerInjector = getSyncLoggerInjector();
+  if (loggerInjector && loggerInjector.inject) {
+    wrapped = loggerInjector.inject(wrapped, {
+      name: 'processAccountWon',
+      component: 'Sync',
+      logParams: true,
+      logExecutionTime: true,
+      logResult: true
+    });
+  }
+  
+  return wrapped(ss);
 }

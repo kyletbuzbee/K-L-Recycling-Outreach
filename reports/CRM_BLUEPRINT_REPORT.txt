@@ -1,0 +1,2486 @@
+================================================================================
+       K&L RECYCLING CRM - COMPREHENSIVE BLUEPRINT & HEALTH REPORT       
+================================================================================
+
+Generated: 2026-02-07 00:34:33
+Files Analyzed: 53
+Functions Found: 428
+Total Lines of Code: 25870
+
+--------------------------------------------------------------------------------
+SYSTEM ARCHITECTURE OVERVIEW
+--------------------------------------------------------------------------------
+
+📊 SHEET STRUCTURE (from Schema):
+
+   📋 Prospects
+      • Address
+      • Close Probability
+      • Company ID
+      • Company Name
+      • Contact Status
+      • Days Since Last Contact
+      • Industry
+      • Last Outcome
+      • Last Outreach Date
+      • Latitude
+      ... and 26 more columns
+
+   📋 Outreach
+      • Company
+      • Company ID
+      • Competitor
+      • Contact Type
+      • Days Since Last Visit
+      • Email Sent
+      • Follow Up Action
+      • Next Visit Countdown
+      • Next Visit Date
+      • Notes
+      ... and 26 more columns
+
+   📋 Accounts
+      • Company Name
+      • Contact Name
+      • Contact Phone
+      • Contact Role
+      • Deployed
+      • Handling of Metal
+      • Mailing Location
+      • Notes
+      • Payout Price
+      • Roll Off Container Size
+      ... and 16 more columns
+
+   📋 Contacts
+      • Account
+      • Address
+      • Company
+      • Department
+      • Email
+      • Name
+      • Phone Number
+      • Role
+      • accountType
+      • address
+      ... and 6 more columns
+
+⚙️  SETTINGS & VALIDATION RULES:
+   Valid Outcomes: Account Won, Disqualified, Follow-Up, Initial Contact, Interested (Hot), Interested (Warm), No Answer, Not Contacted, Not Interested
+   Valid Stages: Lost, Nurture, Outreach, Prospect, Won
+   Workflow Rules: 10 defined
+      • Account Won → Stage: Won, Status: Active
+      • Interested (Hot) → Stage: Nurture, Status: Interested (Hot)
+      • Interested (Warm) → Stage: Nurture, Status: Interested (Warm)
+      • Interested → Stage: Nurture, Status: Interested (Warm)
+      • Initial Contact → Stage: Outreach, Status: Interested (Warm)
+
+📁 FILE BREAKDOWN:
+
+   📦 Core Services (4 files):
+      • CRM_API.js (8 lines, 0 functions)
+      • Config.js (150 lines, 2 functions)
+      • MenuFunctions.js (41 lines, 2 functions)
+      • Settings.js (177 lines, 3 functions)
+
+   🎨 UI Components (8 files):
+      • CRM_BLUEPRINT_REPORT.html (852 lines, 1 functions)
+      • CRM_Styles.html (927 lines, 0 functions)
+      • CRM_Suite.html (349 lines, 11 functions)
+      • DashboardBackend.js (82 lines, 2 functions)
+      • ReportFunctions.js (1409 lines, 24 functions)
+      • dashboard.html (3619 lines, 59 functions)
+      • dateRangeReport.html (193 lines, 7 functions)
+      • report.html (219 lines, 1 functions)
+
+   🔄 Sync & Workflow (3 files):
+      • OutreachSyncFunctions.js (228 lines, 4 functions)
+      • Sync.js (264 lines, 9 functions)
+      • WorkflowAutomationService.js (293 lines, 7 functions)
+
+   ✅ Validation (5 files):
+      • BusinessValidation.js (735 lines, 12 functions)
+      • ComprehensiveValidationSystem.js (1660 lines, 29 functions)
+      • DataValidation.js (1834 lines, 32 functions)
+      • SettingsValidation.js (943 lines, 17 functions)
+      • ValidationUtils.js (189 lines, 11 functions)
+
+   🧪 Testing (12 files):
+      • simple_test.js (8 lines, 1 functions)
+      • test_autofill_implementation.js (79 lines, 2 functions)
+      • test_comprehensive_validation.js (526 lines, 9 functions)
+      • test_fixes.js (288 lines, 8 functions)
+      • test_integration.js (344 lines, 7 functions)
+      • test_normalization.js (291 lines, 10 functions)
+      • test_robust.js (658 lines, 25 functions)
+      • test_rowindex_fix.js (238 lines, 3 functions)
+      • test_runner.js (757 lines, 22 functions)
+      • test_runtime_fixes.js (369 lines, 5 functions)
+
+   🔧 Utilities (5 files):
+      • DataHelpers.js (598 lines, 5 functions)
+      • FuzzyMatchingUtils.js (118 lines, 3 functions)
+      • PerformanceUtils.js (789 lines, 26 functions)
+      • SharedUtils.js (559 lines, 16 functions)
+      • StringUtils.js (139 lines, 15 functions)
+
+   📄 Other (16 files):
+      • AccountFunction.js (278 lines, 3 functions)
+      • AlertingService.js (158 lines, 5 functions)
+      • AutoFillService.js (79 lines, 3 functions)
+      • CSVImport.js (278 lines, 5 functions)
+      • ColumnMapper.js (126 lines, 4 functions)
+      • ErrorHandling.js (279 lines, 10 functions)
+      • Normalization.js (455 lines, 7 functions)
+      • OutreachFunctions.js (1050 lines, 13 functions)
+      • PipelineService.js (131 lines, 6 functions)
+      • ProspectFunctions.js (701 lines, 14 functions)
+
+🔄 DATA FLOW:
+   Outreach Entry → Sync to Prospects → Account Won → Migrate to Accounts
+   Key Functions:
+      • syncCRMLogic() - Main sync orchestrator
+      • processAccountWon() - Account migration trigger
+      • processOutreachSubmission() - Form submission handler
+
+🔗 EXTERNAL DEPENDENCIES:
+   • CacheService
+   • MailApp
+   • ScriptApp
+   • SpreadsheetApp
+
+🔑 CRITICAL FUNCTIONS:
+   ✅ processNewAccount (AccountFunction.js:57)
+   ✅ sendAccountProcessingAlert (AlertingService.js:12)
+   ✅ showAccountProcessingNotification (AlertingService.js:41)
+   ✅ processOutreachSubmission (OutreachFunctions.js:106)
+   ✅ syncOutreachToProspects (OutreachSyncFunctions.js:14)
+   ✅ processInBatches (PerformanceUtils.js:132)
+   ✅ processBatch (PerformanceUtils.js:203)
+   ✅ getWonProspects (PipelineService.js:101)
+   ✅ hasAccountBeenWon (ReportFunctions.js:950)
+   ⚠️ runFullCRM_Sync (Sync.js:12)
+   ✅ syncCRMLogic (Sync.js:29)
+   ⚠️ processAccountWon (Sync.js:176)
+   ⚠️ onFormSubmit (WorkflowAutomationService.js:164)
+   ✅ processDailyOutreachUpdates (WorkflowAutomationService.js:191)
+
+
+================================================================================
+                          SYSTEM HEALTH ASSESSMENT                          
+================================================================================
+
+OVERALL HEALTH SCORE: 50/100 - 🟠 WARNING
+Total Issues Found: 376
+  🔴 Critical: 0
+  🟠 High: 39
+  🟡 Medium: 204
+  🟢 Low: 130
+  ℹ️  Info: 3
+
+--------------------------------------------------------------------------------
+ISSUES BY CATEGORY
+--------------------------------------------------------------------------------
+  Code Quality: 149
+  Schema: 133
+  Performance: 41
+  Error Handling: 37
+  Security: 16
+
+--------------------------------------------------------------------------------
+DETAILED ISSUE LIST
+--------------------------------------------------------------------------------
+
+🔸 HIGH ISSUES:
+
+   📄 BusinessValidation.js:624
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 CRM_Suite.html:144
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('stat-cards').innerHTML = '<div style="color: red; paddi...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:145
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('urgent-list').innerHTML = '<div style="color: red; padd...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:146
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('wins-list').innerHTML = '<div style="color: red; paddin...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:159
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('stat-cards').innerHTML = `...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:168
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('urgent-list').innerHTML = data.prospects.map(p => `...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:175
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('urgent-list').innerHTML = '<div style="padding: 10px; c...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:180
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('wins-list').innerHTML = data.accounts.map(a => `...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:187
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('wins-list').innerHTML = '<div style="padding: 10px; col...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:205
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('pipeline-hot').innerHTML = stages.hot.length > 0 ?...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:209
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('pipeline-warm').innerHTML = stages.warm.length > 0 ?...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:213
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('pipeline-cold').innerHTML = stages.cold.length > 0 ?...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:217
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: document.getElementById('pipeline-won').innerHTML = stages.won.length > 0 ?...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:235
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:238
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: tbody.innerHTML = prospects.map(p => `...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:280
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: datalist.innerHTML = ''; // Clear existing...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 DataValidation.js:1661
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataValidation.js:1720
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:86
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:142
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:160
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:227
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:295
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:651
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:715
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:797
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:923
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:997
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SettingsValidation.js:833
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SharedUtils.js:319
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SharedUtils.js:492
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SharedUtils.js:534
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Sync.js:66
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Sync.js:183
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Sync.js:193
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SystemAlignment.gs:106
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SystemAlignment.gs:176
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 WorkflowAutomationService.js:194
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 dashboard.html:2175
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: dropdown.innerHTML = results.map((r, index) => {...
+   💡 Recommendation: Review and use safer alternatives
+
+🔸 MEDIUM ISSUES:
+
+   📄 AccountFunction.js:30
+   Category: Schema
+   Message: Potential schema typo: 'mailing location' is similar to 'mailingLocation'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'mailing location' should be 'mailingLocation'
+
+   📄 AccountFunction.js:32
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 AccountFunction.js:57
+   Category: Code Quality
+   Message: Function 'processNewAccount' has high complexity (18)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 AccountFunction.js:61
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 AccountFunction.js:65
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 AccountFunction.js:96
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 AccountFunction.js:106
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 AccountFunction.js:188
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 AccountFunction.js:192
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 AccountFunction.js:247
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 AlertingService.js:153
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 BusinessValidation.js:47
+   Category: Schema
+   Message: Potential schema typo: 'account' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'account' should be 'Account'
+
+   📄 BusinessValidation.js:119
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 BusinessValidation.js:119
+   Category: Schema
+   Message: Potential schema typo: 'Contact name' is similar to 'Contact Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Contact name' should be 'Contact Name'
+
+   📄 BusinessValidation.js:134
+   Category: Code Quality
+   Message: Function 'validateProspect' has high complexity (26)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 BusinessValidation.js:134
+   Category: Error Handling
+   Message: Function 'validateProspect' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 BusinessValidation.js:192
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 BusinessValidation.js:194
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 BusinessValidation.js:195
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 BusinessValidation.js:204
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 BusinessValidation.js:276
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 BusinessValidation.js:294
+   Category: Code Quality
+   Message: Function 'validateOutreach' has high complexity (21)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 BusinessValidation.js:294
+   Category: Error Handling
+   Message: Function 'validateOutreach' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 BusinessValidation.js:422
+   Category: Code Quality
+   Message: Function 'validateNewAccount' has high complexity (21)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 BusinessValidation.js:422
+   Category: Error Handling
+   Message: Function 'validateNewAccount' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 BusinessValidation.js:512
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 BusinessValidation.js:513
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 BusinessValidation.js:518
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 BusinessValidation.js:556
+   Category: Error Handling
+   Message: Function 'validateBusinessLogic' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 BusinessValidation.js:678
+   Category: Schema
+   Message: Potential schema typo: 'account' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'account' should be 'Account'
+
+   📄 BusinessValidation.js:683
+   Category: Error Handling
+   Message: Function 'validateCompleteSubmission' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 BusinessValidation.js:702
+   Category: Schema
+   Message: Potential schema typo: 'account' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'account' should be 'Account'
+
+   📄 CRM_BLUEPRINT_REPORT.html:275
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 CRM_BLUEPRINT_REPORT.html:276
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 CRM_BLUEPRINT_REPORT.html:305
+   Category: Schema
+   Message: Potential schema typo: 'mailing location' is similar to 'mailingLocation'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'mailing location' should be 'mailingLocation'
+
+   📄 CRM_BLUEPRINT_REPORT.html:306
+   Category: Schema
+   Message: Potential schema typo: 'mailing location' is similar to 'mailingLocation'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'mailing location' should be 'mailingLocation'
+
+   📄 CRM_BLUEPRINT_REPORT.html:315
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 CRM_BLUEPRINT_REPORT.html:316
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 CRM_BLUEPRINT_REPORT.html:325
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 CRM_BLUEPRINT_REPORT.html:326
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 CRM_BLUEPRINT_REPORT.html:335
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 CRM_BLUEPRINT_REPORT.html:336
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 CRM_BLUEPRINT_REPORT.html:345
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 CRM_BLUEPRINT_REPORT.html:346
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 CRM_BLUEPRINT_REPORT.html:355
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 CRM_BLUEPRINT_REPORT.html:356
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 CRM_BLUEPRINT_REPORT.html:365
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 CRM_BLUEPRINT_REPORT.html:366
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 CRM_BLUEPRINT_REPORT.html:375
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 CRM_BLUEPRINT_REPORT.html:376
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 CRM_BLUEPRINT_REPORT.html:385
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 CRM_BLUEPRINT_REPORT.html:386
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 CRM_BLUEPRINT_REPORT.html:395
+   Category: Schema
+   Message: Potential schema typo: 'close probability' is similar to 'closeProbability'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'close probability' should be 'closeProbability'
+
+   📄 CRM_BLUEPRINT_REPORT.html:396
+   Category: Schema
+   Message: Potential schema typo: 'close probability' is similar to 'closeProbability'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'close probability' should be 'closeProbability'
+
+   📄 CRM_Suite.html:206
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 CRM_Suite.html:210
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 CRM_Suite.html:214
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 CRM_Suite.html:241
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 CRM_Suite.html:242
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 CRM_Suite.html:243
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 CRM_Suite.html:257
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 CSVImport.js:13
+   Category: Code Quality
+   Message: Function 'importCSVData' has high complexity (20)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ComprehensiveValidationSystem.js:266
+   Category: Code Quality
+   Message: Function '_validateProspectsRow' has high complexity (31)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ComprehensiveValidationSystem.js:471
+   Category: Code Quality
+   Message: Function '_validateOutreachRow' has high complexity (28)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ComprehensiveValidationSystem.js:1359
+   Category: Error Handling
+   Message: Function '_simpleLevenshtein' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Config.js:11
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 Config.js:23
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 Config.js:25
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 Config.js:134
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DashboardBackend.js:39
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 DashboardBackend.js:44
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 DashboardBackend.js:49
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 DataHelpers.js:23
+   Category: Code Quality
+   Message: Function 'updateCellSafe' has high complexity (17)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataHelpers.js:127
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:152
+   Category: Code Quality
+   Message: Function 'prependRowSafe' has high complexity (21)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataHelpers.js:268
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:293
+   Category: Code Quality
+   Message: Function 'appendRowSafe' has high complexity (21)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataHelpers.js:382
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:407
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:497
+   Category: Code Quality
+   Message: Function 'getSheetSafe' has high complexity (18)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataValidation.js:15
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 DataValidation.js:15
+   Category: Schema
+   Message: Potential schema typo: 'close probability' is similar to 'closeProbability'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'close probability' should be 'closeProbability'
+
+   📄 DataValidation.js:15
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 DataValidation.js:15
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 DataValidation.js:25
+   Category: Schema
+   Message: Potential schema typo: 'outcome category' is similar to 'outcomeCategory'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outcome category' should be 'outcomeCategory'
+
+   📄 DataValidation.js:26
+   Category: Schema
+   Message: Potential schema typo: 'prospects match' is similar to 'prospectsMatch'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'prospects match' should be 'prospectsMatch'
+
+   📄 DataValidation.js:382
+   Category: Code Quality
+   Message: Function 'validateProspectsData' has high complexity (22)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataValidation.js:437
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 DataValidation.js:438
+   Category: Schema
+   Message: Potential schema typo: 'close probability' is similar to 'closeProbability'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'close probability' should be 'closeProbability'
+
+   📄 DataValidation.js:439
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 DataValidation.js:440
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 DataValidation.js:600
+   Category: Code Quality
+   Message: Function 'validateOutreachData' has high complexity (24)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataValidation.js:656
+   Category: Schema
+   Message: Potential schema typo: 'outcome category' is similar to 'outcomeCategory'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outcome category' should be 'outcomeCategory'
+
+   📄 DataValidation.js:659
+   Category: Schema
+   Message: Potential schema typo: 'prospects match' is similar to 'prospectsMatch'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'prospects match' should be 'prospectsMatch'
+
+   📄 DataValidation.js:1195
+   Category: Error Handling
+   Message: Function 'simpleLevenshtein' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 DataValidation.js:1385
+   Category: Code Quality
+   Message: Function 'normalizeFieldValue' has high complexity (40)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataValidation.js:1409
+   Category: Schema
+   Message: Potential schema typo: 'outcome category' is similar to 'outcomeCategory'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outcome category' should be 'outcomeCategory'
+
+   📄 DataValidation.js:1428
+   Category: Schema
+   Message: Potential schema typo: 'close probability' is similar to 'closeProbability'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'close probability' should be 'closeProbability'
+
+   📄 DataValidation.js:1429
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 DataValidation.js:1442
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 DataValidation.js:1446
+   Category: Schema
+   Message: Potential schema typo: 'prospects match' is similar to 'prospectsMatch'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'prospects match' should be 'prospectsMatch'
+
+   📄 DataValidation.js:1451
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 ErrorHandling.js:50
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 FuzzyMatchingUtils.js:91
+   Category: Error Handling
+   Message: Function 'levenshteinDistance' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Normalization.js:32
+   Category: Error Handling
+   Message: Function 'validateAndFixDate' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 OutreachFunctions.js:178
+   Category: Schema
+   Message: Potential schema typo: 'outcome category' is similar to 'outcomeCategory'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outcome category' should be 'outcomeCategory'
+
+   📄 OutreachFunctions.js:181
+   Category: Schema
+   Message: Potential schema typo: 'prospects match' is similar to 'prospectsMatch'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'prospects match' should be 'prospectsMatch'
+
+   📄 OutreachFunctions.js:222
+   Category: Schema
+   Message: Potential schema typo: 'mailing location' is similar to 'mailingLocation'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'mailing location' should be 'mailingLocation'
+
+   📄 OutreachFunctions.js:224
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 OutreachFunctions.js:447
+   Category: Code Quality
+   Message: Function 'calculateDashboardMetrics' has high complexity (21)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 OutreachFunctions.js:501
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 OutreachFunctions.js:784
+   Category: Code Quality
+   Message: Function 'getContactDetails' has high complexity (19)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 OutreachFunctions.js:823
+   Category: Schema
+   Message: Potential schema typo: 'account' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'account' should be 'Account'
+
+   📄 OutreachSyncFunctions.js:14
+   Category: Code Quality
+   Message: Function 'syncOutreachToProspects' has high complexity (20)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 OutreachSyncFunctions.js:200
+   Category: Error Handling
+   Message: Function 'calculateUrgencyScore' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 OutreachSyncFunctions.js:217
+   Category: Error Handling
+   Message: Function 'calculateUrgencyBand' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 PerformanceUtils.js:720
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 PipelineService.js:17
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 PipelineService.js:21
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 PipelineService.js:54
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 PipelineService.js:54
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 PipelineService.js:90
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 ProspectFunctions.js:166
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 ProspectFunctions.js:228
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 ProspectFunctions.js:409
+   Category: Error Handling
+   Message: Function 'levenshteinDistance' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ProspectFunctions.js:530
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 ProspectFunctions.js:553
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ProspectFunctions.js:599
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ProspectFunctions.js:692
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 ProspectFunctions.js:693
+   Category: Schema
+   Message: Potential schema typo: 'close probability' is similar to 'closeProbability'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'close probability' should be 'closeProbability'
+
+   📄 ProspectFunctions.js:694
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 ProspectFunctions.js:695
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 ProspectScoringService.js:78
+   Category: Error Handling
+   Message: Function 'calculateUrgencyScore' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ProspectScoringService.js:268
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 ProspectScoringService.js:270
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 ReportFunctions.js:22
+   Category: Code Quality
+   Message: Function 'generateReportHtml' has high complexity (23)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ReportFunctions.js:137
+   Category: Code Quality
+   Message: Function 'generateProfessionalReport' has high complexity (34)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ReportFunctions.js:631
+   Category: Code Quality
+   Message: Function 'calculateActionPriority' has high complexity (19)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ReportFunctions.js:642
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 ReportFunctions.js:683
+   Category: Schema
+   Message: Potential schema typo: 'urgencyband' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyband' should be 'urgencyBand'
+
+   📄 ReportFunctions.js:721
+   Category: Error Handling
+   Message: Function 'calculateStatusPriority' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ReportFunctions.js:759
+   Category: Error Handling
+   Message: Function 'analyzeRecentActivity' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ReportFunctions.js:818
+   Category: Error Handling
+   Message: Function 'calculateOpportunityValue' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ReportFunctions.js:819
+   Category: Schema
+   Message: Potential schema typo: 'close probability' is similar to 'closeProbability'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'close probability' should be 'closeProbability'
+
+   📄 ReportFunctions.js:820
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 ReportFunctions.js:976
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 ReportFunctions.js:977
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 ReportFunctions.js:1119
+   Category: Code Quality
+   Message: Function 'generatePlainTextReportForRange' has high complexity (24)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 Settings.js:6
+   Category: Code Quality
+   Message: Function 'getSettings' has high complexity (25)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 Settings.js:120
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Settings.js:161
+   Category: Schema
+   Message: Potential schema typo: 'Competitors' is similar to 'Competitor'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Competitors' should be 'Competitor'
+
+   📄 Settings.js:164
+   Category: Schema
+   Message: Potential schema typo: 'Outcomes' is similar to 'Outcome'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Outcomes' should be 'Outcome'
+
+   📄 SettingsValidation.js:538
+   Category: Error Handling
+   Message: Function 'simpleLevenshtein' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 SettingsValidation.js:581
+   Category: Code Quality
+   Message: Function 'validateFieldsForCategory' has high complexity (22)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 SharedUtils.js:239
+   Category: Error Handling
+   Message: Function 'dateDiff' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Sync.js:62
+   Category: Error Handling
+   Message: Function 'fixOutreachTypos' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Sync.js:178
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 Sync.js:225
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Sync.js:246
+   Category: Error Handling
+   Message: Function 'editDistance' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 SystemAlignment.gs:80
+   Category: Schema
+   Message: Potential schema typo: 'Outcomes' is similar to 'Outcome'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Outcomes' should be 'Outcome'
+
+   📄 SystemAlignment.gs:83
+   Category: Schema
+   Message: Potential schema typo: 'Competitors' is similar to 'Competitor'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Competitors' should be 'Competitor'
+
+   📄 SystemAlignment.gs:102
+   Category: Error Handling
+   Message: Function 'cleanProspectIndustries' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 SystemAlignment.gs:172
+   Category: Error Handling
+   Message: Function 'fixOutreachStatuses' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 SystemAlignment.gs:230
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 SystemAlignment.gs:239
+   Category: Schema
+   Message: Potential schema typo: 'Company name' is similar to 'Company Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Company name' should be 'Company Name'
+
+   📄 SystemAlignment.gs:240
+   Category: Schema
+   Message: Potential schema typo: 'Contact name' is similar to 'Contact Name'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Contact name' should be 'Contact Name'
+
+   📄 SystemAlignment.gs:241
+   Category: Schema
+   Message: Potential schema typo: 'Contact phone' is similar to 'Contact Phone'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Contact phone' should be 'Contact Phone'
+
+   📄 SystemAlignment.gs:242
+   Category: Schema
+   Message: Potential schema typo: 'Mailing location' is similar to 'Mailing Location'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Mailing location' should be 'Mailing Location'
+
+   📄 SystemAlignment.gs:243
+   Category: Schema
+   Message: Potential schema typo: 'Roll off Container Size' is similar to 'Roll Off Container Size'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Roll off Container Size' should be 'Roll Off Container Size'
+
+   📄 SystemAlignment.gs:278
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ValidationUtils.js:8
+   Category: Error Handling
+   Message: Function 'validateDate' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 WorkflowAutomationService.js:24
+   Category: Code Quality
+   Message: Function 'runDailyAutomation' has high complexity (16)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 WorkflowAutomationService.js:169
+   Category: Schema
+   Message: Potential schema typo: 'Accounts' is similar to 'Account'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Accounts' should be 'Account'
+
+   📄 WorkflowAutomationService.js:255
+   Category: Error Handling
+   Message: Function 'getFollowupTemplateForOutcome' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 apply-fixes.js:33
+   Category: Schema
+   Message: Potential schema typo: 'contact status' is similar to 'contactStatus'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'contact status' should be 'contactStatus'
+
+   📄 apply-fixes.js:34
+   Category: Schema
+   Message: Potential schema typo: 'close probability' is similar to 'closeProbability'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'close probability' should be 'closeProbability'
+
+   📄 apply-fixes.js:35
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 apply-fixes.js:62
+   Category: Schema
+   Message: Potential schema typo: 'outcome category' is similar to 'outcomeCategory'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outcome category' should be 'outcomeCategory'
+
+   📄 apply-fixes.js:65
+   Category: Schema
+   Message: Potential schema typo: 'prospects match' is similar to 'prospectsMatch'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'prospects match' should be 'prospectsMatch'
+
+   📄 apply-fixes.js:87
+   Category: Schema
+   Message: Potential schema typo: 'mailing location' is similar to 'mailingLocation'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'mailing location' should be 'mailingLocation'
+
+   📄 apply-fixes.js:89
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 apply-fixes.js:116
+   Category: Schema
+   Message: Potential schema typo: 'priority score' is similar to 'priorityScore'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'priority score' should be 'priorityScore'
+
+   📄 apply-fixes.js:194
+   Category: Schema
+   Message: Potential schema typo: 'handling of metal' is similar to 'Handling of Metal'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'handling of metal' should be 'Handling of Metal'
+
+   📄 apply-fixes.js:241
+   Category: Error Handling
+   Message: Function 'testProspectValidation' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 apply-fixes.js:306
+   Category: Error Handling
+   Message: Function 'testOutreachValidation' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 apply-fixes.js:371
+   Category: Error Handling
+   Message: Function 'testAccountValidation' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 apply-fixes.js:564
+   Category: Schema
+   Message: Potential schema typo: 'Timestamp:' is similar to 'Timestamp'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Timestamp:' should be 'Timestamp'
+
+   📄 apply-fixes.js:572
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 apply-fixes.js:834
+   Category: Schema
+   Message: Potential schema typo: 'Address ' is similar to 'Address'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Address ' should be 'Address'
+
+   📄 dashboard.html:1304
+   Category: Schema
+   Message: Potential schema typo: 'outreachId' is similar to 'outreachID'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outreachId' should be 'outreachID'
+
+   📄 dashboard.html:1305
+   Category: Schema
+   Message: Potential schema typo: 'outreachId' is similar to 'outreachID'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outreachId' should be 'outreachID'
+
+   📄 dashboard.html:3385
+   Category: Schema
+   Message: Potential schema typo: 'Competitors' is similar to 'Competitor'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Competitors' should be 'Competitor'
+
+   📄 dashboard.html:3385
+   Category: Schema
+   Message: Potential schema typo: 'Competitors' is similar to 'Competitor'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Competitors' should be 'Competitor'
+
+   📄 dashboard.html:3391
+   Category: Schema
+   Message: Potential schema typo: 'Competitors' is similar to 'Competitor'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Competitors' should be 'Competitor'
+
+   📄 dashboard.html:3397
+   Category: Schema
+   Message: Potential schema typo: 'Competitors' is similar to 'Competitor'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'Competitors' should be 'Competitor'
+
+   📄 dashboard.html:3423
+   Category: Schema
+   Message: Potential schema typo: 'outreachId' is similar to 'outreachID'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outreachId' should be 'outreachID'
+
+   📄 dashboard.html:3539
+   Category: Schema
+   Message: Potential schema typo: 'outreachId' is similar to 'outreachID'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outreachId' should be 'outreachID'
+
+   📄 dashboard.html:3558
+   Category: Schema
+   Message: Potential schema typo: 'outreachId' is similar to 'outreachID'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'outreachId' should be 'outreachID'
+
+   📄 test_robust.js:591
+   Category: Error Handling
+   Message: Function 'runAllRobustTests' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 test_robust.js:609
+   Category: Error Handling
+   Message: Function 'countResults' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 test_runner.js:231
+   Category: Error Handling
+   Message: Function 'generateTestSummary' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 test_runner.js:280
+   Category: Error Handling
+   Message: Function 'logTestResults' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 test_runner.js:690
+   Category: Schema
+   Message: Potential schema typo: 'urgencyBands' is similar to 'urgencyBand'
+   Context: String literal in code...
+   💡 Recommendation: Verify if 'urgencyBands' should be 'urgencyBand'
+
+   📄 test_unit.js:336
+   Category: Error Handling
+   Message: Function 'runAllUnitTests' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+🔸 LOW ISSUES:
+
+   📄 AutoFillService.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 AutoFillService.js:7
+   Category: Code Quality
+   Message: Function 'runMasterAutofill' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 AutoFillService.js:20
+   Category: Code Quality
+   Message: Function 'autofillProspects' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 AutoFillService.js:54
+   Category: Code Quality
+   Message: Function 'autofillOutreach' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:134
+   Category: Code Quality
+   Message: Function 'validateProspect' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:294
+   Category: Code Quality
+   Message: Function 'validateOutreach' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:422
+   Category: Code Quality
+   Message: Function 'validateNewAccount' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:556
+   Category: Code Quality
+   Message: Function 'validateBusinessLogic' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:683
+   Category: Code Quality
+   Message: Function 'validateCompleteSubmission' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 CSVImport.js:148
+   Category: Code Quality
+   Message: Function 'parseCSVWithHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 CSVImport.js:190
+   Category: Code Quality
+   Message: Function 'parseCSVLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 CSVImport.js:244
+   Category: Code Quality
+   Message: Function 'normalizeHeaderSafe' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 CSVImport.js:252
+   Category: Code Quality
+   Message: Function 'areSimilarHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:10
+   Category: Code Quality
+   Message: Function 'validateProspectsData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:92
+   Category: Code Quality
+   Message: Function 'validateOutreachData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:174
+   Category: Code Quality
+   Message: Function '_validateHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:266
+   Category: Code Quality
+   Message: Function '_validateProspectsRow' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:471
+   Category: Code Quality
+   Message: Function '_validateOutreachRow' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:665
+   Category: Code Quality
+   Message: Function '_normalizeString' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:675
+   Category: Code Quality
+   Message: Function '_validateIndustry' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:732
+   Category: Code Quality
+   Message: Function '_validateOutcomeCategory' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:789
+   Category: Code Quality
+   Message: Function '_validateStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:846
+   Category: Code Quality
+   Message: Function '_validateContactType' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:903
+   Category: Code Quality
+   Message: Function '_validateUrgencyBand' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:975
+   Category: Code Quality
+   Message: Function '_validateActivityType' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1052
+   Category: Code Quality
+   Message: Function '_validateNumeric' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1107
+   Category: Code Quality
+   Message: Function '_validateDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1158
+   Category: Code Quality
+   Message: Function '_validateBoolean' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1207
+   Category: Code Quality
+   Message: Function '_validateOwner' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1336
+   Category: Code Quality
+   Message: Function '_areSimilarStrings' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1412
+   Category: Code Quality
+   Message: Function 'generateValidationReport' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1499
+   Category: Code Quality
+   Message: Function 'parseCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1576
+   Category: Code Quality
+   Message: Function '_parseCSVLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:74
+   Category: Code Quality
+   Message: Function 'validateAndImportProspectsCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:135
+   Category: Code Quality
+   Message: Function 'validateAndImportOutreachCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:196
+   Category: Code Quality
+   Message: Function 'parseProspectsCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:252
+   Category: Code Quality
+   Message: Function 'parseOutreachCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:309
+   Category: Code Quality
+   Message: Function 'parseCSVLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:382
+   Category: Code Quality
+   Message: Function 'validateProspectsData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:600
+   Category: Code Quality
+   Message: Function 'validateOutreachData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:832
+   Category: Code Quality
+   Message: Function 'validateHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:928
+   Category: Code Quality
+   Message: Function 'validateIndustry' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:988
+   Category: Code Quality
+   Message: Function 'validateOutcomeCategory' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1048
+   Category: Code Quality
+   Message: Function 'validateStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1108
+   Category: Code Quality
+   Message: Function 'validateContactType' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1169
+   Category: Code Quality
+   Message: Function 'areSimilarStrings' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1233
+   Category: Code Quality
+   Message: Function 'isValidNumber' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1248
+   Category: Code Quality
+   Message: Function 'isValidDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1264
+   Category: Code Quality
+   Message: Function 'isValidBoolean' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1645
+   Category: Code Quality
+   Message: Function 'importToProspectsSheet' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1704
+   Category: Code Quality
+   Message: Function 'importToOutreachSheet' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorHandling.js:86
+   Category: Code Quality
+   Message: Function '_formatErrorEmail' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorHandling.js:123
+   Category: Code Quality
+   Message: Function 'withErrorHandling' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorHandling.js:236
+   Category: Code Quality
+   Message: Function 'withSheetLock' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorHandling.js:267
+   Category: Code Quality
+   Message: Function 'withFullProtection' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FuzzyMatchingUtils.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 FuzzyMatchingUtils.js:14
+   Category: Code Quality
+   Message: Function 'fuzzyMatchCompany' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 MenuFunctions.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 MenuFunctions.js:6
+   Category: Code Quality
+   Message: Function 'onOpen' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 MenuFunctions.js:36
+   Category: Code Quality
+   Message: Function 'openSuiteCRM' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Normalization.js:10
+   Category: Code Quality
+   Message: Function 'normalizeStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Normalization.js:32
+   Category: Code Quality
+   Message: Function 'validateAndFixDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 OutreachFunctions.js:413
+   Category: Code Quality
+   Message: Function 'getLastTouchInfo' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PerformanceUtils.js:508
+   Category: Code Quality
+   Message: Function 'formatErrorEmail' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PerformanceUtils.js:666
+   Category: Code Quality
+   Message: Function 'updateCellSafeWithLock' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PerformanceUtils.js:708
+   Category: Code Quality
+   Message: Function 'appendRowSafeWithLock' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PerformanceUtils.js:739
+   Category: Code Quality
+   Message: Function 'setValuesWithLock' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PipelineService.js:46
+   Category: Code Quality
+   Message: Function 'getUrgentProspects' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectFunctions.js:122
+   Category: Code Quality
+   Message: Function 'getCompanyDetailsForAutofill' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectFunctions.js:332
+   Category: Code Quality
+   Message: Function 'fuzzyMatchCompany' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectFunctions.js:620
+   Category: Code Quality
+   Message: Function 'calculateNextBusinessDay' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectFunctions.js:676
+   Category: Code Quality
+   Message: Function 'createNewProspect' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectScoringService.js:6
+   Category: Code Quality
+   Message: Function 'calculateProspectScores' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectScoringService.js:38
+   Category: Code Quality
+   Message: Function 'calculateIndustryScore' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ReportFunctions.js:721
+   Category: Code Quality
+   Message: Function 'calculateStatusPriority' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ReportFunctions.js:759
+   Category: Code Quality
+   Message: Function 'analyzeRecentActivity' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ReportFunctions.js:818
+   Category: Code Quality
+   Message: Function 'calculateOpportunityValue' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ReportFunctions.js:938
+   Category: Code Quality
+   Message: Function 'isClosedStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:26
+   Category: Code Quality
+   Message: Function 'importAndValidateSettingsCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:87
+   Category: Code Quality
+   Message: Function 'parseSettingsCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:144
+   Category: Code Quality
+   Message: Function 'parseCSVLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:217
+   Category: Code Quality
+   Message: Function 'validateSettingsData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:355
+   Category: Code Quality
+   Message: Function 'validateHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:451
+   Category: Code Quality
+   Message: Function 'validateCategory' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:512
+   Category: Code Quality
+   Message: Function 'areSimilarStrings' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:581
+   Category: Code Quality
+   Message: Function 'validateFieldsForCategory' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:684
+   Category: Code Quality
+   Message: Function 'isValidNumber' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:699
+   Category: Code Quality
+   Message: Function 'isValidColor' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:817
+   Category: Code Quality
+   Message: Function 'importToSettingsSheet' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SetupFunctions.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 SetupFunctions.js:6
+   Category: Code Quality
+   Message: Function 'installTriggers' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:122
+   Category: Code Quality
+   Message: Function 'parseDateString' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:200
+   Category: Code Quality
+   Message: Function 'validateDateRange' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:239
+   Category: Code Quality
+   Message: Function 'dateDiff' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:269
+   Category: Code Quality
+   Message: Function 'normalizeHeader' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:296
+   Category: Code Quality
+   Message: Function 'getSheetSafe' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:353
+   Category: Code Quality
+   Message: Function 'generateUniqueId' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:365
+   Category: Code Quality
+   Message: Function 'generateCompanyId' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:376
+   Category: Code Quality
+   Message: Function 'parseCurrency' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:383
+   Category: Code Quality
+   Message: Function 'validateKeys' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:451
+   Category: Code Quality
+   Message: Function 'validateAndFormatDateRange' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:8
+   Category: Code Quality
+   Message: Function 'normalize' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:30
+   Category: Code Quality
+   Message: Function 'splitAndFilter' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:79
+   Category: Code Quality
+   Message: Function 'toTitleCase' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:89
+   Category: Code Quality
+   Message: Function 'concat' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:134
+   Category: Code Quality
+   Message: Function 'capitalizeFirst' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:39
+   Category: Code Quality
+   Message: Function 'getColLetter' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:45
+   Category: Code Quality
+   Message: Function 'getColIndex' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:176
+   Category: Code Quality
+   Message: Function 'processAccountWon' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:235
+   Category: Code Quality
+   Message: Function 'calculateSimilarity' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:246
+   Category: Code Quality
+   Message: Function 'editDistance' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SystemAlignment.gs:12
+   Category: Code Quality
+   Message: Function 'main_alignSystemSchema' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ValidationUtils.js:8
+   Category: Code Quality
+   Message: Function 'validateDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ValidationUtils.js:116
+   Category: Code Quality
+   Message: Function 'validateRequiredFields' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ValidationUtils.js:159
+   Category: Code Quality
+   Message: Function 'normalizeString' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ValidationUtils.js:173
+   Category: Code Quality
+   Message: Function 'splitAndFilter' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 apply-fixes.js:19
+   Category: Code Quality
+   Message: Function 'generateProspect' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 apply-fixes.js:49
+   Category: Code Quality
+   Message: Function 'generateOutreach' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 apply-fixes.js:78
+   Category: Code Quality
+   Message: Function 'generateAccount' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 apply-fixes.js:602
+   Category: Code Quality
+   Message: Function 'standardizeDateHandling' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 simple_test.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 test_comprehensive_validation.js:280
+   Category: Code Quality
+   Message: Function 'testValidationReport' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_normalization.js:45
+   Category: Code Quality
+   Message: Function 'testNormalizeStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_normalization.js:89
+   Category: Code Quality
+   Message: Function 'testValidateAndFixDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_robust.js:66
+   Category: Code Quality
+   Message: Function 'formatDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_robust.js:137
+   Category: Code Quality
+   Message: Function 'assertHasProperties' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_robust.js:185
+   Category: Code Quality
+   Message: Function 'datesMatchByDatePart' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_robust.js:609
+   Category: Code Quality
+   Message: Function 'countResults' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_runner.js:231
+   Category: Code Quality
+   Message: Function 'generateTestSummary' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_settings_validation.js:217
+   Category: Code Quality
+   Message: Function 'runSettingsValidationTests' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+🔸 INFO ISSUES:
+
+   📄 ErrorHandling.js:180
+   Category: Performance
+   Message: SpreadsheetApp.flush() can impact performance
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 PerformanceUtils.js:92
+   Category: Performance
+   Message: SpreadsheetApp.flush() can impact performance
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 PerformanceUtils.js:779
+   Category: Performance
+   Message: SpreadsheetApp.flush() can impact performance
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+================================================================================
+                        ACTIONABLE RECOMMENDATIONS                          
+================================================================================
+
+
+🟠 HIGH - Add Error Handling
+----------------------------------------
+  • Add try/catch blocks to 8 files lacking error handling
+  • Focus on files with complex functions first
+  • Use ErrorHandling.js patterns for consistency
+
+🟡 MEDIUM - Optimize Performance
+----------------------------------------
+  • Address 41 performance issues
+  • Batch SpreadsheetApp operations
+  • Cache frequently accessed data
+  • Use getDataRange() sparingly
+
+🟢 LOW - Code Cleanup
+----------------------------------------
+  • Review 34 potentially orphaned functions
+  • Remove dead code or add documentation
+  • Consolidate duplicate utility functions
+
+📚 INFO - Documentation
+----------------------------------------
+  • Add JSDoc comments to 428 functions
+  • Document function parameters and return types
+  • Add usage examples for complex functions

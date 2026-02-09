@@ -1,0 +1,2837 @@
+================================================================================
+       K&L RECYCLING CRM - COMPREHENSIVE BLUEPRINT & HEALTH REPORT       
+================================================================================
+
+Generated: 2026-02-07 10:51:23
+Files Analyzed: 54
+Functions Found: 0
+Total Lines of Code: 28546
+
+--------------------------------------------------------------------------------
+SYSTEM ARCHITECTURE OVERVIEW
+--------------------------------------------------------------------------------
+
+📊 SHEET STRUCTURE (from Schema):
+
+   📋 OUTREACH
+      • Company
+      • Company ID
+      • Competitor
+      • Contact Type
+      • Days Since Last Visit
+      • Email Sent
+      • Follow Up Action
+      • Next Visit Countdown
+      • Next Visit Date
+      • Notes
+      ... and 8 more columns
+
+   📋 PROSPECTS
+      • Address
+      • Close Probability
+      • Company ID
+      • Company Name
+      • Contact Status
+      • Days Since Last Contact
+      • Industry
+      • Last Outcome
+      • Last Outreach Date
+      • Latitude
+      ... and 8 more columns
+
+   📋 ACCOUNTS
+      • Company Name
+      • Contact Name
+      • Contact Phone
+      • Contact Role
+      • Deployed
+      • Handling of Metal
+      • Mailing Location
+      • Notes
+      • Payout Price
+      • Roll Off Container Size
+      ... and 3 more columns
+
+   📋 CONTACTS
+      • Account
+      • Address
+      • Company
+      • Department
+      • Email
+      • Name
+      • Phone Number
+      • Role
+
+   📋 SETTINGS
+      • Category
+      • Column 8
+      • Description
+      • Key
+      • Value_1
+      • Value_2
+      • Value_3
+      • Value_4
+
+⚙️  SETTINGS & VALIDATION RULES:
+   Valid Outcomes: Account Won, Disqualified, Follow-Up, Initial Contact, Interested (Hot), Interested (Warm), No Answer, Not Contacted, Not Interested
+   Valid Stages: Lost, Nurture, Outreach, Prospect, Won
+   Workflow Rules: 10 defined
+      • Account Won → Stage: Won, Status: Active
+      • Interested (Hot) → Stage: Nurture, Status: Interested (Hot)
+      • Interested (Warm) → Stage: Nurture, Status: Interested (Warm)
+      • Interested → Stage: Nurture, Status: Interested (Warm)
+      • Initial Contact → Stage: Outreach, Status: Interested (Warm)
+
+📁 FILE BREAKDOWN:
+
+   📦 Core Services (4 files):
+      • CRM_API.js (8 lines, 0 functions)
+      • Config.js (150 lines, 2 functions)
+      • MenuFunctions.js (33 lines, 1 functions)
+      • Settings.js (177 lines, 3 functions)
+
+   🎨 UI Components (9 files):
+      • CRM_BLUEPRINT_REPORT.html (857 lines, 1 functions)
+      • CRM_Styles.html (927 lines, 0 functions)
+      • CRM_Suite.html (655 lines, 23 functions)
+      • DashboardBackend.js (82 lines, 2 functions)
+      • ReportFunctions.js (1409 lines, 24 functions)
+      • dashboard.html (3679 lines, 63 functions)
+      • dateRangeReport.html (193 lines, 7 functions)
+      • report.html (219 lines, 1 functions)
+      • reports\CRM_BLUEPRINT_REPORT.html (857 lines, 1 functions)
+
+   🔄 Sync & Workflow (3 files):
+      • OutreachSyncFunctions.js (228 lines, 4 functions)
+      • Sync.js (535 lines, 28 functions)
+      • WorkflowAutomationService.js (293 lines, 8 functions)
+
+   ✅ Validation (5 files):
+      • BusinessValidation.js (1427 lines, 56 functions)
+      • ComprehensiveValidationSystem.js (1660 lines, 29 functions)
+      • DataValidation.js (1834 lines, 32 functions)
+      • SettingsValidation.js (943 lines, 17 functions)
+      • ValidationUtils.js (189 lines, 11 functions)
+
+   🧪 Testing (6 files):
+      • simple_test.js (8 lines, 1 functions)
+      • test_integration.js (220 lines, 21 functions)
+      • test_runner.js (73 lines, 9 functions)
+      • test_unit.js (113 lines, 14 functions)
+      • test_validation.js (150 lines, 10 functions)
+      • test_workflow.js (129 lines, 9 functions)
+
+   🔧 Utilities (5 files):
+      • DataHelpers.js (812 lines, 19 functions)
+      • FuzzyMatchingUtils.js (125 lines, 3 functions)
+      • PerformanceUtils.js (789 lines, 26 functions)
+      • SharedUtils.js (684 lines, 6 functions)
+      • StringUtils.js (139 lines, 15 functions)
+
+   📄 Other (22 files):
+      • AccountFunction.js (278 lines, 3 functions)
+      • AlertingService.js (158 lines, 5 functions)
+      • AutoFillService.js (79 lines, 3 functions)
+      • BatchProcessor.js (719 lines, 18 functions)
+      • CSVImport.js (278 lines, 5 functions)
+      • ColumnMapper.js (126 lines, 4 functions)
+      • ErrorBoundary.js (557 lines, 15 functions)
+      • ErrorHandling.js (279 lines, 10 functions)
+      • FunctionRefactorer.js (544 lines, 23 functions)
+      • HtmlSafeRenderer.js (569 lines, 25 functions)
+
+🔄 DATA FLOW:
+   Outreach Entry → Sync to Prospects → Account Won → Migrate to Accounts
+   Key Functions:
+      • syncCRMLogic() - Main sync orchestrator
+      • processAccountWon() - Account migration trigger
+      • processOutreachSubmission() - Form submission handler
+
+🔗 EXTERNAL DEPENDENCIES:
+   • CacheService
+   • MailApp
+   • ScriptApp
+   • SpreadsheetApp
+
+🔑 CRITICAL FUNCTIONS:
+
+
+================================================================================
+                          SYSTEM HEALTH ASSESSMENT                          
+================================================================================
+
+OVERALL HEALTH SCORE: 50/100 - 🟠 WARNING
+Total Issues Found: 438
+  🔴 Critical: 0
+  🟠 High: 34
+  🟡 Medium: 95
+  🟢 Low: 306
+  ℹ️  Info: 3
+
+--------------------------------------------------------------------------------
+ISSUES BY CATEGORY
+--------------------------------------------------------------------------------
+  Code Quality: 223
+  Maintainability: 106
+  Performance: 47
+  Error Handling: 39
+  Schema: 15
+  Security: 8
+
+--------------------------------------------------------------------------------
+DETAILED ISSUE LIST
+--------------------------------------------------------------------------------
+
+🔸 HIGH ISSUES:
+
+   📄 BatchProcessor.js:459
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 BusinessValidation.js:1315
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 CRM_Suite.html:204
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: el.innerHTML = sanitizeHtml(html);...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 CRM_Suite.html:583
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: datalist.innerHTML = '';...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 DataValidation.js:1661
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataValidation.js:1720
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ErrorBoundary.js:485
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 FuzzyMatchingUtils.js:0
+   Category: Code Quality
+   Message: Required function 'normalizeCompanyName' not found in FuzzyMatchingUtils.js
+   Context: Incomplete fuzzy matching implementation...
+   💡 Recommendation: Implement normalizeCompanyName function in FuzzyMatchingUtils.js
+
+   📄 HtmlSafeRenderer.js:170
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: temp.innerHTML = String(html);...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 HtmlSafeRenderer.js:267
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: element.innerHTML = sanitizeHtml(html);...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 HtmlSafeRenderer.js:477
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: element.innerHTML = sanitizeHtml(html);...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 HtmlSafeRenderer.js:488
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: container.innerHTML = sanitizeHtml(html);...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 HtmlSafeRenderer.js:553
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: content.innerHTML = sanitizeHtml(opts.content);...
+   💡 Recommendation: Review and use safer alternatives
+
+   📄 Normalization.js:86
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:142
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:160
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:227
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Normalization.js:295
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:651
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:715
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:797
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:923
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 OutreachFunctions.js:997
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SettingsValidation.js:833
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SharedUtils.js:435
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SharedUtils.js:617
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SharedUtils.js:659
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Sync.js:206
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Sync.js:349
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Sync.js:359
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SystemAlignment.gs:106
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SystemAlignment.gs:176
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 WorkflowAutomationService.js:194
+   Category: Performance
+   Message: Loading entire sheet into memory - consider batching for large datasets
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 dashboard.html:2175
+   Category: Security
+   Message: innerHTML can lead to XSS vulnerabilities
+   Context: dropdown.innerHTML = results.map((r, index) => {...
+   💡 Recommendation: Review and use safer alternatives
+
+🔸 MEDIUM ISSUES:
+
+   📄 AccountFunction.js:57
+   Category: Code Quality
+   Message: Function 'processNewAccount' has high complexity (18)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 AccountFunction.js:247
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 AlertingService.js:153
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 AutoFillService.js:21
+   Category: Schema
+   Message: Access to undocumented sheet: 'Prospects'
+   Context: getSheetByName('Prospects')...
+   💡 Recommendation: Add 'Prospects' to Config.js HEADERS or System_Schema.csv
+
+   📄 AutoFillService.js:55
+   Category: Schema
+   Message: Access to undocumented sheet: 'Outreach'
+   Context: getSheetByName('Outreach')...
+   💡 Recommendation: Add 'Outreach' to Config.js HEADERS or System_Schema.csv
+
+   📄 BatchProcessor.js:407
+   Category: Error Handling
+   Message: Function '_groupUpdatesByRange' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 BusinessValidation.js:241
+   Category: Error Handling
+   Message: Function 'createProspectPipeline' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 BusinessValidation.js:401
+   Category: Error Handling
+   Message: Function 'createAccountPipeline' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 CSVImport.js:13
+   Category: Code Quality
+   Message: Function 'importCSVData' has high complexity (20)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ComprehensiveValidationSystem.js:266
+   Category: Code Quality
+   Message: Function '_validateProspectsRow' has high complexity (31)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ComprehensiveValidationSystem.js:471
+   Category: Code Quality
+   Message: Function '_validateOutreachRow' has high complexity (28)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ComprehensiveValidationSystem.js:1359
+   Category: Error Handling
+   Message: Function '_simpleLevenshtein' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Config.js:134
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:101
+   Category: Code Quality
+   Message: Function 'updateCellSafe' has high complexity (17)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataHelpers.js:205
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:230
+   Category: Code Quality
+   Message: Function 'prependRowSafe' has high complexity (21)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataHelpers.js:346
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:371
+   Category: Code Quality
+   Message: Function 'appendRowSafe' has high complexity (21)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataHelpers.js:460
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:485
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 DataHelpers.js:575
+   Category: Code Quality
+   Message: Function 'getSheetSafe' has high complexity (18)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataValidation.js:382
+   Category: Code Quality
+   Message: Function 'validateProspectsData' has high complexity (22)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataValidation.js:600
+   Category: Code Quality
+   Message: Function 'validateOutreachData' has high complexity (24)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 DataValidation.js:1195
+   Category: Error Handling
+   Message: Function 'simpleLevenshtein' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 DataValidation.js:1385
+   Category: Code Quality
+   Message: Function 'normalizeFieldValue' has high complexity (40)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ErrorBoundary.js:67
+   Category: Error Handling
+   Message: Function '_classifyError' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ErrorBoundary.js:105
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ErrorBoundary.js:125
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ErrorHandling.js:50
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 FunctionRefactorer.js:475
+   Category: Error Handling
+   Message: Function 'refactor' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 FuzzyMatchingUtils.js:98
+   Category: Error Handling
+   Message: Function 'levenshteinDistance' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 HtmlSafeRenderer.js:165
+   Category: Code Quality
+   Message: Function 'sanitizeHtml' has high complexity (17)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 HtmlSafeRenderer.js:165
+   Category: Error Handling
+   Message: Function 'sanitizeHtml' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 HtmlSafeRenderer.js:277
+   Category: Error Handling
+   Message: Function 'createElement' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 HtmlSafeRenderer.js:374
+   Category: Error Handling
+   Message: Function 'createTableRows' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 HtmlSafeRenderer.js:375
+   Category: Error Handling
+   Message: Function 'fragment' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 HtmlSafeRenderer.js:378
+   Category: Error Handling
+   Message: Function 'tr' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 LoggerInjector.js:157
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 LoggerInjector.js:170
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 LoggerInjector.js:196
+   Category: Error Handling
+   Message: Function '_log' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Normalization.js:32
+   Category: Error Handling
+   Message: Function 'validateAndFixDate' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 OutreachFunctions.js:447
+   Category: Code Quality
+   Message: Function 'calculateDashboardMetrics' has high complexity (21)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 OutreachFunctions.js:784
+   Category: Code Quality
+   Message: Function 'getContactDetails' has high complexity (19)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 OutreachFunctions.js:791
+   Category: Schema
+   Message: Access to undocumented sheet: 'Contacts'
+   Context: getSheetByName('Contacts')...
+   💡 Recommendation: Add 'Contacts' to Config.js HEADERS or System_Schema.csv
+
+   📄 OutreachSyncFunctions.js:14
+   Category: Code Quality
+   Message: Function 'syncOutreachToProspects' has high complexity (20)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 OutreachSyncFunctions.js:200
+   Category: Error Handling
+   Message: Function 'calculateUrgencyScore' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 OutreachSyncFunctions.js:217
+   Category: Error Handling
+   Message: Function 'calculateUrgencyBand' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 PerformanceUtils.js:720
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ProspectFunctions.js:409
+   Category: Error Handling
+   Message: Function 'levenshteinDistance' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ProspectFunctions.js:553
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ProspectFunctions.js:599
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ProspectScoringService.js:78
+   Category: Error Handling
+   Message: Function 'calculateUrgencyScore' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ReportFunctions.js:22
+   Category: Code Quality
+   Message: Function 'generateReportHtml' has high complexity (23)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ReportFunctions.js:137
+   Category: Code Quality
+   Message: Function 'generateProfessionalReport' has high complexity (34)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ReportFunctions.js:631
+   Category: Code Quality
+   Message: Function 'calculateActionPriority' has high complexity (19)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 ReportFunctions.js:721
+   Category: Error Handling
+   Message: Function 'calculateStatusPriority' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ReportFunctions.js:759
+   Category: Error Handling
+   Message: Function 'analyzeRecentActivity' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ReportFunctions.js:818
+   Category: Error Handling
+   Message: Function 'calculateOpportunityValue' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 ReportFunctions.js:1119
+   Category: Code Quality
+   Message: Function 'generatePlainTextReportForRange' has high complexity (24)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 SchemaNormalizer.js:408
+   Category: Error Handling
+   Message: Function '_calculateSimilarity' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Settings.js:6
+   Category: Code Quality
+   Message: Function 'getSettings' has high complexity (25)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 Settings.js:120
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 SettingsValidation.js:538
+   Category: Error Handling
+   Message: Function 'simpleLevenshtein' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 SettingsValidation.js:581
+   Category: Code Quality
+   Message: Function 'validateFieldsForCategory' has high complexity (22)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 SharedUtils.js:353
+   Category: Error Handling
+   Message: Function 'dateDiff' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Sync.js:167
+   Category: Schema
+   Message: Access to undocumented sheet: 'Prospects'
+   Context: getSheetByName('Prospects')...
+   💡 Recommendation: Add 'Prospects' to Config.js HEADERS or System_Schema.csv
+
+   📄 Sync.js:168
+   Category: Schema
+   Message: Access to undocumented sheet: 'Outreach'
+   Context: getSheetByName('Outreach')...
+   💡 Recommendation: Add 'Outreach' to Config.js HEADERS or System_Schema.csv
+
+   📄 Sync.js:169
+   Category: Schema
+   Message: Access to undocumented sheet: 'Settings'
+   Context: getSheetByName('Settings')...
+   💡 Recommendation: Add 'Settings' to Config.js HEADERS or System_Schema.csv
+
+   📄 Sync.js:199
+   Category: Error Handling
+   Message: Function 'fixOutreachTypos' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 Sync.js:333
+   Category: Code Quality
+   Message: Function 'processAccountWon' has high complexity (16)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 Sync.js:340
+   Category: Schema
+   Message: Access to undocumented sheet: 'Outreach'
+   Context: getSheetByName('Outreach')...
+   💡 Recommendation: Add 'Outreach' to Config.js HEADERS or System_Schema.csv
+
+   📄 Sync.js:341
+   Category: Schema
+   Message: Access to undocumented sheet: 'Accounts'
+   Context: getSheetByName('Accounts')...
+   💡 Recommendation: Add 'Accounts' to Config.js HEADERS or System_Schema.csv
+
+   📄 Sync.js:342
+   Category: Schema
+   Message: Access to undocumented sheet: 'Prospects'
+   Context: getSheetByName('Prospects')...
+   💡 Recommendation: Add 'Prospects' to Config.js HEADERS or System_Schema.csv
+
+   📄 Sync.js:428
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 Sync.js:464
+   Category: Error Handling
+   Message: Function 'editDistance' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 SystemAlignment.gs:37
+   Category: Schema
+   Message: Access to undocumented sheet: 'Settings'
+   Context: getSheetByName('Settings')...
+   💡 Recommendation: Add 'Settings' to Config.js HEADERS or System_Schema.csv
+
+   📄 SystemAlignment.gs:102
+   Category: Error Handling
+   Message: Function 'cleanProspectIndustries' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 SystemAlignment.gs:103
+   Category: Schema
+   Message: Access to undocumented sheet: 'Prospects'
+   Context: getSheetByName('Prospects')...
+   💡 Recommendation: Add 'Prospects' to Config.js HEADERS or System_Schema.csv
+
+   📄 SystemAlignment.gs:172
+   Category: Error Handling
+   Message: Function 'fixOutreachStatuses' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 SystemAlignment.gs:173
+   Category: Schema
+   Message: Access to undocumented sheet: 'Outreach'
+   Context: getSheetByName('Outreach')...
+   💡 Recommendation: Add 'Outreach' to Config.js HEADERS or System_Schema.csv
+
+   📄 SystemAlignment.gs:204
+   Category: Schema
+   Message: Access to undocumented sheet: 'Outreach'
+   Context: getSheetByName('Outreach')...
+   💡 Recommendation: Add 'Outreach' to Config.js HEADERS or System_Schema.csv
+
+   📄 SystemAlignment.gs:230
+   Category: Schema
+   Message: Access to undocumented sheet: 'Accounts'
+   Context: getSheetByName('Accounts')...
+   💡 Recommendation: Add 'Accounts' to Config.js HEADERS or System_Schema.csv
+
+   📄 SystemAlignment.gs:266
+   Category: Schema
+   Message: Access to undocumented sheet: 'Settings'
+   Context: getSheetByName('Settings')...
+   💡 Recommendation: Add 'Settings' to Config.js HEADERS or System_Schema.csv
+
+   📄 SystemAlignment.gs:278
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 ValidationUtils.js:8
+   Category: Error Handling
+   Message: Function 'validateDate' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 WorkflowAutomationService.js:24
+   Category: Code Quality
+   Message: Function 'runDailyAutomation' has high complexity (16)
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Refactor to reduce cyclomatic complexity
+
+   📄 WorkflowAutomationService.js:255
+   Category: Error Handling
+   Message: Function 'getFollowupTemplateForOutcome' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 apply-fixes.js:241
+   Category: Error Handling
+   Message: Function 'testProspectValidation' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 apply-fixes.js:306
+   Category: Error Handling
+   Message: Function 'testOutreachValidation' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 apply-fixes.js:371
+   Category: Error Handling
+   Message: Function 'testAccountValidation' lacks error handling
+   Context: Complex function without try/catch...
+   💡 Recommendation: Add try/catch blocks for robust error handling
+
+   📄 apply-fixes.js:572
+   Category: Performance
+   Message: appendRow in loop is slow - batch append operations
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 test_integration.js:0
+   Category: Code Quality
+   Message: Test 'testFuzzyMatchingLogic' failing: Fuzzy matching failed on punctuation/spacing
+   Context: Integration test failure...
+   💡 Recommendation: Fix fuzzy matching logic to handle punctuation, spacing, and case variations
+
+   📄 test_integration.js:0
+   Category: Code Quality
+   Message: Test 'testFuzzyMatchingLogicExtended' failing: Should match with fuzzy logic
+   Context: Integration test failure...
+   💡 Recommendation: Fix fuzzy matching logic to handle punctuation, spacing, and case variations
+
+   📄 test_integration.js:0
+   Category: Code Quality
+   Message: Test 'testDataSynchronizationBasic' failing: Should match with fuzzy logic
+   Context: Integration test failure...
+   💡 Recommendation: Fix fuzzy matching logic to handle punctuation, spacing, and case variations
+
+   📄 test_integration.js:0
+   Category: Code Quality
+   Message: Test 'testCSVImportWorkflow' failing: Should parse company name correctly
+   Context: Integration test failure...
+   💡 Recommendation: Fix fuzzy matching logic to handle punctuation, spacing, and case variations
+
+🔸 LOW ISSUES:
+
+   📄 AccountFunction.js:57
+   Category: Maintainability
+   Message: Function 'processNewAccount' is 118 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 AccountFunction.js:177
+   Category: Maintainability
+   Message: Function 'checkNewAccounts' is 100 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 AutoFillService.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 AutoFillService.js:7
+   Category: Code Quality
+   Message: Function 'runMasterAutofill' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 AutoFillService.js:20
+   Category: Code Quality
+   Message: Function 'autofillProspects' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 AutoFillService.js:54
+   Category: Code Quality
+   Message: Function 'autofillOutreach' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BatchProcessor.js:100
+   Category: Code Quality
+   Message: Function '_calculateOptimalBatchSize' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BatchProcessor.js:120
+   Category: Code Quality
+   Message: Function '_safeSleep' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BatchProcessor.js:139
+   Category: Maintainability
+   Message: Function 'batchAppendRows' is 102 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BatchProcessor.js:185
+   Category: Code Quality
+   Message: Function 'numCols' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BatchProcessor.js:253
+   Category: Maintainability
+   Message: Function 'batchReadData' is 75 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BatchProcessor.js:341
+   Category: Maintainability
+   Message: Function 'batchUpdateCells' is 61 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BatchProcessor.js:407
+   Category: Code Quality
+   Message: Function '_groupUpdatesByRange' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BatchProcessor.js:464
+   Category: Code Quality
+   Message: Function 'getDataOptimized' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BatchProcessor.js:510
+   Category: Maintainability
+   Message: Function 'batchPrependRows' is 51 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BatchProcessor.js:627
+   Category: Maintainability
+   Message: Function 'processBatch' is 60 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BusinessValidation.js:56
+   Category: Code Quality
+   Message: Function 'required' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:65
+   Category: Code Quality
+   Message: Function 'validateCompanyName' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:85
+   Category: Code Quality
+   Message: Function 'validateContactName' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:95
+   Category: Code Quality
+   Message: Function 'validateAddress' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:105
+   Category: Code Quality
+   Message: Function 'validatePriorityScore' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:116
+   Category: Code Quality
+   Message: Function 'validateUrgencyScore' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:127
+   Category: Code Quality
+   Message: Function 'validateRollOffFee' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:145
+   Category: Code Quality
+   Message: Function 'validateCompanyId' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:156
+   Category: Code Quality
+   Message: Function 'validateContainerSize' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:167
+   Category: Code Quality
+   Message: Function 'validateOutcome' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:178
+   Category: Code Quality
+   Message: Function 'validateStage' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:189
+   Category: Code Quality
+   Message: Function 'validateStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:241
+   Category: Maintainability
+   Message: Function 'createProspectPipeline' is 75 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BusinessValidation.js:241
+   Category: Code Quality
+   Message: Function 'createProspectPipeline' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:243
+   Category: Code Quality
+   Message: Function 'prospectRequiredFields' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:270
+   Category: Code Quality
+   Message: Function 'prospectDates' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:291
+   Category: Code Quality
+   Message: Function 'pipeline' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:322
+   Category: Maintainability
+   Message: Function 'createOutreachPipeline' is 73 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BusinessValidation.js:322
+   Category: Code Quality
+   Message: Function 'createOutreachPipeline' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:324
+   Category: Code Quality
+   Message: Function 'outreachRequiredFields' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:370
+   Category: Code Quality
+   Message: Function 'pipeline' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:401
+   Category: Maintainability
+   Message: Function 'createAccountPipeline' is 85 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BusinessValidation.js:401
+   Category: Code Quality
+   Message: Function 'createAccountPipeline' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:403
+   Category: Code Quality
+   Message: Function 'accountRequiredFields' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:424
+   Category: Code Quality
+   Message: Function 'accountSiteLocation' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:437
+   Category: Code Quality
+   Message: Function 'accountFees' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:448
+   Category: Code Quality
+   Message: Function 'accountHandlingMethod' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:461
+   Category: Code Quality
+   Message: Function 'pipeline' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:498
+   Category: Maintainability
+   Message: Function 'getWrappedValidator' is 54 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 BusinessValidation.js:498
+   Category: Code Quality
+   Message: Function 'getWrappedValidator' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:503
+   Category: Code Quality
+   Message: Function 'wrappedFn' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:592
+   Category: Code Quality
+   Message: Function 'analyzeValidationComplexity' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 BusinessValidation.js:671
+   Category: Code Quality
+   Message: Function 'validateProspectPipeline' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 CSVImport.js:13
+   Category: Maintainability
+   Message: Function 'importCSVData' is 130 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 CSVImport.js:148
+   Category: Code Quality
+   Message: Function 'parseCSVWithHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 CSVImport.js:190
+   Category: Code Quality
+   Message: Function 'parseCSVLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 CSVImport.js:244
+   Category: Code Quality
+   Message: Function 'normalizeHeaderSafe' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 CSVImport.js:252
+   Category: Code Quality
+   Message: Function 'areSimilarHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:10
+   Category: Maintainability
+   Message: Function 'validateProspectsData' is 77 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:10
+   Category: Code Quality
+   Message: Function 'validateProspectsData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:92
+   Category: Maintainability
+   Message: Function 'validateOutreachData' is 77 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:92
+   Category: Code Quality
+   Message: Function 'validateOutreachData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:174
+   Category: Maintainability
+   Message: Function '_validateHeaders' is 87 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:174
+   Category: Code Quality
+   Message: Function '_validateHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:266
+   Category: Maintainability
+   Message: Function '_validateProspectsRow' is 200 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:266
+   Category: Code Quality
+   Message: Function '_validateProspectsRow' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:471
+   Category: Maintainability
+   Message: Function '_validateOutreachRow' is 178 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:471
+   Category: Code Quality
+   Message: Function '_validateOutreachRow' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:665
+   Category: Code Quality
+   Message: Function '_normalizeString' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:675
+   Category: Maintainability
+   Message: Function '_validateIndustry' is 52 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:675
+   Category: Code Quality
+   Message: Function '_validateIndustry' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:732
+   Category: Maintainability
+   Message: Function '_validateOutcomeCategory' is 52 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:732
+   Category: Code Quality
+   Message: Function '_validateOutcomeCategory' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:789
+   Category: Maintainability
+   Message: Function '_validateStatus' is 52 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:789
+   Category: Code Quality
+   Message: Function '_validateStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:846
+   Category: Maintainability
+   Message: Function '_validateContactType' is 52 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:846
+   Category: Code Quality
+   Message: Function '_validateContactType' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:903
+   Category: Maintainability
+   Message: Function '_validateUrgencyBand' is 67 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:903
+   Category: Code Quality
+   Message: Function '_validateUrgencyBand' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:975
+   Category: Maintainability
+   Message: Function '_validateActivityType' is 72 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:975
+   Category: Code Quality
+   Message: Function '_validateActivityType' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1052
+   Category: Code Quality
+   Message: Function '_validateNumeric' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1107
+   Category: Code Quality
+   Message: Function '_validateDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1158
+   Category: Code Quality
+   Message: Function '_validateBoolean' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1207
+   Category: Code Quality
+   Message: Function '_validateOwner' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1336
+   Category: Code Quality
+   Message: Function '_areSimilarStrings' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1412
+   Category: Maintainability
+   Message: Function 'generateValidationReport' is 82 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:1412
+   Category: Code Quality
+   Message: Function 'generateValidationReport' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1499
+   Category: Maintainability
+   Message: Function 'parseCSV' is 72 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:1499
+   Category: Code Quality
+   Message: Function 'parseCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ComprehensiveValidationSystem.js:1576
+   Category: Maintainability
+   Message: Function '_parseCSVLine' is 66 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ComprehensiveValidationSystem.js:1576
+   Category: Code Quality
+   Message: Function '_parseCSVLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:71
+   Category: Code Quality
+   Message: Function 'wrapDataFunction' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:101
+   Category: Maintainability
+   Message: Function 'updateCellSafe' is 119 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataHelpers.js:230
+   Category: Maintainability
+   Message: Function 'prependRowSafe' is 131 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataHelpers.js:371
+   Category: Maintainability
+   Message: Function 'appendRowSafe' is 129 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataHelpers.js:509
+   Category: Maintainability
+   Message: Function 'getColumnIndex' is 54 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataHelpers.js:575
+   Category: Maintainability
+   Message: Function 'getSheetSafe' is 101 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataHelpers.js:690
+   Category: Code Quality
+   Message: Function 'updateCellSafeWithLogging' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:702
+   Category: Code Quality
+   Message: Function 'prependRowSafeWithLogging' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:714
+   Category: Code Quality
+   Message: Function 'appendRowSafeWithLogging' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:726
+   Category: Code Quality
+   Message: Function 'getColumnIndexWithLogging' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:738
+   Category: Code Quality
+   Message: Function 'getSheetSafeWithLogging' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:750
+   Category: Code Quality
+   Message: Function 'prependRowsBatch' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:751
+   Category: Code Quality
+   Message: Function 'fn' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:785
+   Category: Code Quality
+   Message: Function 'appendRowsBatch' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataHelpers.js:786
+   Category: Code Quality
+   Message: Function 'fn' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:74
+   Category: Maintainability
+   Message: Function 'validateAndImportProspectsCSV' is 54 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:74
+   Category: Code Quality
+   Message: Function 'validateAndImportProspectsCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:135
+   Category: Maintainability
+   Message: Function 'validateAndImportOutreachCSV' is 54 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:135
+   Category: Code Quality
+   Message: Function 'validateAndImportOutreachCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:196
+   Category: Code Quality
+   Message: Function 'parseProspectsCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:252
+   Category: Code Quality
+   Message: Function 'parseOutreachCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:309
+   Category: Maintainability
+   Message: Function 'parseCSVLine' is 66 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:309
+   Category: Code Quality
+   Message: Function 'parseCSVLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:382
+   Category: Maintainability
+   Message: Function 'validateProspectsData' is 211 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:382
+   Category: Code Quality
+   Message: Function 'validateProspectsData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:600
+   Category: Maintainability
+   Message: Function 'validateOutreachData' is 224 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:600
+   Category: Code Quality
+   Message: Function 'validateOutreachData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:832
+   Category: Maintainability
+   Message: Function 'validateHeaders' is 89 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:832
+   Category: Code Quality
+   Message: Function 'validateHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:928
+   Category: Maintainability
+   Message: Function 'validateIndustry' is 53 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:928
+   Category: Code Quality
+   Message: Function 'validateIndustry' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:988
+   Category: Maintainability
+   Message: Function 'validateOutcomeCategory' is 53 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:988
+   Category: Code Quality
+   Message: Function 'validateOutcomeCategory' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1048
+   Category: Maintainability
+   Message: Function 'validateStatus' is 53 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:1048
+   Category: Code Quality
+   Message: Function 'validateStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1108
+   Category: Maintainability
+   Message: Function 'validateContactType' is 53 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:1108
+   Category: Code Quality
+   Message: Function 'validateContactType' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1169
+   Category: Code Quality
+   Message: Function 'areSimilarStrings' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1233
+   Category: Code Quality
+   Message: Function 'isValidNumber' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1248
+   Category: Code Quality
+   Message: Function 'isValidDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1264
+   Category: Code Quality
+   Message: Function 'isValidBoolean' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1385
+   Category: Maintainability
+   Message: Function 'normalizeFieldValue' is 82 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:1645
+   Category: Maintainability
+   Message: Function 'importToProspectsSheet' is 52 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:1645
+   Category: Code Quality
+   Message: Function 'importToProspectsSheet' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 DataValidation.js:1704
+   Category: Maintainability
+   Message: Function 'importToOutreachSheet' is 52 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 DataValidation.js:1704
+   Category: Code Quality
+   Message: Function 'importToOutreachSheet' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorBoundary.js:67
+   Category: Code Quality
+   Message: Function '_classifyError' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorBoundary.js:185
+   Category: Code Quality
+   Message: Function '_formatError' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorBoundary.js:240
+   Category: Maintainability
+   Message: Function 'wrap' is 59 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ErrorBoundary.js:313
+   Category: Maintainability
+   Message: Function 'withRetry' is 68 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ErrorHandling.js:86
+   Category: Code Quality
+   Message: Function '_formatErrorEmail' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorHandling.js:123
+   Category: Code Quality
+   Message: Function 'withErrorHandling' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorHandling.js:236
+   Category: Code Quality
+   Message: Function 'withSheetLock' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ErrorHandling.js:267
+   Category: Code Quality
+   Message: Function 'withFullProtection' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:39
+   Category: Code Quality
+   Message: Function 'calculateComplexity' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:74
+   Category: Code Quality
+   Message: Function 'analyzeFunction' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:98
+   Category: Maintainability
+   Message: Function 'splitValidationFunction' is 98 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 FunctionRefactorer.js:98
+   Category: Code Quality
+   Message: Function 'splitValidationFunction' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:166
+   Category: Code Quality
+   Message: Function 'mainValidator' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:168
+   Category: Code Quality
+   Message: Function 'warnings' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:203
+   Category: Code Quality
+   Message: Function 'createValidationPipeline' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:242
+   Category: Code Quality
+   Message: Function 'generateJSDoc' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:378
+   Category: Code Quality
+   Message: Function 'date' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:475
+   Category: Code Quality
+   Message: Function 'refactor' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FunctionRefactorer.js:527
+   Category: Code Quality
+   Message: Function 'findComplexFunctions' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 FuzzyMatchingUtils.js:14
+   Category: Maintainability
+   Message: Function 'fuzzyMatchCompany' is 51 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 HtmlSafeRenderer.js:100
+   Category: Maintainability
+   Message: Function 'validateUrl' is 54 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 HtmlSafeRenderer.js:165
+   Category: Maintainability
+   Message: Function 'sanitizeHtml' is 79 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 HtmlSafeRenderer.js:374
+   Category: Code Quality
+   Message: Function 'createTableRows' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 HtmlSafeRenderer.js:375
+   Category: Code Quality
+   Message: Function 'fragment' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 HtmlSafeRenderer.js:378
+   Category: Code Quality
+   Message: Function 'tr' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 HtmlSafeRenderer.js:414
+   Category: Code Quality
+   Message: Function 'createList' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 HtmlSafeRenderer.js:415
+   Category: Code Quality
+   Message: Function 'list' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 HtmlSafeRenderer.js:497
+   Category: Code Quality
+   Message: Function 'renderTable' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 HtmlSafeRenderer.js:529
+   Category: Code Quality
+   Message: Function 'renderCard' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 LoggerInjector.js:53
+   Category: Code Quality
+   Message: Function 'start' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 LoggerInjector.js:117
+   Category: Code Quality
+   Message: Function '_formatMessage' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 LoggerInjector.js:291
+   Category: Code Quality
+   Message: Function 'log' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 LoggerInjector.js:295
+   Category: Code Quality
+   Message: Function 'createScopedLogger' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 LoggerInjector.js:334
+   Category: Maintainability
+   Message: Function 'inject' is 70 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 LoggerInjector.js:334
+   Category: Code Quality
+   Message: Function 'inject' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 LoggerInjector.js:411
+   Category: Code Quality
+   Message: Function 'injectAll' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 LoggerInjector.js:488
+   Category: Code Quality
+   Message: Function 'generatePerformanceReport' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 MenuFunctions.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 MenuFunctions.js:6
+   Category: Code Quality
+   Message: Function 'onOpen' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Normalization.js:10
+   Category: Code Quality
+   Message: Function 'normalizeStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Normalization.js:32
+   Category: Code Quality
+   Message: Function 'validateAndFixDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Normalization.js:131
+   Category: Maintainability
+   Message: Function 'findOrphanedRecords' is 72 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 Normalization.js:208
+   Category: Maintainability
+   Message: Function 'runFullDataValidation' is 73 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 Normalization.js:286
+   Category: Maintainability
+   Message: Function 'cleanOutreachData' is 65 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 Normalization.js:356
+   Category: Maintainability
+   Message: Function 'generateValidationReport' is 97 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 OutreachFunctions.js:23
+   Category: Maintainability
+   Message: Function 'checkForDuplicateLID' is 76 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 OutreachFunctions.js:106
+   Category: Maintainability
+   Message: Function 'processOutreachSubmission' is 160 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 OutreachFunctions.js:272
+   Category: Maintainability
+   Message: Function 'fetchOutreachHistory' is 135 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 OutreachFunctions.js:413
+   Category: Code Quality
+   Message: Function 'getLastTouchInfo' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 OutreachFunctions.js:447
+   Category: Maintainability
+   Message: Function 'calculateDashboardMetrics' is 162 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 OutreachFunctions.js:702
+   Category: Maintainability
+   Message: Function 'getProspectDetails' is 75 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 OutreachFunctions.js:784
+   Category: Maintainability
+   Message: Function 'getContactDetails' is 68 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 OutreachFunctions.js:910
+   Category: Maintainability
+   Message: Function 'getCompanyDetailsForAutofill' is 68 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 OutreachSyncFunctions.js:14
+   Category: Maintainability
+   Message: Function 'syncOutreachToProspects' is 152 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 PerformanceUtils.js:132
+   Category: Maintainability
+   Message: Function 'processInBatches' is 66 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 PerformanceUtils.js:508
+   Category: Code Quality
+   Message: Function 'formatErrorEmail' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PerformanceUtils.js:547
+   Category: Maintainability
+   Message: Function 'validateParameters' is 63 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 PerformanceUtils.js:666
+   Category: Code Quality
+   Message: Function 'updateCellSafeWithLock' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PerformanceUtils.js:708
+   Category: Code Quality
+   Message: Function 'appendRowSafeWithLock' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PerformanceUtils.js:739
+   Category: Code Quality
+   Message: Function 'setValuesWithLock' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 PipelineService.js:46
+   Category: Code Quality
+   Message: Function 'getUrgentProspects' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectFunctions.js:51
+   Category: Maintainability
+   Message: Function 'searchProspectsByName' is 65 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ProspectFunctions.js:122
+   Category: Maintainability
+   Message: Function 'getCompanyDetailsForAutofill' is 58 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ProspectFunctions.js:122
+   Category: Code Quality
+   Message: Function 'getCompanyDetailsForAutofill' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectFunctions.js:185
+   Category: Maintainability
+   Message: Function 'fetchLastTouchInfo' is 57 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ProspectFunctions.js:249
+   Category: Maintainability
+   Message: Function 'updateProspectAfterVisit' is 74 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ProspectFunctions.js:332
+   Category: Code Quality
+   Message: Function 'fuzzyMatchCompany' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectFunctions.js:440
+   Category: Maintainability
+   Message: Function 'updateExistingProspectWithWriteBackRules' is 59 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ProspectFunctions.js:505
+   Category: Maintainability
+   Message: Function 'checkStaleProspects' is 61 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ProspectFunctions.js:620
+   Category: Code Quality
+   Message: Function 'calculateNextBusinessDay' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectFunctions.js:676
+   Category: Code Quality
+   Message: Function 'createNewProspect' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectScoringService.js:6
+   Category: Code Quality
+   Message: Function 'calculateProspectScores' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectScoringService.js:38
+   Category: Code Quality
+   Message: Function 'calculateIndustryScore' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ProspectScoringService.js:178
+   Category: Maintainability
+   Message: Function 'runBatchScoring' is 60 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ProspectScoringService.js:244
+   Category: Maintainability
+   Message: Function 'applyBatchScoreUpdates' is 77 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ReportFunctions.js:22
+   Category: Maintainability
+   Message: Function 'generateReportHtml' is 107 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ReportFunctions.js:137
+   Category: Maintainability
+   Message: Function 'generateProfessionalReport' is 434 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ReportFunctions.js:631
+   Category: Maintainability
+   Message: Function 'calculateActionPriority' is 85 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ReportFunctions.js:721
+   Category: Code Quality
+   Message: Function 'calculateStatusPriority' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ReportFunctions.js:759
+   Category: Maintainability
+   Message: Function 'analyzeRecentActivity' is 54 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ReportFunctions.js:759
+   Category: Code Quality
+   Message: Function 'analyzeRecentActivity' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ReportFunctions.js:818
+   Category: Code Quality
+   Message: Function 'calculateOpportunityValue' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ReportFunctions.js:938
+   Category: Code Quality
+   Message: Function 'isClosedStatus' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ReportFunctions.js:1052
+   Category: Maintainability
+   Message: Function 'parseDateSafely' is 59 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ReportFunctions.js:1119
+   Category: Maintainability
+   Message: Function 'generatePlainTextReportForRange' is 104 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ReportFunctions.js:1231
+   Category: Maintainability
+   Message: Function 'parseDateForReport' is 64 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ReportFunctions.js:1353
+   Category: Maintainability
+   Message: Function 'parseLooseDate' is 56 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 RouteFunction.js:6
+   Category: Maintainability
+   Message: Function 'updateGeocodes' is 60 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SchemaNormalizer.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 SchemaNormalizer.js:364
+   Category: Code Quality
+   Message: Function '_normalizeString' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SchemaNormalizer.js:408
+   Category: Code Quality
+   Message: Function '_calculateSimilarity' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Settings.js:6
+   Category: Maintainability
+   Message: Function 'getSettings' is 137 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SettingsValidation.js:26
+   Category: Maintainability
+   Message: Function 'importAndValidateSettingsCSV' is 54 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SettingsValidation.js:26
+   Category: Code Quality
+   Message: Function 'importAndValidateSettingsCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:87
+   Category: Code Quality
+   Message: Function 'parseSettingsCSV' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:144
+   Category: Maintainability
+   Message: Function 'parseCSVLine' is 66 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SettingsValidation.js:144
+   Category: Code Quality
+   Message: Function 'parseCSVLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:217
+   Category: Maintainability
+   Message: Function 'validateSettingsData' is 131 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SettingsValidation.js:217
+   Category: Code Quality
+   Message: Function 'validateSettingsData' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:355
+   Category: Maintainability
+   Message: Function 'validateHeaders' is 89 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SettingsValidation.js:355
+   Category: Code Quality
+   Message: Function 'validateHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:451
+   Category: Maintainability
+   Message: Function 'validateCategory' is 53 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SettingsValidation.js:451
+   Category: Code Quality
+   Message: Function 'validateCategory' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:512
+   Category: Code Quality
+   Message: Function 'areSimilarStrings' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:581
+   Category: Maintainability
+   Message: Function 'validateFieldsForCategory' is 96 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SettingsValidation.js:581
+   Category: Code Quality
+   Message: Function 'validateFieldsForCategory' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:684
+   Category: Code Quality
+   Message: Function 'isValidNumber' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:699
+   Category: Code Quality
+   Message: Function 'isValidColor' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SettingsValidation.js:817
+   Category: Maintainability
+   Message: Function 'importToSettingsSheet' is 52 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SettingsValidation.js:817
+   Category: Code Quality
+   Message: Function 'importToSettingsSheet' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SetupFunctions.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 SetupFunctions.js:6
+   Category: Code Quality
+   Message: Function 'installTriggers' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:161
+   Category: Maintainability
+   Message: Function 'parseDate' is 64 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SharedUtils.js:236
+   Category: Maintainability
+   Message: Function 'parseDateString' is 67 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SharedUtils.js:236
+   Category: Code Quality
+   Message: Function 'parseDateString' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:314
+   Category: Code Quality
+   Message: Function 'validateDateRange' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SharedUtils.js:353
+   Category: Code Quality
+   Message: Function 'dateDiff' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:8
+   Category: Code Quality
+   Message: Function 'normalize' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:30
+   Category: Code Quality
+   Message: Function 'splitAndFilter' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:79
+   Category: Code Quality
+   Message: Function 'toTitleCase' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:89
+   Category: Code Quality
+   Message: Function 'concat' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 StringUtils.js:134
+   Category: Code Quality
+   Message: Function 'capitalizeFirst' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:86
+   Category: Code Quality
+   Message: Function 'createSyncTimer' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:160
+   Category: Maintainability
+   Message: Function 'syncCRMLogic' is 167 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 Sync.js:176
+   Category: Code Quality
+   Message: Function 'getColLetter' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:182
+   Category: Code Quality
+   Message: Function 'getColIndex' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:199
+   Category: Maintainability
+   Message: Function 'fixOutreachTypos' is 59 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 Sync.js:333
+   Category: Maintainability
+   Message: Function 'processAccountWon' is 114 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 Sync.js:333
+   Category: Code Quality
+   Message: Function 'processAccountWon' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:453
+   Category: Code Quality
+   Message: Function 'calculateSimilarity' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:464
+   Category: Code Quality
+   Message: Function 'editDistance' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:491
+   Category: Code Quality
+   Message: Function 'syncCRMLogicWithLogging' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 Sync.js:515
+   Category: Code Quality
+   Message: Function 'processAccountWonWithLogging' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SystemAlignment.gs:12
+   Category: Code Quality
+   Message: Function 'main_alignSystemSchema' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 SystemAlignment.gs:35
+   Category: Maintainability
+   Message: Function 'updateSettingsTable' is 62 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 SystemAlignment.gs:102
+   Category: Maintainability
+   Message: Function 'cleanProspectIndustries' is 65 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 ValidationUtils.js:8
+   Category: Code Quality
+   Message: Function 'validateDate' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ValidationUtils.js:116
+   Category: Code Quality
+   Message: Function 'validateRequiredFields' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ValidationUtils.js:159
+   Category: Code Quality
+   Message: Function 'normalizeString' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 ValidationUtils.js:173
+   Category: Code Quality
+   Message: Function 'splitAndFilter' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 WorkflowAutomationService.js:24
+   Category: Maintainability
+   Message: Function 'runDailyAutomation' is 80 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 WorkflowAutomationService.js:191
+   Category: Maintainability
+   Message: Function 'processDailyOutreachUpdates' is 59 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 apply-fixes.js:19
+   Category: Code Quality
+   Message: Function 'generateProspect' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 apply-fixes.js:49
+   Category: Code Quality
+   Message: Function 'generateOutreach' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 apply-fixes.js:78
+   Category: Code Quality
+   Message: Function 'generateAccount' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 apply-fixes.js:241
+   Category: Maintainability
+   Message: Function 'testProspectValidation' is 60 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 apply-fixes.js:306
+   Category: Maintainability
+   Message: Function 'testOutreachValidation' is 60 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 apply-fixes.js:371
+   Category: Maintainability
+   Message: Function 'testAccountValidation' is 60 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 apply-fixes.js:436
+   Category: Maintainability
+   Message: Function 'testDateValidation' is 59 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 apply-fixes.js:541
+   Category: Maintainability
+   Message: Function 'applyErrorLogging' is 54 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 apply-fixes.js:602
+   Category: Code Quality
+   Message: Function 'standardizeDateHandling' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 apply-fixes.js:686
+   Category: Maintainability
+   Message: Function 'runComprehensiveTests' is 51 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 apply-fixes.js:742
+   Category: Maintainability
+   Message: Function 'runIntegrationTests' is 66 lines long
+   Context: Consider breaking into smaller functions...
+   💡 Recommendation: Functions should ideally be under 50 lines
+
+   📄 simple_test.js:0
+   Category: Error Handling
+   Message: File lacks error handling in any function
+   Context: No try/catch blocks found...
+   💡 Recommendation: Add error handling to critical functions
+
+   📄 test_integration.js:5
+   Category: Code Quality
+   Message: Function 'testFuzzyMatchingLogic' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:20
+   Category: Code Quality
+   Message: Function 'testNextBusinessDayCalculation' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:30
+   Category: Code Quality
+   Message: Function 'testSequentialIdParsing' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:41
+   Category: Code Quality
+   Message: Function 'testCSVParseWithHeaders' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:51
+   Category: Code Quality
+   Message: Function 'testCSVParseLine' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:71
+   Category: Code Quality
+   Message: Function 'testFuzzyMatchingLogicExtended' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:93
+   Category: Code Quality
+   Message: Function 'testBusinessDayCalculationEdgeCases' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:102
+   Category: Code Quality
+   Message: Function 'testCSVImportWorkflow' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:122
+   Category: Code Quality
+   Message: Function 'testDataSynchronizationBasic' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_integration.js:150
+   Category: Code Quality
+   Message: Function 'testOutreachFunctionIntegration' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_unit.js:5
+   Category: Code Quality
+   Message: Function 'testConfigSchemaIntegrity' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_unit.js:20
+   Category: Code Quality
+   Message: Function 'testSharedUtilsFormatting' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_unit.js:34
+   Category: Code Quality
+   Message: Function 'testValidateEmail' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_validation.js:6
+   Category: Code Quality
+   Message: Function 'testEmailValidation' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_validation.js:42
+   Category: Code Quality
+   Message: Function 'testRequiredFieldsValidation' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_validation.js:79
+   Category: Code Quality
+   Message: Function 'testRangeValidation' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_validation.js:98
+   Category: Code Quality
+   Message: Function 'testInventoryValidation' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+   📄 test_workflow.js:22
+   Category: Code Quality
+   Message: Function 'testOutreachWorkflowAutomation' has no logging
+   Context: Function with multiple calls should log...
+   💡 Recommendation: Add console.log or Logger.log for debugging
+
+🔸 INFO ISSUES:
+
+   📄 ErrorHandling.js:180
+   Category: Performance
+   Message: SpreadsheetApp.flush() can impact performance
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 PerformanceUtils.js:92
+   Category: Performance
+   Message: SpreadsheetApp.flush() can impact performance
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+   📄 PerformanceUtils.js:779
+   Category: Performance
+   Message: SpreadsheetApp.flush() can impact performance
+   Context: Performance anti-pattern detected...
+   💡 Recommendation: Consider using batch operations or caching
+
+================================================================================
+                        ACTIONABLE RECOMMENDATIONS                          
+================================================================================
+
+
+🟠 HIGH - Add Error Handling
+----------------------------------------
+  • Add try/catch blocks to 11 files lacking error handling
+  • Focus on files with complex functions first
+  • Use ErrorHandling.js patterns for consistency
+
+🟡 MEDIUM - Optimize Performance
+----------------------------------------
+  • Address 47 performance issues
+  • Batch SpreadsheetApp operations
+  • Cache frequently accessed data
+  • Use getDataRange() sparingly

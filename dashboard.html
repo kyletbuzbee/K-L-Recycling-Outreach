@@ -1558,22 +1558,6 @@
       <!-- Summary Tiles -->
       <div id="crm-summary" class="crm-summary-grid"></div>
 
-      <!-- Follow-Up Table -->
-      <table id="crm-followups" class="crm-table">
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>Notes</th>
-            <th>Countdown</th>
-            <th>Urgency</th>
-            <th>Priority</th>
-            <th>Next Action</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
     <!-- Control Center - Collapsible Utility Panel -->
     <div class="section">
       <div class="section-header">
@@ -2187,15 +2171,15 @@
 
       if (results && results.length > 0) {
         console.log('Generating HTML for', results.length, 'results');
-        // Use data attributes instead of inline onclick to handle special characters
+        // Use data attributes with escaped values for safety
         dropdown.innerHTML = results.map((r, index) => {
-          const escapedName = escapeHtml(r.companyName || r.company);
+          const escapedName = HtmlSafeRenderer.escapeHtml(r.companyName || r.company);
           const companyId = r.companyId || '';
-          const address = escapeHtml(r.address || '');
-          const phone = escapeHtml(r.phone || '');
-          const email = escapeHtml(r.email || '');
-          const contactName = escapeHtml(r.contactName || '');
-          return `<div class="suggestion-item" data-index="${index}" data-name="${escapedName}" data-id="${companyId}" data-address="${address}" data-phone="${phone}" data-email="${email}" data-contact="${contactName}">${escapedName}</div>`;
+          const address = HtmlSafeRenderer.escapeHtml(r.address || '');
+          const phone = HtmlSafeRenderer.escapeHtml(r.phone || '');
+          const email = HtmlSafeRenderer.escapeHtml(r.email || '');
+          const contactName = HtmlSafeRenderer.escapeHtml(r.contactName || '');
+          return '<div class="suggestion-item" data-index="' + index + '" data-name="' + escapedName + '" data-id="' + companyId + '" data-address="' + address + '" data-phone="' + phone + '" data-email="' + email + '" data-contact="' + contactName + '">' + escapedName + '</div>';
         }).join('');
 
         console.log('HTML set, adding click listeners');
@@ -3203,6 +3187,66 @@
     }
 
     // ========================================
+    // HTML SAFE RENDERER INTEGRATION
+    // ========================================
+    
+    /**
+     * HtmlSafeRenderer - Prevents XSS vulnerabilities
+     * Provides safe DOM manipulation methods
+     */
+    var HtmlSafeRenderer = (function() {
+      // Escape HTML special characters to prevent XSS
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        var div = document.createElement('div');
+        div.textContent = String(str);
+        return div.innerHTML;
+      }
+      
+      // Escape HTML attributes more restrictively
+      function escapeAttribute(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+      
+      // Sanitize HTML by removing dangerous tags and attributes
+      function sanitizeHtml(html) {
+        if (!html || typeof html !== 'string') return '';
+        // Remove script tags and event handlers
+        html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        html = html.replace(/\s+on\w+\s*=\s*(['"])[^'"]*\1/gi, '');
+        html = html.replace(/href\s*=\s*(['"])\s*javascript:[^'"]*\1/gi, 'href="#"');
+        return html;
+      }
+      
+      // Build safe list item
+      function buildListItem(primary, secondary, options) {
+        options = options || {};
+        var primaryEscaped = escapeHtml(primary || 'Unknown');
+        var secondaryEscaped = escapeHtml(secondary || '');
+        var style = escapeAttribute(options.style || '');
+        return '<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; ' + style + '">' +
+                 '<div>' +
+                   '<div style="font-weight: 600; color: #2c3e50;">' + primaryEscaped + '</div>' +
+                   (secondary ? '<div style="font-size: 12px; color: #7f8c8d;">' + secondaryEscaped + '</div>' : '') +
+                 '</div>' +
+               '</div>';
+      }
+      
+      return {
+        escapeHtml: escapeHtml,
+        escapeAttribute: escapeAttribute,
+        sanitizeHtml: sanitizeHtml,
+        buildListItem: buildListItem
+      };
+    })();
+
+    // ========================================
     // Utility Functions
     // ========================================
     function showLoading(show) {
@@ -3394,6 +3438,23 @@
           option.textContent = type;
           activityTypeSelect.appendChild(option);
         });
+      }
+
+      // Populate competitor dropdown from Settings (dynamic - no hardcoding)
+      const competitorSelect = document.getElementById('competitor');
+      if (validationLists['Competitors'] && validationLists['Competitors'].values) {
+        // Clear existing options except the first ("None / Unknown")
+        while (competitorSelect.options.length > 1) {
+          competitorSelect.remove(1);
+        }
+        // Add new options from Settings
+        validationLists['Competitors'].values.forEach(function (competitor) {
+          const option = document.createElement('option');
+          option.value = competitor;
+          option.textContent = competitor;
+          competitorSelect.appendChild(option);
+        });
+        console.log('✅ Populated ' + validationLists['Competitors'].values.length + ' competitors from Settings');
       }
 
       // Populate container sizes for new accounts

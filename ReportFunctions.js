@@ -1295,6 +1295,59 @@ function parseDateForReport(dateInput) {
 }
 
 /**
+ * Show the Professional Report in a modal dialog
+ * Wrapper function called by menu and dashboard quick actions
+ */
+function showProfessionalReport() {
+  try {
+    // Get dates for the current month
+    var today = new Date();
+    var startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    var format = (typeof formatDate === 'function') ? formatDate : function(d) { 
+      return d ? new Date(d).toLocaleDateString() : ''; 
+    };
+    
+    var html = generateProfessionalReport(startOfMonth, today);
+    
+    var output = HtmlService
+      .createHtmlOutput(html)
+      .setTitle('K&L Recycling - Professional Report')
+      .setWidth(900)
+      .setHeight(800);
+    
+    SpreadsheetApp.getUi().showModalDialog(output, '📊 Professional Operations Report');
+    
+  } catch (e) {
+    console.error('Error showing professional report:', e);
+    SpreadsheetApp.getUi().alert('Error generating report: ' + e.message);
+  }
+}
+
+/**
+ * Show the Professional Report with custom date range
+ * @param {string|Date} startDate - Start date for the report
+ * @param {string|Date} endDate - End date for the report
+ */
+function showProfessionalReportWithDates(startDate, endDate) {
+  try {
+    var html = generateProfessionalReport(startDate, endDate);
+    
+    var output = HtmlService
+      .createHtmlOutput(html)
+      .setTitle('K&L Recycling - Professional Report')
+      .setWidth(900)
+      .setHeight(800);
+    
+    SpreadsheetApp.getUi().showModalDialog(output, '📊 Professional Operations Report');
+    
+  } catch (e) {
+    console.error('Error showing professional report:', e);
+    SpreadsheetApp.getUi().alert('Error generating report: ' + e.message);
+  }
+}
+
+/**
  * Helper function to parse loose date formats
  */
 function parseLooseDate(dateValue) {

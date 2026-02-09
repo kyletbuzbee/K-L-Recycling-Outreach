@@ -102,3 +102,48 @@ function openDashboardInNewTab() {
     );
   }
 }
+
+/**
+ * Shows the CRM Suite as a modal dialog
+ * This opens the full CRM Suite interface
+ */
+function showCRMSuite() {
+  try {
+    var html = HtmlService.createHtmlOutputFromFile('CRM_Suite')
+      .setWidth(1200)
+      .setHeight(800)
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    
+    SpreadsheetApp.getUi().showModalDialog(html, 'K&L Recycling CRM Suite');
+    console.log('CRM Suite shown successfully');
+  } catch (error) {
+    console.error('Error showing CRM Suite:', error);
+    SpreadsheetApp.getUi().alert(
+      'Error',
+      'Failed to open CRM Suite: ' + error.message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
+ * Shows the CRM Suite as a sidebar
+ * Alternative way to access the CRM Suite
+ */
+function showCRMSuiteSidebar() {
+  try {
+    var html = HtmlService.createHtmlOutputFromFile('CRM_Suite')
+      .setTitle('K&L Recycling CRM Suite')
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    
+    SpreadsheetApp.getUi().showSidebar(html);
+    console.log('CRM Suite sidebar shown successfully');
+  } catch (error) {
+    console.error('Error showing CRM Suite sidebar:', error);
+    SpreadsheetApp.getUi().alert(
+      'Error',
+      'Failed to open CRM Suite sidebar: ' + error.message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}

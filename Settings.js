@@ -145,3 +145,32 @@ function getSettings() {
 function getCRMSettings() {
   return getSettings();
 }
+
+/**
+ * Returns validation lists from Settings for dashboard dropdowns.
+ * Returns an object with category keys mapping to {values: [], description: ''}.
+ * Used by dashboard.html to populate dropdowns dynamically from Settings.
+ */
+function getValidationLists() {
+  try {
+    var settings = getSettings();
+    
+    if (!settings || !settings.validationLists) {
+      // Return empty validation lists with defaults
+      return {
+        'Competitors': { values: ['AIM', 'Tyler Iron', 'Huntwell', 'Other', 'None'], description: 'Top competitors' },
+        'Container Sizes': { values: ['20 yd', '30 yd', '40 yd', 'Lugger'], description: 'Standard bin types' },
+        'Activity Types': { values: ['Visit', 'Phone', 'Email'], description: 'Contact types' },
+        'Outcomes': { values: ['Account Won', 'Interested (Hot)', 'Interested (Warm)', 'Initial Contact', 'Follow-Up', 'No Answer', 'Not Interested', 'Disqualified'], description: 'Visit outcomes' },
+        'Stages': { values: ['Prospect', 'Outreach', 'Nurture', 'Won', 'Lost'], description: 'Pipeline stages' },
+        'Statuses': { values: ['Active', 'Interested (Hot)', 'Interested (Warm)', 'Cold', 'Disqualified', 'Won'], description: 'Contact statuses' }
+      };
+    }
+    
+    return settings.validationLists;
+    
+  } catch (e) {
+    console.error('Error in getValidationLists: ' + e.message);
+    return {};
+  }
+}

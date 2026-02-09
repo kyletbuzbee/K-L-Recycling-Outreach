@@ -1,10 +1,124 @@
 /**
  * Shared Utilities for K&L Recycling CRM
- * Version: 2.7.0 (Merged Clean-Room + Enhanced Functionality)
- * Logic: Safe-Fetch Pattern + Enhanced Date Validation
+ * Version: 2.8.0 (Merged Clean-Room + Enhanced Functionality + SchemaNormalizer Integration)
+ * Logic: Safe-Fetch Pattern + Enhanced Date Validation + Schema Integration
  */
 
 var SharedUtils = {};
+
+// ============================================================================
+// SCHEMA NORMALIZER INTEGRATION
+// ============================================================================
+
+/**
+ * Safe access to SchemaNormalizer component with fallback
+ */
+SharedUtils.getSchemaNormalizer = function() {
+  try {
+    return typeof SchemaNormalizer !== 'undefined' ? SchemaNormalizer : null;
+  } catch (e) {
+    return null;
+  }
+};
+
+/**
+ * Get canonical name for a field using SchemaNormalizer if available
+ * Falls back to standard normalization if SchemaNormalizer not available
+ * @param {string} fieldName - The field name to canonicalize
+ * @param {string} sheetType - The sheet type (PROSPECTS, OUTREACH, ACCOUNTS)
+ * @return {string} The canonical field name
+ */
+SharedUtils.getCanonicalFieldName = function(fieldName, sheetType) {
+  try {
+    var schemaNormalizer = SharedUtils.getSchemaNormalizer();
+    if (schemaNormalizer && schemaNormalizer.getCanonicalName) {
+      return schemaNormalizer.getCanonicalName(fieldName, sheetType);
+    }
+  } catch (e) {
+    console.warn('SchemaNormalizer not available, using fallback normalization');
+  }
+  // Fallback to standard normalization
+  return SharedUtils.normalizeHeader(fieldName);
+};
+
+/**
+ * Build a header map for a sheet using SchemaNormalizer if available
+ * Falls back to standard mapping if SchemaNormalizer not available
+ * @param {Array} headers - Array of header names from the sheet
+ * @param {string} sheetType - The sheet type (PROSPECTS, OUTREACH, ACCOUNTS)
+ * @return {Object} Header map with canonical names as keys
+ */
+SharedUtils.buildHeaderMap = function(headers, sheetType) {
+  try {
+    var schemaNormalizer = SharedUtils.getSchemaNormalizer();
+    if (schemaNormalizer && schemaNormalizer.buildHeaderMap) {
+      return schemaNormalizer.buildHeaderMap(headers, sheetType);
+    }
+  } catch (e) {
+    console.warn('SchemaNormalizer not available, using fallback header mapping');
+  }
+  
+  // Fallback implementation
+  var headerMap = {};
+  for (var i = 0; i < headers.length; i++) {
+    var canonicalName = SharedUtils.normalizeHeader(headers[i]);
+    headerMap[canonicalName] = i;
+  }
+  return headerMap;
+};
+
+/**
+ * Check if a field is valid for a given sheet type
+ * @param {string} fieldName - The field name to validate
+ * @param {string} sheetType - The sheet type (PROSPECTS, OUTREACH, ACCOUNTS)
+ * @return {boolean} True if the field is valid
+ */
+SharedUtils.isValidField = function(fieldName, sheetType) {
+  try {
+    var schemaNormalizer = SharedUtils.getSchemaNormalizer();
+    if (schemaNormalizer && schemaNormalizer.SCHEMA && schemaNormalizer.SCHEMA[sheetType]) {
+      var canonicalName = SharedUtils.getCanonicalFieldName(fieldName, sheetType);
+      return schemaNormalizer.SCHEMA[sheetType].hasOwnProperty(canonicalName);
+    }
+  } catch (e) {
+    console.warn('SchemaNormalizer not available, skipping field validation');
+  }
+  return true; // Fallback: assume field is valid
+};
+
+/**
+ * Get schema definition for a sheet type
+ * @param {string} sheetType - The sheet type (PROSPECTS, OUTREACH, ACCOUNTS)
+ * @return {Object|null} Schema definition or null if not available
+ */
+SharedUtils.getSchemaDefinition = function(sheetType) {
+  try {
+    var schemaNormalizer = SharedUtils.getSchemaNormalizer();
+    if (schemaNormalizer && schemaNormalizer.SCHEMA) {
+      return schemaNormalizer.SCHEMA[sheetType] || null;
+    }
+  } catch (e) {
+    console.warn('SchemaNormalizer not available');
+  }
+  return null;
+};
+
+/**
+ * Get all canonical field names for a sheet type
+ * @param {string} sheetType - The sheet type (PROSPECTS, OUTREACH, ACCOUNTS)
+ * @return {Array} Array of canonical field names
+ */
+SharedUtils.getSchemaFields = function(sheetType) {
+  var schema = SharedUtils.getSchemaDefinition(sheetType);
+  if (schema) {
+    return Object.keys(schema);
+  }
+  return [];
+};
+
+// ============================================================================
+// ENHANCED DATE VALIDATION
+// ============================================================================
 
 /**
  * Enhanced date validation and formatting utilities with multiple format support
@@ -265,6 +379,7 @@ var DateValidationUtils = {
 
 /**
  * Standard Header Normalization
+ * Enhanced to use SchemaNormalizer when available
  */
 SharedUtils.normalizeHeader = function(header) {
   if (!header) return "";
@@ -309,6 +424,7 @@ SharedUtils.getSheetSafe = function(sheetName, functionName) {
 /**
  * CRITICAL: getSafeSheetData with _rowIndex Injection
  * This is the primary data engine for the SuiteCRM Dashboard.
+ * Enhanced to use SchemaNormalizer for header mapping
  */
 SharedUtils.getSafeSheetData = function(sheetName, requiredColumns) {
   try {
@@ -320,13 +436,22 @@ SharedUtils.getSafeSheetData = function(sheetName, requiredColumns) {
     if (data.length < 2) return [];
 
     var headers = data[0].map(function(h) { return SharedUtils.normalizeHeader(h); });
+    
+    // Use SchemaNormalizer if available for enhanced header mapping
+    var useSchemaNormalizer = SharedUtils.getSchemaNormalizer() !== null;
     var colMap = {};
 
-    requiredColumns.forEach(function(col) {
-      var norm = SharedUtils.normalizeHeader(col);
-      var idx = headers.indexOf(norm);
-      if (idx > -1) colMap[norm] = idx;
-    });
+    if (useSchemaNormalizer) {
+      // Use SchemaNormalizer's buildHeaderMap
+      colMap = SharedUtils.buildHeaderMap(headers, sheetName.toUpperCase());
+    } else {
+      // Fallback to standard mapping
+      requiredColumns.forEach(function(col) {
+        var norm = SharedUtils.normalizeHeader(col);
+        var idx = headers.indexOf(norm);
+        if (idx > -1) colMap[norm] = idx;
+      });
+    }
 
     var results = [];
     for (var i = 1; i < data.length; i++) {

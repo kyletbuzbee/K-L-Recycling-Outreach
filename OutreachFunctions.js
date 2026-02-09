@@ -10,7 +10,11 @@ var OutreachFunctions = {
   fetchOutreachHistory: fetchOutreachHistory,
   calculateDashboardMetrics: calculateDashboardMetrics,
   mapStatusToStage: mapStatusToStage,
-  getLastTouchInfo: getLastTouchInfo
+  getLastTouchInfo: getLastTouchInfo,
+  addOutreachComplete: addOutreachComplete,
+  getCompanyDetailsForAutofill: getCompanyDetailsForAutofill,
+  checkProspectStatus: checkProspectStatus,
+  getOutreachData: getOutreachData
 };
 
 /**
@@ -844,5 +848,202 @@ function getContactDetails(companyName) {
   } catch (e) {
     console.error('Error in getContactDetails: ' + e.message);
     return null;
+  }
+}
+
+/**
+ * Simplified outreach entry function for dashboard save button.
+ * Validates input and calls processOutreachSubmission.
+ * Returns {success: true/false, error?: string}
+ */
+function addOutreachComplete(formData) {
+  try {
+    // Validate required fields
+    if (!formData || !formData.company) {
+      return { success: false, error: 'Company name is required' };
+    }
+    
+    if (!formData.outcome) {
+      return { success: false, error: 'Outcome is required' };
+    }
+    
+    // Build data object for processOutreachSubmission
+    var outreachData = {
+      company: formData.company,
+      companyName: formData.company,
+      outcome: formData.outcome,
+      stage: formData.stage || '',
+      status: formData.status || '',
+      notes: formData.notes || '',
+      nextVisitDate: formData.nextVisitDate || '',
+      activityType: formData.activityType || 'Visit',
+      outreachId: formData.outreachId || '',
+      competitor: formData.competitor || 'None',
+      newCompanyData: formData.newCompanyData || null
+    };
+    
+    // Process the outreach submission
+    var result = processOutreachSubmission(outreachData);
+    
+    if (result && result.success) {
+      return { 
+        success: true, 
+        outreachId: result.outreachId,
+        companyId: result.companyId,
+        message: result.message 
+      };
+    } else {
+      return { success: false, error: result.error || 'Failed to save outreach entry' };
+    }
+    
+  } catch (e) {
+    console.error('Error in addOutreachComplete: ' + e.message);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Gets comprehensive company details for dashboard autofill.
+ * Combines data from Prospects and Contacts sheets.
+ * Returns {companyName, companyId, address, city, state, zip, phone, email, contactName, industry, status} or null.
+ */
+function getCompanyDetailsForAutofill(companyIdOrName) {
+  try {
+    var searchTerm = companyIdOrName || '';
+    if (!searchTerm || searchTerm.trim().length === 0) {
+      return null;
+    }
+    searchTerm = searchTerm.trim();
+    
+    // Get company details from Prospects sheet
+    var prospectSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEETS.PROSPECTS);
+    var companyData = null;
+    
+    if (prospectSheet && prospectSheet.getLastRow() > 1) {
+      var prospectData = prospectSheet.getDataRange().getValues();
+      var headers = prospectData[0];
+      
+      // Find column indices
+      var nameIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'company name' || (h + '').toLowerCase().trim() === 'company'; });
+      var idIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'company id'; });
+      var addrIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'address'; });
+      var indIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'industry'; });
+      var statusIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'contact status'; });
+      
+      // Search for matching company
+      for (var i = 1; i < prospectData.length; i++) {
+        var row = prospectData[i];
+        var rowCompanyId = idIdx > -1 && row[idIdx] ? (row[idIdx] + '').trim() : '';
+        var rowCompanyName = nameIdx > -1 && row[nameIdx] ? (row[nameIdx] + '').trim() : '';
+        
+        if (rowCompanyId === searchTerm || rowCompanyName.toLowerCase() === searchTerm.toLowerCase()) {
+          companyData = {
+            companyName: rowCompanyName,
+            companyId: rowCompanyId,
+            address: addrIdx > -1 && row[addrIdx] ? (row[addrIdx] + '').trim() : '',
+            industry: indIdx > -1 && row[indIdx] ? (row[indIdx] + '').trim() : '',
+            status: statusIdx > -1 && row[statusIdx] ? (row[statusIdx] + '').trim() : ''
+          };
+          break;
+        }
+      }
+    }
+    
+    // Get contact details from Contacts sheet
+    var contactData = getContactDetails(companyData ? companyData.companyName : searchTerm);
+    
+    // Combine and return
+    if (companyData || contactData) {
+      return {
+        companyName: companyData ? companyData.companyName : (contactData ? contactData.name : ''),
+        companyId: companyData ? companyData.companyId : '',
+        address: companyData ? companyData.address : '',
+        city: '',
+        state: '',
+        zip: '',
+        phone: contactData ? contactData.phone : '',
+        email: contactData ? contactData.email : '',
+        contactName: contactData ? contactData.name : '',
+        industry: companyData ? companyData.industry : '',
+        status: companyData ? companyData.status : ''
+      };
+    }
+    
+    return null;
+    
+  } catch (e) {
+    console.error('Error in getCompanyDetailsForAutofill: ' + e.message);
+    return null;
+  }
+}
+
+/**
+ * Checks if a company exists in Prospects sheet.
+ * Returns {success: true, exists: true/false, companyId?: string, status?: string, error?: string}
+ */
+function checkProspectStatus(companyName) {
+  try {
+    if (!companyName || companyName.trim().length === 0) {
+      return { success: false, error: 'Company name is required' };
+    }
+    
+    var searchTerm = companyName.trim();
+    var prospectSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEETS.PROSPECTS);
+    
+    if (!prospectSheet || prospectSheet.getLastRow() <= 1) {
+      return { success: true, exists: false };
+    }
+    
+    var prospectData = prospectSheet.getDataRange().getValues();
+    var headers = prospectData[0];
+    
+    // Find column indices
+    var nameIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'company name' || (h + '').toLowerCase().trim() === 'company'; });
+    var idIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'company id'; });
+    var statusIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'contact status'; });
+    var lastOutcomeIdx = headers.findIndex(function(h) { return (h + '').toLowerCase().trim() === 'last outcome'; });
+    
+    // Search for matching company
+    for (var i = 1; i < prospectData.length; i++) {
+      var row = prospectData[i];
+      var rowCompanyName = nameIdx > -1 && row[nameIdx] ? (row[nameIdx] + '').trim() : '';
+      
+      if (rowCompanyName.toLowerCase() === searchTerm.toLowerCase()) {
+        return {
+          success: true,
+          exists: true,
+          companyId: idIdx > -1 && row[idIdx] ? (row[idIdx] + '').trim() : '',
+          status: statusIdx > -1 && row[statusIdx] ? (row[statusIdx] + '').trim() : '',
+          lastOutcome: lastOutcomeIdx > -1 && row[lastOutcomeIdx] ? (row[lastOutcomeIdx] + '').trim() : ''
+        };
+      }
+    }
+    
+    return { success: true, exists: false };
+    
+  } catch (e) {
+    console.error('Error in checkProspectStatus: ' + e.message);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * Gets outreach data for a date range (for stats and route planning).
+ * Returns {success: true, data: [...], error?: string}
+ */
+function getOutreachData(startDateStr, endDateStr) {
+  try {
+    // Use fetchOutreachHistory which already exists
+    var result = fetchOutreachHistory(startDateStr, endDateStr, { maxRecords: 1000 });
+    
+    if (result && result.success) {
+      return { success: true, data: result.data };
+    } else {
+      return { success: false, error: result.error || 'Failed to fetch outreach data' };
+    }
+    
+  } catch (e) {
+    console.error('Error in getOutreachData: ' + e.message);
+    return { success: false, error: e.message };
   }
 }

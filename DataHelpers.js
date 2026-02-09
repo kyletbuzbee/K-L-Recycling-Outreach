@@ -1,7 +1,85 @@
 /**
  * Data Helpers - The Safe-Fetch Engine
  * Handles reading/writing data with dynamic column mapping.
+ * 
+ * INTEGRATION: ErrorBoundary and LoggerInjector
+ * - All data access functions wrapped with ErrorBoundary.wrap
+ * - All functions instrumented with LoggerInjector.inject
  */
+
+// ============================================================================
+// INFRASTRUCTURE COMPONENT INTEGRATION
+// ============================================================================
+
+/**
+ * Safe access to ErrorBoundary component with fallback
+ */
+function getErrorBoundary() {
+  try {
+    return typeof ErrorBoundary !== 'undefined' ? ErrorBoundary : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Safe access to LoggerInjector component with fallback
+ */
+function getLoggerInjector() {
+  try {
+    return typeof LoggerInjector !== 'undefined' ? LoggerInjector : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
+ * Wrap a function with ErrorBoundary if available, otherwise return original
+ */
+function wrapWithErrorBoundary(fn, functionName) {
+  const errorBoundary = getErrorBoundary();
+  if (errorBoundary && errorBoundary.wrap) {
+    return errorBoundary.wrap(fn, {
+      functionName: functionName,
+      component: 'DataHelpers',
+      retryCount: 3
+    });
+  }
+  return fn;
+}
+
+/**
+ * Inject logging into a function if LoggerInjector available
+ */
+function injectLogging(fn, functionName, options) {
+  const loggerInjector = getLoggerInjector();
+  if (loggerInjector && loggerInjector.inject) {
+    return loggerInjector.inject(fn, {
+      name: functionName,
+      component: 'DataHelpers',
+      logParams: options && options.logParams !== false,
+      logExecutionTime: options && options.logExecutionTime !== false,
+      logResult: options && options.logResult !== false
+    });
+  }
+  return fn;
+}
+
+/**
+ * Combined wrapper for ErrorBoundary + LoggerInjector
+ */
+function wrapDataFunction(fn, functionName, options) {
+  options = options || {};
+  let wrapped = fn;
+  // Apply logging first, then error handling (innermost to outermost)
+  wrapped = injectLogging(wrapped, functionName, options);
+  wrapped = wrapWithErrorBoundary(wrapped, functionName);
+  return wrapped;
+}
+
+// ============================================================================
+// DEPRECATED: Legacy getSafeSheetData function moved to SharedUtils
+// ============================================================================
 
 /**
  * DEPRECATED: This function has been removed to eliminate ambiguity with SharedUtils.getSafeSheetData.
@@ -13,7 +91,7 @@
 
 /**
  * Writes data back to a specific cell based on ID match or Row Index.
- * Enhanced with comprehensive error handling and logging.
+ * Enhanced with comprehensive error handling and LoggerInjector instrumentation.
  * @param {string} sheetName
  * @param {number} rowIndex - 1-based row index.
  * @param {string} columnName - Header name to write to.
@@ -595,4 +673,140 @@ function getSheetSafe(sheetName, options) {
     }
     return null;
   }
+}
+
+// ============================================================================
+// WRAPPED VERSIONS FOR INFRASTRUCTURE INTEGRATION
+// ============================================================================
+
+/**
+ * Wrapped version of updateCellSafe with ErrorBoundary + LoggerInjector
+ * @param {string} sheetName
+ * @param {number} rowIndex
+ * @param {string} columnName
+ * @param {any} value
+ * @return {Object} Result object with success status and error details
+ */
+function updateCellSafeWithLogging(sheetName, rowIndex, columnName, value) {
+  return wrapDataFunction(function(sn, ri, cn, val) {
+    return updateCellSafe(sn, ri, cn, val);
+  }, 'updateCellSafe')(sheetName, rowIndex, columnName, value);
+}
+
+/**
+ * Wrapped version of prependRowSafe with ErrorBoundary + LoggerInjector
+ * @param {string} sheetName
+ * @param {Object} rowObj
+ * @return {Object} Result object with success status and error details
+ */
+function prependRowSafeWithLogging(sheetName, rowObj) {
+  return wrapDataFunction(function(sn, ro) {
+    return prependRowSafe(sn, ro);
+  }, 'prependRowSafe')(sheetName, rowObj);
+}
+
+/**
+ * Wrapped version of appendRowSafe with ErrorBoundary + LoggerInjector
+ * @param {string} sheetName
+ * @param {Object} rowObj
+ * @return {Object} Result object with success status and error details
+ */
+function appendRowSafeWithLogging(sheetName, rowObj) {
+  return wrapDataFunction(function(sn, ro) {
+    return appendRowSafe(sn, ro);
+  }, 'appendRowSafe')(sheetName, rowObj);
+}
+
+/**
+ * Wrapped version of getColumnIndex with ErrorBoundary + LoggerInjector
+ * @param {string} sheetName
+ * @param {string} columnName
+ * @return {number} 1-based column index, or -1 if not found
+ */
+function getColumnIndexWithLogging(sheetName, columnName) {
+  return wrapDataFunction(function(sn, cn) {
+    return getColumnIndex(sn, cn);
+  }, 'getColumnIndex')(sheetName, columnName);
+}
+
+/**
+ * Wrapped version of getSheetSafe with ErrorBoundary + LoggerInjector
+ * @param {string} sheetName
+ * @param {Object} options
+ * @return {Sheet|null}
+ */
+function getSheetSafeWithLogging(sheetName, options) {
+  return wrapDataFunction(function(sn, opt) {
+    return getSheetSafe(sn, opt);
+  }, 'getSheetSafe')(sheetName, options);
+}
+
+/**
+ * Batch prepend rows with ErrorBoundary + LoggerInjector support
+ * @param {string} sheetName
+ * @param {Array} rowObjects
+ * @return {Object} Result object with success status and error details
+ */
+function prependRowsBatch(sheetName, rowObjects) {
+  var fn = function(sn, rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return { success: false, error: 'rowObjects must be a non-empty array' };
+    }
+    
+    var results = [];
+    for (var i = 0; i < rows.length; i++) {
+      var result = prependRowSafe(sn, rows[i]);
+      results.push({
+        index: i,
+        success: result.success,
+        error: result.error || null
+      });
+    }
+    
+    var successCount = results.filter(function(r) { return r.success; }).length;
+    return {
+      success: successCount === results.length,
+      total: results.length,
+      successful: successCount,
+      failed: results.length - successCount,
+      results: results
+    };
+  };
+  
+  return wrapDataFunction(fn, 'prependRowsBatch')(sheetName, rowObjects);
+}
+
+/**
+ * Batch append rows with ErrorBoundary + LoggerInjector support
+ * @param {string} sheetName
+ * @param {Array} rowObjects
+ * @return {Object} Result object with success status and error details
+ */
+function appendRowsBatch(sheetName, rowObjects) {
+  var fn = function(sn, rows) {
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return { success: false, error: 'rowObjects must be a non-empty array' };
+    }
+    
+    var results = [];
+    for (var i = 0; i < rows.length; i++) {
+      var result = appendRowSafe(sn, rows[i]);
+      results.push({
+        index: i,
+        success: result.success,
+        error: result.error || null
+      });
+    }
+    
+    var successCount = results.filter(function(r) { return r.success; }).length;
+    return {
+      success: successCount === results.length,
+      total: results.length,
+      successful: successCount,
+      failed: results.length - successCount,
+      results: results
+    };
+  };
+  
+  return wrapDataFunction(fn, 'appendRowsBatch')(sheetName, rowObjects);
 }
