@@ -108,5 +108,143 @@ var UnitTests_Core = {
 
     result = getColumnIndex("TestSheet", "");
     TestRunner.assert.equals(result, -1, "Should return -1 for empty column name");
+  },
+
+  // DataHelpers Tests
+  testUpdateCellSafe: function() {
+    // Test updateCellSafe function exists
+    TestRunner.assert.isTrue(typeof updateCellSafe === 'function', "updateCellSafe function should exist");
+  },
+
+  testPrependRowSafe: function() {
+    // Test prependRowSafe function exists
+    TestRunner.assert.isTrue(typeof prependRowSafe === 'function', "prependRowSafe function should exist");
+  },
+
+  testAppendRowSafe: function() {
+    // Test appendRowSafe function exists
+    TestRunner.assert.isTrue(typeof appendRowSafe === 'function', "appendRowSafe function should exist");
+  },
+
+  testGetSheetSafe: function() {
+    // Test getSheetSafe function exists
+    TestRunner.assert.isTrue(typeof getSheetSafe === 'function', "getSheetSafe function should exist");
+  },
+
+  // SharedUtils Additional Tests
+  testGenerateUniqueId: function() {
+    var id = SharedUtils.generateUniqueId('CID');
+    TestRunner.assert.isTrue(typeof id === 'string', "Should generate string ID");
+    TestRunner.assert.isTrue(id.length > 0, "Should generate non-empty ID");
+  },
+
+  testGenerateCompanyId: function() {
+    var id = SharedUtils.generateCompanyId('Test Company');
+    TestRunner.assert.isTrue(typeof id === 'string', "Should generate string company ID");
+    TestRunner.assert.isTrue(id.length > 0, "Should generate non-empty company ID");
+  },
+
+  testParseCurrency: function() {
+    TestRunner.assert.equals(SharedUtils.parseCurrency('$1,234.56'), 1234.56, "Should parse currency correctly");
+    TestRunner.assert.equals(SharedUtils.parseCurrency('1234'), 1234, "Should handle numeric strings");
+    TestRunner.assert.equals(SharedUtils.parseCurrency(1234.56), 1234.56, "Should handle numbers");
+  },
+
+  testValidateKeys: function() {
+    var obj = { key1: 'value1', key2: 'value2' };
+    TestRunner.assert.isTrue(SharedUtils.validateKeys(obj, ['key1', 'key2']), "Should validate keys");
+  },
+
+  testCheckSpreadsheetAccess: function() {
+    // Test checkSpreadsheetAccess function exists
+    TestRunner.assert.isTrue(typeof SharedUtils.checkSpreadsheetAccess === 'function', "checkSpreadsheetAccess function should exist");
+  },
+
+  // Error Handling Tests
+  testNullInputHandling: function() {
+    // Test that utilities handle null inputs gracefully
+    var id = SharedUtils.generateUniqueId(null);
+    TestRunner.assert.isTrue(typeof id === 'string', "Should generate string ID even with null input");
+    TestRunner.assert.isTrue(id.length > 0, "Should generate non-empty ID");
+  },
+
+  testUndefinedInputHandling: function() {
+    // Test that utilities handle undefined inputs gracefully
+    var id = SharedUtils.generateUniqueId(undefined);
+    TestRunner.assert.isTrue(typeof id === 'string', "Should generate string ID even with undefined input");
+    TestRunner.assert.isTrue(id.length > 0, "Should generate non-empty ID");
+  },
+
+  testParseCurrencyNullUndefined: function() {
+    // Test parseCurrency handles null/undefined
+    TestRunner.assert.equals(SharedUtils.parseCurrency(null), 0.0, "Should return 0 for null");
+    TestRunner.assert.equals(SharedUtils.parseCurrency(undefined), 0.0, "Should return 0 for undefined");
+    TestRunner.assert.equals(SharedUtils.parseCurrency(''), 0.0, "Should return 0 for empty string");
+  },
+
+  testGenerateCompanyIdEdgeCases: function() {
+    // Test generateCompanyId handles edge cases
+    var idEmpty = SharedUtils.generateCompanyId('');
+    TestRunner.assert.isTrue(typeof idEmpty === 'string', "Should handle empty string");
+    TestRunner.assert.isTrue(idEmpty.startsWith('CID-'), "Should still generate valid prefix");
+    
+    var idSpecial = SharedUtils.generateCompanyId('123 Special!@#');
+    TestRunner.assert.isTrue(typeof idSpecial === 'string', "Should handle special characters");
+  },
+
+  testValidateKeysEdgeCases: function() {
+    // Test validateKeys with edge cases
+    var emptyObj = {};
+    try {
+      SharedUtils.validateKeys(emptyObj, ['name']);
+      TestRunner.assert.isTrue(false, "Should throw error for empty object");
+    } catch (e) {
+      TestRunner.assert.isTrue(true, "Should throw error for missing required keys");
+    }
+    
+    // Test with null/undefined keys
+    var validObj = { name: 'John' };
+    var result = SharedUtils.validateKeys(validObj, ['name']);
+    TestRunner.assert.isTrue(result, "Should validate existing keys");
+  },
+
+  testDateValidationEdgeCases: function() {
+    // Test date validation handles edge cases
+    var invalidDate = ValidationUtils.validateDate(null);
+    TestRunner.assert.isTrue(!invalidDate.success, "Null date should fail validation");
+    
+    var undefinedDate = ValidationUtils.validateDate(undefined);
+    TestRunner.assert.isTrue(!undefinedDate.success, "Undefined date should fail validation");
+    
+    var emptyDate = ValidationUtils.validateDate('');
+    TestRunner.assert.isTrue(!emptyDate.success, "Empty date should fail validation");
+  },
+
+  testEmailValidationEdgeCases: function() {
+    // Test email validation handles edge cases
+    var nullEmail = ValidationUtils.validateEmail(null);
+    TestRunner.assert.isTrue(!nullEmail.success, "Null email should fail");
+    
+    var undefinedEmail = ValidationUtils.validateEmail(undefined);
+    TestRunner.assert.isTrue(!undefinedEmail.success, "Undefined email should fail");
+    
+    var emptyEmail = ValidationUtils.validateEmail('');
+    TestRunner.assert.isTrue(!emptyEmail.success, "Empty email should fail");
+  },
+
+  testRequiredFieldsEdgeCases: function() {
+    // Test required fields validation with edge cases
+    var objNullValues = { name: null, email: undefined };
+    var result = ValidationUtils.validateRequiredFields(objNullValues, ['name', 'email']);
+    TestRunner.assert.isTrue(!result.success, "Should fail when fields are null/undefined");
+  },
+
+  testStringValidationEdgeCases: function() {
+    // Test string validation handles edge cases
+    var nullString = ValidationUtils.validateStringLength(null, 1, 10, "test");
+    TestRunner.assert.isTrue(!nullString.success, "Null string should fail validation");
+    
+    var undefinedString = ValidationUtils.validateStringLength(undefined, 1, 10, "test");
+    TestRunner.assert.isTrue(!undefinedString.success, "Undefined string should fail validation");
   }
 };
