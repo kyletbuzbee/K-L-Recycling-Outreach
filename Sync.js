@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MASTER CRM CONTROLLER v3.1 (Audited + Infrastructure Integration)
  * CORE FEATURES:
  * 1. Syncs Outreach -> Prospects (Updates Status, Dates, Outcomes)
@@ -147,7 +147,7 @@ function runFullCRM_Sync() {
   logger.log('Full CRM sync completed in ' + elapsedTime + 'ms');
   
   if (syncResult && syncResult > 0) {
-    ui.alert('Sync Complete.\n\n🎉 ' + syncResult + ' New Account(s) moved to Accounts Sheet.');
+    ui.alert('Sync Complete.\n\nðŸŽ‰ ' + syncResult + ' New Account(s) moved to Accounts Sheet.');
   } else {
     console.log('Sync Complete. No new accounts to migrate.');
   }

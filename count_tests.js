@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Counts the number of tests in each test file
  * This helps verify our test suite is complete and well-structured
  */
@@ -54,7 +54,7 @@ function countTests() {
   // Show progress bars
   summary.forEach(function(item) {
     var percentage = Math.round((item.tests / totalTests) * 100);
-    var bar = '█'.repeat(Math.round(percentage / 2));
+    var bar = 'â–ˆ'.repeat(Math.round(percentage / 2));
     var fileName = item.file.padEnd(25);
     var testCount = item.tests.toString().padStart(3);
     
@@ -63,7 +63,7 @@ function countTests() {
   });
   
   console.log('');
-  console.log('✅ Test suite verification complete');
+  console.log('âœ… Test suite verification complete');
   
   return {
     summary: summary,

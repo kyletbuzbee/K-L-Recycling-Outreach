@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Apply Fixes and Test Utilities
  * Comprehensive testing framework and automated fix application for K&L Recycling CRM.
  */
@@ -249,10 +249,10 @@ var TestUtils = {
     var validProspect = this.mockData.generateProspect();
     var validation = BusinessValidation.validateProspect(validProspect);
     if (validation.success) {
-      console.log('✓ Valid prospect validation passed');
+      console.log('âœ“ Valid prospect validation passed');
       passedCount++;
     } else {
-      console.log('✗ Valid prospect validation failed:', validation.errors);
+      console.log('âœ— Valid prospect validation failed:', validation.errors);
       results.errors.push('Valid prospect validation failed: ' + validation.errors.join(', '));
     }
 
@@ -283,10 +283,10 @@ var TestUtils = {
       }
 
       if (!validation.success && hasExpectedErrors && hasExpectedWarnings) {
-        console.log('✓ Invalid prospect test passed:', testCase.name);
+        console.log('âœ“ Invalid prospect test passed:', testCase.name);
         passedCount++;
       } else {
-        console.log('✗ Invalid prospect test failed:', testCase.name);
+        console.log('âœ— Invalid prospect test failed:', testCase.name);
         console.log('  Expected errors:', testCase.expectedErrors);
         console.log('  Actual errors:', validation.errors);
         console.log('  Expected warnings:', testCase.expectedWarnings);
@@ -314,10 +314,10 @@ var TestUtils = {
     var validOutreach = this.mockData.generateOutreach();
     var validation = BusinessValidation.validateOutreach(validOutreach);
     if (validation.success) {
-      console.log('✓ Valid outreach validation passed');
+      console.log('âœ“ Valid outreach validation passed');
       passedCount++;
     } else {
-      console.log('✗ Valid outreach validation failed:', validation.errors);
+      console.log('âœ— Valid outreach validation failed:', validation.errors);
       results.errors.push('Valid outreach validation failed: ' + validation.errors.join(', '));
     }
 
@@ -348,10 +348,10 @@ var TestUtils = {
       }
 
       if (!validation.success && hasExpectedErrors && hasExpectedWarnings) {
-        console.log('✓ Invalid outreach test passed:', testCase.name);
+        console.log('âœ“ Invalid outreach test passed:', testCase.name);
         passedCount++;
       } else {
-        console.log('✗ Invalid outreach test failed:', testCase.name);
+        console.log('âœ— Invalid outreach test failed:', testCase.name);
         console.log('  Expected errors:', testCase.expectedErrors);
         console.log('  Actual errors:', validation.errors);
         console.log('  Expected warnings:', testCase.expectedWarnings);
@@ -379,10 +379,10 @@ var TestUtils = {
     var validAccount = this.mockData.generateAccount();
     var validation = BusinessValidation.validateNewAccount(validAccount);
     if (validation.success) {
-      console.log('✓ Valid account validation passed');
+      console.log('âœ“ Valid account validation passed');
       passedCount++;
     } else {
-      console.log('✗ Valid account validation failed:', validation.errors);
+      console.log('âœ— Valid account validation failed:', validation.errors);
       results.errors.push('Valid account validation failed: ' + validation.errors.join(', '));
     }
 
@@ -413,10 +413,10 @@ var TestUtils = {
       }
 
       if (!validation.success && hasExpectedErrors && hasExpectedWarnings) {
-        console.log('✓ Invalid account test passed:', testCase.name);
+        console.log('âœ“ Invalid account test passed:', testCase.name);
         passedCount++;
       } else {
-        console.log('✗ Invalid account test failed:', testCase.name);
+        console.log('âœ— Invalid account test failed:', testCase.name);
         console.log('  Expected errors:', testCase.expectedErrors);
         console.log('  Actual errors:', validation.errors);
         console.log('  Expected warnings:', testCase.expectedWarnings);
@@ -483,10 +483,10 @@ var TestUtils = {
       var success = (result !== null) === testCase.expected;
       
       if (success) {
-        console.log('✓', testCase.name);
+        console.log('âœ“', testCase.name);
         passed++;
       } else {
-        console.log('✗', testCase.name, '- Expected:', testCase.expected, '- Got:', result !== null);
+        console.log('âœ—', testCase.name, '- Expected:', testCase.expected, '- Got:', result !== null);
       }
     });
 
@@ -752,15 +752,15 @@ function runIntegrationTests() {
   try {
     var testSheet = getSheetSafe('Prospects', { throwError: false });
     if (testSheet !== null) {
-      console.log('✓ getSheetSafe integration test passed');
+      console.log('âœ“ getSheetSafe integration test passed');
       results.passed++;
     } else {
-      console.log('✗ getSheetSafe integration test failed - returned null');
+      console.log('âœ— getSheetSafe integration test failed - returned null');
       results.failed++;
       results.errors.push('getSheetSafe returned null for existing sheet');
     }
   } catch (e) {
-    console.log('✗ getSheetSafe integration test failed with error:', e.message);
+    console.log('âœ— getSheetSafe integration test failed with error:', e.message);
     results.failed++;
     results.errors.push('getSheetSafe error: ' + e.message);
   }
@@ -770,15 +770,15 @@ function runIntegrationTests() {
     var testDate = new Date();
     var formattedDate = SharedUtils.formatDate(testDate, {}, 'integration test');
     if (formattedDate && formattedDate.length > 0) {
-      console.log('✓ formatDate integration test passed');
+      console.log('âœ“ formatDate integration test passed');
       results.passed++;
     } else {
-      console.log('✗ formatDate integration test failed - empty result');
+      console.log('âœ— formatDate integration test failed - empty result');
       results.failed++;
       results.errors.push('formatDate returned empty string');
     }
   } catch (e) {
-    console.log('✗ formatDate integration test failed with error:', e.message);
+    console.log('âœ— formatDate integration test failed with error:', e.message);
     results.failed++;
     results.errors.push('formatDate error: ' + e.message);
   }
@@ -790,16 +790,16 @@ function runIntegrationTests() {
     var rangeResult = SharedUtils.validateAndFormatDateRange(startDate, endDate, {});
     
     if (rangeResult.success && rangeResult.diffDays === 7) {
-      console.log('✓ Date range validation integration test passed');
+      console.log('âœ“ Date range validation integration test passed');
       results.passed++;
     } else {
-      console.log('✗ Date range validation integration test failed');
+      console.log('âœ— Date range validation integration test failed');
       console.log('  Result:', rangeResult);
       results.failed++;
       results.errors.push('Date range validation failed');
     }
   } catch (e) {
-    console.log('✗ Date range validation integration test failed with error:', e.message);
+    console.log('âœ— Date range validation integration test failed with error:', e.message);
     results.failed++;
     results.errors.push('Date range validation error: ' + e.message);
   }

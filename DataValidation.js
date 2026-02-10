@@ -9,7 +9,7 @@ var DataValidation = {
    * Expected headers for prospects CSV (case-insensitive)
    */
   PROSPECTS_HEADERS: [
-    'company id', 'address', 'zip code', 'company name', 'industry',
+    'company id', 'address', 'city', 'zip code', 'company name', 'industry',
     'latitude', 'longitude', 'last outcome', 'last outreach date',
     'days since last contact', 'next step due countdown', 'next steps due date',
     'contact status', 'close probability', 'priority score', 'urgencyband',
@@ -1651,10 +1651,10 @@ var DataValidation = {
       }
 
       var ss = accessResult.spreadsheet;
-      var sheet = ss.getSheetByName(CONFIG.SHEET_PROSPECTS);
+      var sheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
 
       if (!sheet) {
-        throw new Error('Prospects sheet not found: ' + CONFIG.SHEET_PROSPECTS);
+        throw new Error('Prospects sheet not found: ' + CONFIG.SHEETS.PROSPECTS);
       }
 
       // Clear existing data (except headers if they exist)
@@ -1689,7 +1689,7 @@ var DataValidation = {
         success: false,
         error: e.message,
         details: {
-          sheetName: CONFIG.SHEET_PROSPECTS,
+          sheetName: CONFIG.SHEETS.PROSPECTS,
           dataRows: data.length
         }
       };
@@ -1710,10 +1710,10 @@ var DataValidation = {
       }
 
       var ss = accessResult.spreadsheet;
-      var sheet = ss.getSheetByName(CONFIG.SHEET_OUTREACH);
+      var sheet = ss.getSheetByName(CONFIG.SHEETS.OUTREACH);
 
       if (!sheet) {
-        throw new Error('Outreach sheet not found: ' + CONFIG.SHEET_OUTREACH);
+        throw new Error('Outreach sheet not found: ' + CONFIG.SHEETS.OUTREACH);
       }
 
       // Clear existing data (except headers if they exist)
@@ -1748,7 +1748,7 @@ var DataValidation = {
         success: false,
         error: e.message,
         details: {
-          sheetName: CONFIG.SHEET_OUTREACH,
+          sheetName: CONFIG.SHEETS.OUTREACH,
           dataRows: data.length
         }
       };

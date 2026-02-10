@@ -1,4 +1,4 @@
-/**
+﻿/**
  * FunctionRefactorer - Automated Code Quality Improvements
  * Resolves 19 high-complexity function issues
  * 

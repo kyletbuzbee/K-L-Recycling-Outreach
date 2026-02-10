@@ -1,4 +1,4 @@
-/**
+﻿/**
  * BatchProcessor - Optimized Batch Operations for Google Sheets
  * Resolves 41 performance issues across the codebase
  * 

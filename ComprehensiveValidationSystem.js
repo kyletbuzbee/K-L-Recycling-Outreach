@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Comprehensive Validation System for K&L Recycling CRM
  * Enhanced validation with case-insensitive matching, robust error handling, and data normalization
  */

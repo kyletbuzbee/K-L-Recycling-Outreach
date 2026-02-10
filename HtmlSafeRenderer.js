@@ -1,4 +1,4 @@
-/**
+﻿/**
  * HtmlSafeRenderer - XSS Prevention & Safe DOM Manipulation
  * Resolves 16 security issues (XSS vulnerabilities in HTML files)
  * 

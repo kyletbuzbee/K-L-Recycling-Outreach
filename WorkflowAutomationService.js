@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Workflow Automation Service
  * Main entry points for time-based triggers.
  */
@@ -146,7 +146,7 @@ function deleteContinuationTriggers() {
 function sendAutomationCompletionNotification() {
   try {
     var recipient = Session.getActiveUser().getEmail();
-    var subject = '✅ K&L CRM - Daily Automation Complete';
+    var subject = 'âœ… K&L CRM - Daily Automation Complete';
     var message = 'Daily automation completed successfully at ' + new Date().toLocaleString();
     
     MailApp.sendEmail({
@@ -166,7 +166,7 @@ function onFormSubmit(e) {
   if (e && e.range) {
     var sheet = e.range.getSheet();
     // FIX: Use SHEET_ACCOUNTS since there's no separate "New Accounts" sheet
-    var accountsSheetName = CONFIG.SHEET_ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
+    var accountsSheetName = CONFIG.SHEETS.ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
     if (sheet.getName() === accountsSheetName) {
       console.log('Form submitted - processing new accounts...');
       
@@ -190,7 +190,7 @@ function onFormSubmit(e) {
  */
 function processDailyOutreachUpdates(settings) {
   try {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEET_OUTREACH);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEETS.OUTREACH);
     const data = sheet.getDataRange().getValues();
     const headers = data[0];
 

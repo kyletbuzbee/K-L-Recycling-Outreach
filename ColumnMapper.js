@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Column Mapper Service
  * Provides consistent column mapping across the entire application
  * Prevents mapping inconsistencies between Safe-Fetch and manual operations

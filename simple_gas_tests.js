@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Simple GAS Test Script
  * Tests the TestRunner functionality in Google Apps Script environment
  */
@@ -8,46 +8,46 @@ function testTestRunnerAvailability() {
   console.log('=== Testing TestRunner Availability ===');
   try {
     if (typeof TestRunner === 'undefined') {
-      console.error('❌ TestRunner is not defined');
+      console.error('âŒ TestRunner is not defined');
       return false;
     }
     
     if (typeof TestRunner.assert === 'undefined') {
-      console.error('❌ TestRunner.assert is not defined');
+      console.error('âŒ TestRunner.assert is not defined');
       return false;
     }
     
-    console.log('✅ TestRunner is available');
-    console.log('✅ TestRunner.assert is available');
+    console.log('âœ… TestRunner is available');
+    console.log('âœ… TestRunner.assert is available');
     
     // Test basic assertions
     try {
       TestRunner.assert.equals(1 + 1, 2, '1+1 should equal 2');
-      console.log('✅ assertEquals works');
+      console.log('âœ… assertEquals works');
     } catch (e) {
-      console.error('❌ assertEquals failed:', e.message);
+      console.error('âŒ assertEquals failed:', e.message);
       return false;
     }
     
     try {
       TestRunner.assert.isTrue(true, 'true should be true');
-      console.log('✅ isTrue works');
+      console.log('âœ… isTrue works');
     } catch (e) {
-      console.error('❌ isTrue failed:', e.message);
+      console.error('âŒ isTrue failed:', e.message);
       return false;
     }
     
     try {
       TestRunner.assert.notNull('value', 'value should not be null');
-      console.log('✅ notNull works');
+      console.log('âœ… notNull works');
     } catch (e) {
-      console.error('❌ notNull failed:', e.message);
+      console.error('âŒ notNull failed:', e.message);
       return false;
     }
     
     return true;
   } catch (error) {
-    console.error('❌ TestRunner error:', error);
+    console.error('âŒ TestRunner error:', error);
     return false;
   }
 }
@@ -58,38 +58,38 @@ function testTestSuitesAvailability() {
   var available = true;
   
   if (typeof UnitTests_Core === 'undefined') {
-    console.error('❌ UnitTests_Core not defined');
+    console.error('âŒ UnitTests_Core not defined');
     available = false;
   } else {
-    console.log('✅ UnitTests_Core is available');
+    console.log('âœ… UnitTests_Core is available');
   }
   
   if (typeof IntegrationTests_Prospects === 'undefined') {
-    console.error('❌ IntegrationTests_Prospects not defined');
+    console.error('âŒ IntegrationTests_Prospects not defined');
     available = false;
   } else {
-    console.log('✅ IntegrationTests_Prospects is available');
+    console.log('âœ… IntegrationTests_Prospects is available');
   }
   
   if (typeof WorkflowTests === 'undefined') {
-    console.error('❌ WorkflowTests not defined');
+    console.error('âŒ WorkflowTests not defined');
     available = false;
   } else {
-    console.log('✅ WorkflowTests is available');
+    console.log('âœ… WorkflowTests is available');
   }
   
   if (typeof ValidationTests === 'undefined') {
-    console.error('❌ ValidationTests not defined');
+    console.error('âŒ ValidationTests not defined');
     available = false;
   } else {
-    console.log('✅ ValidationTests is available');
+    console.log('âœ… ValidationTests is available');
   }
   
   if (typeof OutreachProspectsLogicTests === 'undefined') {
-    console.error('❌ OutreachProspectsLogicTests not defined');
+    console.error('âŒ OutreachProspectsLogicTests not defined');
     available = false;
   } else {
-    console.log('✅ OutreachProspectsLogicTests is available');
+    console.log('âœ… OutreachProspectsLogicTests is available');
   }
   
   return available;
@@ -104,33 +104,33 @@ function runQuickTest() {
   try {
     if (typeof UnitTests_Core !== 'undefined') {
       UnitTests_Core.testConfigSchemaIntegrity();
-      console.log('✅ UnitTests_Core.testConfigSchemaIntegrity passed');
+      console.log('âœ… UnitTests_Core.testConfigSchemaIntegrity passed');
       results.passed++;
     }
   } catch (e) {
-    console.error('❌ UnitTests_Core.testConfigSchemaIntegrity failed:', e.message);
+    console.error('âŒ UnitTests_Core.testConfigSchemaIntegrity failed:', e.message);
     results.failed++;
   }
   
   try {
     if (typeof IntegrationTests_Prospects !== 'undefined') {
       IntegrationTests_Prospects.testCSVParseWithHeaders();
-      console.log('✅ IntegrationTests_Prospects.testCSVParseWithHeaders passed');
+      console.log('âœ… IntegrationTests_Prospects.testCSVParseWithHeaders passed');
       results.passed++;
     }
   } catch (e) {
-    console.error('❌ IntegrationTests_Prospects.testCSVParseWithHeaders failed:', e.message);
+    console.error('âŒ IntegrationTests_Prospects.testCSVParseWithHeaders failed:', e.message);
     results.failed++;
   }
   
   try {
     if (typeof WorkflowTests !== 'undefined') {
       WorkflowTests.testProspectToCustomerWorkflow();
-      console.log('✅ WorkflowTests.testProspectToCustomerWorkflow passed');
+      console.log('âœ… WorkflowTests.testProspectToCustomerWorkflow passed');
       results.passed++;
     }
   } catch (e) {
-    console.error('❌ WorkflowTests.testProspectToCustomerWorkflow failed:', e.message);
+    console.error('âŒ WorkflowTests.testProspectToCustomerWorkflow failed:', e.message);
     results.failed++;
   }
   
@@ -175,12 +175,12 @@ function runQuickTests() {
   console.log('====================================');
   
   if (allPassed && quickResults.failed === 0) {
-    console.log('✅ All quick tests passed!');
+    console.log('âœ… All quick tests passed!');
     if (typeof SpreadsheetApp !== 'undefined') {
       SpreadsheetApp.getActiveSpreadsheet().toast('All tests passed!', 'K&L CRM Tests', 5);
     }
   } else {
-    console.log('❌ Some tests failed');
+    console.log('âŒ Some tests failed');
     if (typeof SpreadsheetApp !== 'undefined') {
       SpreadsheetApp.getActiveSpreadsheet().toast(quickResults.failed + ' tests failed', 'K&L CRM Tests', 5);
     }

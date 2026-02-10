@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Shared Utilities for K&L Recycling CRM
  * Version: 2.8.0 (Merged Clean-Room + Enhanced Functionality + SchemaNormalizer Integration)
  * Logic: Safe-Fetch Pattern + Enhanced Date Validation + Schema Integration
@@ -625,9 +625,9 @@ function getNextSequentialNumber(prefix) {
     var sheet;
 
     if (prefix && prefix.startsWith('LID')) {
-      sheet = ss.getSheetByName(typeof CONFIG !== 'undefined' ? CONFIG.SHEET_OUTREACH : 'Outreach');
+      sheet = ss.getSheetByName(typeof CONFIG !== 'undefined' ? CONFIG.SHEETS.OUTREACH : 'Outreach');
     } else {
-      sheet = ss.getSheetByName(typeof CONFIG !== 'undefined' ? CONFIG.SHEET_PROSPECTS : 'Prospects');
+      sheet = ss.getSheetByName(typeof CONFIG !== 'undefined' ? CONFIG.SHEETS.PROSPECTS : 'Prospects');
     }
 
     if (!sheet) return 1;
@@ -670,7 +670,7 @@ function getNextSequentialNumber(prefix) {
 function getNextSequentialNumberForPrefix(prefixPattern) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(typeof CONFIG !== 'undefined' ? CONFIG.SHEET_PROSPECTS : 'Prospects');
+    var sheet = ss.getSheetByName(typeof CONFIG !== 'undefined' ? CONFIG.SHEETS.PROSPECTS : 'Prospects');
 
     if (!sheet) return 1;
 

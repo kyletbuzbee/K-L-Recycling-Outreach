@@ -1225,9 +1225,9 @@
       if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0) {
         var urgentHtml = data.prospects.map(function(p) {
           return HtmlSafeRenderer.buildListItem(
-            p['company name'] || 'Unknown',
-            p.urgencyband || 'N/A',
-            { badgeClass: (p.urgencyband || '').toLowerCase() }
+            p.companyName || 'Unknown',
+            p.urgencyBand || 'N/A',
+            { badgeClass: (p.urgencyBand || '').toLowerCase() }
           );
         }).join('');
         HtmlSafeRenderer.setInnerHtml('urgent-list', urgentHtml);
@@ -1239,8 +1239,8 @@
       if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
         var winsHtml = data.accounts.map(function(a) {
           return HtmlSafeRenderer.buildListItem(
-            a['company name'] || 'Unknown Company',
-            a['roll off container size'] || 'N/A'
+            a.companyName || 'Unknown Company',
+            a.rolloffContainerSize || 'N/A'
           );
         }).join('');
         HtmlSafeRenderer.setInnerHtml('wins-list', winsHtml);
@@ -1265,25 +1265,25 @@
 
       var hotHtml = stages.hot.length > 0 ? 
         stages.hot.map(function(p) { 
-          return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
+          return HtmlSafeRenderer.buildPipelineDeal(p, ['companyName', 'urgencyBand']); 
         }).join('') : 
         '<div class="empty-state"><i class="fas fa-inbox"></i>No hot prospects</div>';
       
       var warmHtml = stages.warm.length > 0 ? 
         stages.warm.map(function(p) { 
-          return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
+          return HtmlSafeRenderer.buildPipelineDeal(p, ['companyName', 'urgencyBand']); 
         }).join('') : 
         '<div class="empty-state"><i class="fas fa-inbox"></i>No warm prospects</div>';
       
       var coldHtml = stages.cold.length > 0 ? 
         stages.cold.map(function(p) { 
-          return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'urgencyband']); 
+          return HtmlSafeRenderer.buildPipelineDeal(p, ['companyName', 'urgencyBand']); 
         }).join('') : 
         '<div class="empty-state"><i class="fas fa-inbox"></i>No cold prospects</div>';
       
       var wonHtml = stages.won.length > 0 ? 
         stages.won.map(function(p) { 
-          return HtmlSafeRenderer.buildPipelineDeal(p, ['company name', 'timestamp']); 
+          return HtmlSafeRenderer.buildPipelineDeal(p, ['companyName', 'timestamp']); 
         }).join('') : 
         '<div class="empty-state"><i class="fas fa-trophy"></i>No wins yet</div>';
       
@@ -1312,11 +1312,11 @@
       
       var rowsHtml = prospects.map(function(p) {
         return HtmlSafeRenderer.buildTableRow([
-          { text: p['company name'] || 'Unknown', className: '' },
-          { text: p['contact status'] || 'N/A', className: 'badge ' + (p['contact status'] || '').toLowerCase() },
-          { text: p['urgencyband'] || 'N/A', className: '' },
-          { text: p['priority score'] || 'N/A', className: '' },
-          { text: p['last outreach date'] || 'N/A', className: '' }
+          { text: p.companyName || 'Unknown', className: '' },
+          { text: p.contactStatus || 'N/A', className: 'badge ' + (p.contactStatus || '').toLowerCase() },
+          { text: p.urgencyBand || 'N/A', className: '' },
+          { text: p.priorityScore || 'N/A', className: '' },
+          { text: p.lastOutreachDate || 'N/A', className: '' }
         ]);
       }).join('');
       
@@ -1330,8 +1330,8 @@
       if (!crmData.prospects) return;
 
       var filtered = crmData.prospects.filter(function(p) {
-        var matchesSearch = (p['company name'] || '').toLowerCase().includes(searchTerm);
-        var status = (p['contact status'] || '').toLowerCase();
+        var matchesSearch = (p.companyName || '').toLowerCase().includes(searchTerm);
+        var status = (p.contactStatus || '').toLowerCase();
         var matchesFilter = filterStatus === 'all' || status === filterStatus;
         return matchesSearch && matchesFilter;
       });

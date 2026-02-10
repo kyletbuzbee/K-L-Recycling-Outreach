@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Outreach to Prospects Sync Function
  * Reads all outreach records and updates prospects with latest information
  * Uses fuzzy matching to handle company name/ID differences
@@ -17,7 +17,7 @@ function syncOutreachToProspects() {
     
     // Get all outreach data
     var outreachResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_OUTREACH, [
+      return SharedUtils.getSafeSheetData(CONFIG.SHEETS.OUTREACH, [
         'Outreach ID', 'Company ID', 'Company', 'Visit Date', 
         'Outcome', 'Stage', 'Status', 'Contact Type'
       ]);
@@ -35,7 +35,7 @@ function syncOutreachToProspects() {
 
     // Get all prospects data
     var prospectsResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, [
+      return SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, [
         'Company ID', 'Company Name', 'Contact Status', 'Last Outcome',
         'Last Outreach Date', 'Days Since Last Contact', 'Next Steps Due Date',
         'Urgency Score', 'UrgencyBand'
@@ -131,18 +131,33 @@ function syncOutreachToProspects() {
         
         // Apply updates to prospect
         Object.keys(updatesToApply).forEach(function(field) {
-          updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, field, updatesToApply[field]);
+          updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, field, updatesToApply[field]);
         });
         
         updateCount++;
         console.log('Updated prospect: ' + prospect['company name'] + ' (match: ' + matchResult.matchType + ')');
         
       } else {
-        // No match found - log for review
-        noMatchCount++;
-        console.warn('No prospect match for outreach company: ' + latestOutreach['company']);
-        console.warn('  Company ID: ' + latestOutreach['company id']);
-        console.warn('  Company Name: ' + latestOutreach['company']);
+        // No match found - Create new prospect from outreach data
+        createCount++;
+        console.log('Creating new prospect for: ' + latestOutreach['company']);
+        
+        // Prepare new prospect data
+        var newProspectData = {
+          companyId: latestOutreach['company id'] || SharedUtils.generateCompanyId(latestOutreach['company']),
+          companyName: latestOutreach['company'],
+          outcome: latestOutreach['outcome'],
+          status: updatesToApply['Contact Status'] || 'Prospect',
+          activityType: latestOutreach['contact type'] || 'Visit'
+        };
+        
+        // Create the new prospect
+        var createResult = createProspectFromOutreach(newProspectData);
+        if (createResult.success) {
+          console.log('Successfully created new prospect: ' + newProspectData.companyName);
+        } else {
+          console.error('Failed to create prospect for: ' + latestOutreach['company'] + ' - ' + createResult.error);
+        }
       }
     });
 
@@ -223,5 +238,69 @@ function calculateUrgencyBand(daysSince) {
     return 'Medium';
   } else {
     return 'Low';
+  }
+}
+
+/**
+ * Creates a new prospect from outreach data when no match is found
+ * @param {Object} data - Prospect data from outreach
+ * @return {Object} Result with success flag
+ */
+function createProspectFromOutreach(data) {
+  try {
+    var companyId = data.companyId || SharedUtils.generateCompanyId(data.companyName);
+    var today = new Date();
+    
+    // Calculate urgency based on days since last contact (0 for new)
+    var daysSince = 0;
+    var urgencyScore = 115; // High for new prospects
+    var urgencyBand = 'High';
+    
+    // Get workflow rule for outcome to determine status
+    var settings = getSettings();
+    var rule = settings.workflowRules && settings.workflowRules[data.outcome] || {};
+    var status = rule.status || data.status || 'Prospect';
+    
+    // Calculate next steps due date
+    var nextStepsDays = rule.daysOffset || 14;
+    var nextStepsDate = new Date(today);
+    nextStepsDate.setDate(nextStepsDate.getDate() + nextStepsDays);
+    
+    var prospectRow = {
+      'company id': companyId,
+      'company name': data.companyName,
+      'address': '',
+      'zip code': '',
+      'industry': '',
+      'latitude': '',
+      'longitude': '',
+      'last outcome': data.outcome || '',
+      'last outreach date': SharedUtils.formatDate(today),
+      'days since last contact': daysSince,
+      'next step due countdown': nextStepsDays,
+      'next steps due date': SharedUtils.formatDate(nextStepsDate),
+      'contact status': status,
+      'close probability': 0,
+      'priority score': 50,
+      'urgency band': urgencyBand,
+      'urgency score': urgencyScore
+    };
+    
+    appendRowSafe(CONFIG.SHEETS.PROSPECTS, prospectRow);
+    
+    console.log('Created new prospect: ' + data.companyName + ' (ID: ' + companyId + ')');
+    
+    return {
+      success: true,
+      companyId: companyId,
+      companyName: data.companyName
+    };
+    
+  } catch (e) {
+    console.error('Error creating prospect from outreach:', e);
+    return {
+      success: false,
+      error: e.message
+    };
   }
 }

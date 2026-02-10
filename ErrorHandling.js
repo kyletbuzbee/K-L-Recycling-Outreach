@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Comprehensive Error Handling Framework
  * Centralized error handling utilities for the K&L Recycling CRM
  */
@@ -71,7 +71,7 @@ var ErrorHandling = {
         var emailBody = this._formatErrorEmail(errorInfo);
         MailApp.sendEmail(
           Session.getActiveUser().getEmail(),
-          '🚨 CRM Error Report: ' + errorInfo.message,
+          'ðŸš¨ CRM Error Report: ' + errorInfo.message,
           emailBody
         );
       }
@@ -201,7 +201,7 @@ var ErrorHandling = {
 
     // Check if we're approaching timeout limits
     if (this._checkExecutionTime(startTime, context.functionName)) {
-      console.warn('⚠️ TIMEOUT WARNING: Approaching execution limits');
+      console.warn('âš ï¸ TIMEOUT WARNING: Approaching execution limits');
     }
 
     try {
@@ -223,7 +223,7 @@ var ErrorHandling = {
     var warningThreshold = timeoutLimit * 0.7; // Warn at 70% of limit
 
     if (elapsed > warningThreshold) {
-      console.warn('⚠️ TIMEOUT WARNING: ' + functionName + ' has been running for ' +
+      console.warn('âš ï¸ TIMEOUT WARNING: ' + functionName + ' has been running for ' +
                   (elapsed/1000).toFixed(1) + ' seconds. Approaching 6-minute limit.');
       return true;
     }

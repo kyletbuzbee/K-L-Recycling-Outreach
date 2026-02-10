@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Schema Normalizer - Single Source of Truth for Field Names
  * Resolves 133 schema inconsistency issues across the codebase
  * 

@@ -1,7 +1,53 @@
 /**
  * Dashboard Backend Functions
  * Exposes PipelineService methods for the dashboard sidebar
+ * Version: 2.1.0 - Enhanced error handling and API response standardization
  */
+
+/**
+ * Helper function to check if PipelineService is available
+ * @returns {boolean} True if PipelineService is available
+ */
+function isPipelineServiceAvailable() {
+  try {
+    return typeof PipelineService !== 'undefined' && 
+           PipelineService !== null && 
+           typeof PipelineService.getAllProspects === 'function';
+  } catch (e) {
+    console.error('PipelineService availability check failed:', e);
+    return false;
+  }
+}
+
+/**
+ * Helper function to check if required services are available
+ * @returns {Object} Result with success flag and error message if failed
+ */
+function checkRequiredServices() {
+  var missingServices = [];
+  
+  if (typeof PipelineService === 'undefined' || PipelineService === null) {
+    missingServices.push('PipelineService');
+  }
+  
+  if (typeof SharedUtils === 'undefined' || SharedUtils === null) {
+    missingServices.push('SharedUtils');
+  }
+  
+  if (typeof CONFIG === 'undefined' || CONFIG === null) {
+    missingServices.push('CONFIG');
+  }
+  
+  if (missingServices.length > 0) {
+    return {
+      success: false,
+      error: 'Required services not loaded: ' + missingServices.join(', '),
+      missingServices: missingServices
+    };
+  }
+  
+  return { success: true };
+}
 
 /**
  * Gets urgent prospects for the dashboard follow-up table
@@ -9,10 +55,20 @@
  */
 function getUrgentProspectsForDashboard() {
   try {
+    // Check if PipelineService is available
+    if (!isPipelineServiceAvailable()) {
+      console.warn('getUrgentProspectsForDashboard: PipelineService not available');
+      return {
+        success: true,
+        data: [],
+        warning: 'PipelineService not available - returning empty array'
+      };
+    }
+    
     var prospects = PipelineService.getUrgentProspects();
     return {
       success: true,
-      data: prospects
+      data: prospects || []
     };
   } catch (e) {
     console.error('Error in getUrgentProspectsForDashboard:', e);
@@ -30,6 +86,24 @@ function getUrgentProspectsForDashboard() {
  */
 function getPipelineFunnelForDashboard() {
   try {
+    // Check if PipelineService is available
+    if (!isPipelineServiceAvailable()) {
+      console.warn('getPipelineFunnelForDashboard: PipelineService not available');
+      return {
+        success: true,
+        data: {
+          total: 0,
+          hot: 0,
+          warm: 0,
+          won: 0,
+          nurture: 0,
+          outreach: 0,
+          lost: 0
+        },
+        warning: 'PipelineService not available - returning default values'
+      };
+    }
+    
     var funnelData = PipelineService.calculateFunnel();
     
     // DEFENSIVE: Ensure funnelData is always an object with expected properties
@@ -38,21 +112,27 @@ function getPipelineFunnelForDashboard() {
     }
     
     // Get additional stage counts for more detailed tiles
-    var allProspects = PipelineService.getAllProspects();
+    var allProspects = [];
+    try {
+      allProspects = PipelineService.getAllProspects();
+    } catch (prospectError) {
+      console.warn('Could not get all prospects for funnel:', prospectError);
+    }
+    
     if (!Array.isArray(allProspects)) { allProspects = []; }
     
     var nurtureCount = allProspects.filter(function(p) {
-      var status = (p['contact status'] || '').toString().toLowerCase();
+      var status = (p.contactStatus || p.contactstatus || '').toString().toLowerCase();
       return status.includes('warm') || status.includes('follow');
     }).length;
     
     var outreachCount = allProspects.filter(function(p) {
-      var status = (p['contact status'] || '').toString().toLowerCase();
+      var status = (p.contactStatus || p.contactstatus || '').toString().toLowerCase();
       return status.includes('cold') || status.includes('initial');
     }).length;
     
     var lostCount = allProspects.filter(function(p) {
-      var status = (p['contact status'] || '').toString().toLowerCase();
+      var status = (p.contactStatus || p.contactstatus || '').toString().toLowerCase();
       return status.includes('disqualified') || status.includes('not interested');
     }).length;
     
@@ -94,8 +174,19 @@ function getPipelineFunnelForDashboard() {
  */
 function crmGateway(payload) {
   try {
+    // Check required services first
+    var serviceCheck = checkRequiredServices();
+    if (!serviceCheck.success) {
+      console.error('CRM Gateway: Service check failed:', serviceCheck.error);
+      return { 
+        success: false, 
+        error: serviceCheck.error,
+        data: null
+      };
+    }
+    
     if (!payload || !payload.action) {
-      return { success: false, error: 'Missing action parameter' };
+      return { success: false, error: 'Missing action parameter', data: null };
     }
 
     var action = payload.action;
@@ -114,13 +205,15 @@ function crmGateway(payload) {
         return getUrgentProspectsForDashboard();
       case 'GET_RECENT_WINS':
         return getRecentWins();
+      case 'GET_VALIDATION_LISTS':
+        return getValidationListsForDashboard();
       default:
         console.warn('Unknown CRM Gateway action:', action);
-        return { success: false, error: 'Unknown action: ' + action };
+        return { success: false, error: 'Unknown action: ' + action, data: null };
     }
   } catch (e) {
     console.error('Error in crmGateway:', e);
-    return { success: false, error: e.message };
+    return { success: false, error: e.message, data: null };
   }
 }
 
@@ -141,11 +234,20 @@ function getDashboardStats() {
         pipeline: funnel.data || {},
         prospects: prospects.data || [],
         accounts: wins.data || []
-      }
+      },
+      warnings: []
     };
   } catch (e) {
     console.error('Error in getDashboardStats:', e);
-    return { success: false, error: e.message };
+    return { 
+      success: false, 
+      error: e.message,
+      data: {
+        pipeline: {},
+        prospects: [],
+        accounts: []
+      }
+    };
   }
 }
 
@@ -156,8 +258,39 @@ function getDashboardStats() {
  */
 function getPipelineData() {
   try {
+    // Check if PipelineService is available
+    if (!isPipelineServiceAvailable()) {
+      console.warn('getPipelineData: PipelineService not available');
+      return {
+        success: true,
+        data: {
+          hot: [],
+          warm: [],
+          cold: [],
+          won: [],
+          counts: {
+            total: 0,
+            hot: 0,
+            warm: 0,
+            cold: 0,
+            won: 0
+          }
+        },
+        warning: 'PipelineService not available'
+      };
+    }
+    
     var allProspects = PipelineService.getAllProspects();
-    var funnel = PipelineService.calculateFunnel();
+    if (!Array.isArray(allProspects)) {
+      allProspects = [];
+    }
+    
+    var funnel = { total: 0, hot: 0, warm: 0, won: 0 };
+    try {
+      funnel = PipelineService.calculateFunnel();
+    } catch (funnelError) {
+      console.warn('Could not calculate funnel:', funnelError);
+    }
 
     var hot = [];
     var warm = [];
@@ -166,8 +299,8 @@ function getPipelineData() {
 
     // Categorize prospects
     allProspects.forEach(function(p) {
-      var status = (p['contact status'] || '').toString().toLowerCase();
-      var urgency = (p['urgencyband'] || '').toString().toLowerCase();
+      var status = (p.contactStatus || p.contactstatus || '').toString().toLowerCase();
+      var urgency = (p.urgencyBand || p.urgencyband || '').toString().toLowerCase();
 
       if (status.includes('won') || status.includes('active')) {
         won.push(p);
@@ -198,7 +331,23 @@ function getPipelineData() {
     };
   } catch (e) {
     console.error('Error in getPipelineData:', e);
-    return { success: false, error: e.message };
+    return { 
+      success: false, 
+      error: e.message,
+      data: {
+        hot: [],
+        warm: [],
+        cold: [],
+        won: [],
+        counts: {
+          total: 0,
+          hot: 0,
+          warm: 0,
+          cold: 0,
+          won: 0
+        }
+      }
+    };
   }
 }
 
@@ -208,7 +357,23 @@ function getPipelineData() {
  */
 function getProspectsData() {
   try {
+    // Check if PipelineService is available
+    if (!isPipelineServiceAvailable()) {
+      console.warn('getProspectsData: PipelineService not available');
+      return {
+        success: true,
+        data: {
+          all: [],
+          total: 0
+        },
+        warning: 'PipelineService not available'
+      };
+    }
+    
     var allProspects = PipelineService.getAllProspects();
+    if (!Array.isArray(allProspects)) {
+      allProspects = [];
+    }
 
     return {
       success: true,
@@ -219,7 +384,14 @@ function getProspectsData() {
     };
   } catch (e) {
     console.error('Error in getProspectsData:', e);
-    return { success: false, error: e.message };
+    return { 
+      success: false, 
+      error: e.message,
+      data: {
+        all: [],
+        total: 0
+      }
+    };
   }
 }
 
@@ -229,7 +401,20 @@ function getProspectsData() {
  */
 function getRecentWins() {
   try {
+    // Check if PipelineService is available
+    if (!isPipelineServiceAvailable()) {
+      console.warn('getRecentWins: PipelineService not available');
+      return {
+        success: true,
+        data: [],
+        warning: 'PipelineService not available'
+      };
+    }
+    
     var accounts = PipelineService.getWonAccounts();
+    if (!Array.isArray(accounts)) {
+      accounts = [];
+    }
 
     return {
       success: true,
@@ -237,21 +422,52 @@ function getRecentWins() {
     };
   } catch (e) {
     console.error('Error in getRecentWins:', e);
-    return { success: false, error: e.message };
+    return { 
+      success: false, 
+      error: e.message,
+      data: []
+    };
+  }
+}
+
+/**
+ * GET_VALIDATION_LISTS - Returns validation lists for dashboard dropdowns
+ * Wrapped for dashboard API compatibility
+ * @returns {Object} Validation lists with success flag
+ */
+function getValidationListsForDashboard() {
+  try {
+    var validationLists = getValidationLists();
+    
+    return {
+      success: true,
+      data: validationLists || {}
+    };
+  } catch (e) {
+    console.error('Error in getValidationListsForDashboard:', e);
+    return {
+      success: false,
+      error: e.message,
+      data: {}
+    };
   }
 }
 
 /**
  * showPipelineModal - Returns HTML for pipeline modal display
  * Called by dashboard.html to show pipeline view
- * @returns {string} HTML content for pipeline modal
+ * @returns {Object} Object with success flag and HTML content
  */
 function showPipelineModal() {
   try {
     var pipelineData = getPipelineData();
     
     if (!pipelineData.success) {
-      return '<div class="error">Error loading pipeline: ' + (pipelineData.error || 'Unknown error') + '</div>';
+      return {
+        success: false,
+        error: pipelineData.error || 'Unknown error',
+        html: '<div class="error">Error loading pipeline: ' + (pipelineData.error || 'Unknown error') + '</div>'
+      };
     }
     
     var html = '<div class="pipeline-modal">';
@@ -270,7 +486,7 @@ function showPipelineModal() {
       } else {
         html += '<ul class="prospect-list">';
         prospects.slice(0, 10).forEach(function(p) {
-          html += '<li>' + (p['company name'] || 'Unknown') + '</li>';
+          html += '<li>' + (p.companyName || p.companyname || 'Unknown') + '</li>';
         });
         if (prospects.length > 10) {
           html += '<li class="more">... and ' + (prospects.length - 10) + ' more</li>';
@@ -282,25 +498,36 @@ function showPipelineModal() {
     });
     
     html += '</div>';
-    return html;
+    return {
+      success: true,
+      html: html
+    };
     
   } catch (e) {
     console.error('Error in showPipelineModal:', e);
-    return '<div class="error">Error loading pipeline modal: ' + e.message + '</div>';
+    return {
+      success: false,
+      error: e.message,
+      html: '<div class="error">Error loading pipeline modal: ' + e.message + '</div>'
+    };
   }
 }
 
 /**
  * showAccountsModal - Returns HTML for accounts modal display
  * Called by dashboard.html to show accounts view
- * @returns {string} HTML content for accounts modal
+ * @returns {Object} Object with success flag and HTML content
  */
 function showAccountsModal() {
   try {
     var accountsData = getRecentWins();
     
     if (!accountsData.success) {
-      return '<div class="error">Error loading accounts: ' + (accountsData.error || 'Unknown error') + '</div>';
+      return {
+        success: false,
+        error: accountsData.error || 'Unknown error',
+        html: '<div class="error">Error loading accounts: ' + (accountsData.error || 'Unknown error') + '</div>'
+      };
     }
     
     var accounts = accountsData.data || [];
@@ -313,11 +540,15 @@ function showAccountsModal() {
     } else {
       html += '<div class="accounts-list">';
       accounts.forEach(function(account) {
+        var companyName = account.companyName || account.companyname || account['company name'] || 'Unknown';
+        var status = account.contactStatus || account.contactstatus || account['contact status'] || 'Active';
+        var lastContact = account.lastOutreachDate || account.lastoutreachdate || account['last outreach date'] || '';
+        
         html += '<div class="account-card">';
-        html += '<h4>' + (account['company name'] || 'Unknown') + '</h4>';
-        html += '<p>Status: ' + (account['contact status'] || 'Active') + '</p>';
-        if (account['last outreach date']) {
-          html += '<p>Last Contact: ' + account['last outreach date'] + '</p>';
+        html += '<h4>' + companyName + '</h4>';
+        html += '<p>Status: ' + status + '</p>';
+        if (lastContact) {
+          html += '<p>Last Contact: ' + lastContact + '</p>';
         }
         html += '</div>';
       });
@@ -325,25 +556,36 @@ function showAccountsModal() {
     }
     
     html += '</div>';
-    return html;
+    return {
+      success: true,
+      html: html
+    };
     
   } catch (e) {
     console.error('Error in showAccountsModal:', e);
-    return '<div class="error">Error loading accounts modal: ' + e.message + '</div>';
+    return {
+      success: false,
+      error: e.message,
+      html: '<div class="error">Error loading accounts modal: ' + e.message + '</div>'
+    };
   }
 }
 
 /**
  * showCalendarModal - Returns HTML for calendar modal display
  * Called by dashboard.html to show calendar view
- * @returns {string} HTML content for calendar modal
+ * @returns {Object} Object with success flag and HTML content
  */
 function showCalendarModal() {
   try {
     var prospectsData = getUrgentProspectsForDashboard();
     
     if (!prospectsData.success) {
-      return '<div class="error">Error loading calendar data: ' + (prospectsData.error || 'Unknown error') + '</div>';
+      return {
+        success: false,
+        error: prospectsData.error || 'Unknown error',
+        html: '<div class="error">Error loading calendar data: ' + (prospectsData.error || 'Unknown error') + '</div>'
+      };
     }
     
     var prospects = prospectsData.data || [];
@@ -356,21 +598,33 @@ function showCalendarModal() {
     } else {
       html += '<div class="calendar-list">';
       prospects.forEach(function(p) {
+        var companyName = p.companyName || p.companyname || 'Unknown';
+        var dueDate = p.nextStepsDueDate || p.nextstepsduedate || p['next steps due date'] || 'Not scheduled';
+        var status = p.contactStatus || p.contactstatus || p['contact status'] || 'Unknown';
+        var urgency = p.urgencyBand || p.urgencyband || 'Unknown';
+        
         html += '<div class="calendar-item">';
-        html += '<h4>' + (p['company name'] || 'Unknown') + '</h4>';
-        html += '<p>Due: ' + (p['next steps due date'] || 'Not scheduled') + '</p>';
-        html += '<p>Status: ' + (p['contact status'] || 'Unknown') + '</p>';
-        html += '<p>Urgency: ' + (p['urgencyband'] || 'Unknown') + '</p>';
+        html += '<h4>' + companyName + '</h4>';
+        html += '<p>Due: ' + dueDate + '</p>';
+        html += '<p>Status: ' + status + '</p>';
+        html += '<p>Urgency: ' + urgency + '</p>';
         html += '</div>';
       });
       html += '</div>';
     }
     
     html += '</div>';
-    return html;
+    return {
+      success: true,
+      html: html
+    };
     
   } catch (e) {
     console.error('Error in showCalendarModal:', e);
-    return '<div class="error">Error loading calendar modal: ' + e.message + '</div>';
+    return {
+      success: false,
+      error: e.message,
+      html: '<div class="error">Error loading calendar modal: ' + e.message + '</div>'
+    };
   }
 }

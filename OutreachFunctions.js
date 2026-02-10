@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Outreach Functions
  * Handles Logging, Duplicate Checks, and History Retrieval.
  */
@@ -41,7 +41,7 @@ function checkForDuplicateLID(lid) {
     }
 
     // Use optimized data fetching with caching for better performance
-    var outreach = getSafeSheetDataOptimized(CONFIG.SHEET_OUTREACH, ['Outreach ID', 'Company'], {
+    var outreach = getSafeSheetDataOptimized(CONFIG.SHEETS.OUTREACH, ['Outreach ID', 'Company'], {
       useCache: true,
       cacheDuration: 30000 // Cache for 30 seconds since LID checks happen frequently
     });
@@ -114,7 +114,7 @@ function processOutreachSubmission(data) {
   }
 
   // Use sheet locking for concurrency control
-  return executeWithSheetLock(CONFIG.SHEET_OUTREACH, function() {
+  return executeWithSheetLock(CONFIG.SHEETS.OUTREACH, function() {
     return executeWithTimeoutProtection(function() {
       try {
         // Generate IDs with error handling
@@ -128,7 +128,7 @@ function processOutreachSubmission(data) {
         }
 
         // Check if company exists in Prospects sheet with optimized data fetching
-        var prospects = getSafeSheetDataOptimized(CONFIG.SHEET_PROSPECTS, ['Company Name', 'Company ID'], {
+        var prospects = getSafeSheetDataOptimized(CONFIG.SHEETS.PROSPECTS, ['Company Name', 'Company ID'], {
           useCache: true,
           cacheDuration: 30000
         });
@@ -186,7 +186,7 @@ function processOutreachSubmission(data) {
 
         // 1. Log to Outreach Sheet with error handling
         try {
-          prependRowSafe(CONFIG.SHEET_OUTREACH, outreachRow);
+          prependRowSafe(CONFIG.SHEETS.OUTREACH, outreachRow);
           console.log('Successfully logged outreach entry for company: ' + (data.companyName || data.company));
         } catch (outreachError) {
           return handleErrorWithContext(outreachError, {
@@ -231,7 +231,7 @@ function processOutreachSubmission(data) {
             if (!accountRow['company name']) {
               console.warn('Cannot create new account: missing company name');
             } else {
-              appendRowSafe(CONFIG.SHEET_ACCOUNTS, accountRow);
+              appendRowSafe(CONFIG.SHEETS.ACCOUNTS, accountRow);
               console.log('Successfully created new account for: ' + accountRow['company name']);
             }
           } catch (accountError) {
@@ -306,7 +306,7 @@ function fetchOutreachHistory(startDateStr, endDateStr, options) {
         ['Visit Date', 'Company', 'Outcome', 'Status', 'Notes'];
 
       // Use optimized data fetching with caching
-      var outreach = getSafeSheetDataOptimized(CONFIG.SHEET_OUTREACH, requiredColumns, {
+      var outreach = getSafeSheetDataOptimized(CONFIG.SHEETS.OUTREACH, requiredColumns, {
         useCache: true,
         cacheDuration: 60000 // Cache for 1 minute since outreach data changes frequently
       });
@@ -412,7 +412,7 @@ function fetchOutreachHistory(startDateStr, endDateStr, options) {
  */
 function getLastTouchInfo(companyName) {
   try {
-    var outreach = getSafeSheetDataOptimized(CONFIG.SHEET_OUTREACH, 
+    var outreach = getSafeSheetDataOptimized(CONFIG.SHEETS.OUTREACH, 
       ['Visit Date', 'Outcome', 'Notes', 'Next Visit Date', 'Company'], 
       { useCache: true });
 
@@ -454,13 +454,13 @@ function calculateDashboardMetrics(options) {
       console.log('Starting dashboard metrics calculation');
 
       // Use optimized data fetching with caching for better performance
-      var prospects = getSafeSheetDataOptimized(CONFIG.SHEET_PROSPECTS,
+      var prospects = getSafeSheetDataOptimized(CONFIG.SHEETS.PROSPECTS,
         ['Contact Status', 'Company Name', 'Last Outcome', 'Last Outreach Date', 'Priority Score'], {
         useCache: true,
         cacheDuration: 120000 // Cache for 2 minutes since prospect data changes less frequently
       });
 
-      var outreach = getSafeSheetDataOptimized(CONFIG.SHEET_OUTREACH,
+      var outreach = getSafeSheetDataOptimized(CONFIG.SHEETS.OUTREACH,
         ['Visit Date', 'Company', 'Outcome', 'Contact Type', 'Owner'], {
         useCache: true,
         cacheDuration: 60000 // Cache for 1 minute for outreach data

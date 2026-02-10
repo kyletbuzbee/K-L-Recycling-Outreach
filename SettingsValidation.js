@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Settings CSV Validation and Import
  * Robust validation and normalization for settings CSV data
  * Handles case sensitivity, misspellings, and malformed data gracefully
@@ -823,10 +823,10 @@ var SettingsValidation = {
       }
 
       var ss = accessResult.spreadsheet;
-      var sheet = ss.getSheetByName(CONFIG.SHEET_SETTINGS);
+      var sheet = ss.getSheetByName(CONFIG.SHEETS.SETTINGS);
 
       if (!sheet) {
-        throw new Error('Settings sheet not found: ' + CONFIG.SHEET_SETTINGS);
+        throw new Error('Settings sheet not found: ' + CONFIG.SHEETS.SETTINGS);
       }
 
       // Clear existing data (except headers if they exist)
@@ -861,7 +861,7 @@ var SettingsValidation = {
         success: false,
         error: e.message,
         details: {
-          sheetName: CONFIG.SHEET_SETTINGS,
+          sheetName: CONFIG.SHEETS.SETTINGS,
           dataRows: data.length
         }
       };

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LoggerInjector - Automated Logging & Performance Tracking
  * Resolves 130+ missing logging issues across the codebase
  * 

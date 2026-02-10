@@ -178,7 +178,7 @@ var SettingsCache = {
 function runBatchScoring() {
   // Use cached settings to avoid repeated reads
   var settings = SettingsCache.getSettings();
-  var prospects = SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, ['Company ID', 'Industry', 'Days Since Last Contact']);
+  var prospects = SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, ['Company ID', 'Industry', 'Days Since Last Contact']);
   
   // Process in batches for better performance
   var batchSize = 50;
@@ -249,10 +249,10 @@ function applyBatchScoreUpdates(updates) {
     }
 
     var ss = accessResult.spreadsheet;
-    var sheet = ss.getSheetByName(CONFIG.SHEET_PROSPECTS);
+    var sheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
 
     if (!sheet) {
-      throw new Error('Prospects sheet not found: ' + CONFIG.SHEET_PROSPECTS);
+      throw new Error('Prospects sheet not found: ' + CONFIG.SHEETS.PROSPECTS);
     }
 
     // Get headers to find column indices

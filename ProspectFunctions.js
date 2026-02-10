@@ -23,7 +23,7 @@ var ProspectFunctions = {
 function getCompanyNamesForAutocomplete() {
   try {
     var prospectsResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, ['Company Name']);
+      return SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, ['Company Name']);
     }, {
       functionName: 'getCompanyNamesForAutocomplete'
     });
@@ -63,7 +63,7 @@ function searchProspectsByName(query) {
 
     // Get prospect data with error handling
     var prospectsResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, ['Company Name', 'Company ID', 'Address', 'Zip Code', 'Industry', 'Last Outcome']);
+      return SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, ['Company Name', 'Company ID', 'Address', 'Zip Code', 'Industry', 'Last Outcome']);
     }, {
       functionName: 'searchProspectsByName',
       query: query
@@ -127,7 +127,7 @@ function getCompanyDetailsForAutofill(companyId) {
 
     // Get prospect data with comprehensive field mapping
     var prospectsResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, [
+      return SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, [
         'Company ID', 'Company Name', 'Address', 'City', 'State', 'Zip Code', 
         'Industry', 'Last Outcome', 'Contact Status'
       ]);
@@ -191,7 +191,7 @@ function fetchLastTouchInfo(companyName) {
 
     // Get prospect data with error handling
     var prospectsResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, ['Company Name', 'Last Outreach Date', 'Last Outcome', 'Days Since Last Contact']);
+      return SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, ['Company Name', 'Last Outreach Date', 'Last Outcome', 'Days Since Last Contact']);
     }, {
       functionName: 'fetchLastTouchInfo',
       companyName: companyName
@@ -255,7 +255,7 @@ function updateProspectAfterVisit(companyId, companyName, outcome, status, activ
 
     // Get all prospects for fuzzy matching
     var prospectsResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, [
+      return SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, [
         'Company ID', 'Company Name', 'Contact Status', 'Last Outcome', 
         'Last Outreach Date', 'Days Since Last Contact', 'Next Steps Due Date'
       ]);
@@ -466,26 +466,26 @@ function updateExistingProspectWithWriteBackRules(rowIndex, outcome, status, act
       else if (['Disqualified', 'Not Interested', 'Lost'].includes(outcome)) newStatus = 'Disqualified';
       else if (matchedRule && matchedRule.status) newStatus = matchedRule.status; // Use 'Value_2' from settings
       
-      updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Contact Status', newStatus);
+      updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Contact Status', newStatus);
 
       // Update Next Steps Due Date
       if (['Won', 'Disqualified', 'Lost'].includes(newStatus)) {
-        updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Next Steps Due Date', ''); // Clear it
+        updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Next Steps Due Date', ''); // Clear it
         urgencyScore = 0;
       } else {
         // Calculate dynamic date based on Settings 'Value_3'
         var nextDate = calculateNextBusinessDay(nextStepDays);
-        updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Next Steps Due Date', formatDate(nextDate));
+        updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Next Steps Due Date', formatDate(nextDate));
         
         // Dynamic Urgency
         if (nextStepDays <= 3) urgencyScore = 115; // High urgency for short turnarounds
       }
 
       // 3. STANDARD UPDATES (Always happen)
-      updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Last Outcome', outcome);
-      updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Last Outreach Date', today);
-      updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Days Since Last Contact', 0);
-      updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Urgency Score', urgencyScore);
+      updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Last Outcome', outcome);
+      updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Last Outreach Date', today);
+      updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Days Since Last Contact', 0);
+      updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Urgency Score', urgencyScore);
 
       recalculateNextStepCountdown(rowIndex);
 
@@ -508,7 +508,7 @@ function checkStaleProspects() {
     var staleDays = settings.globalConstants['Stale_Prospect_Days'] ? settings.globalConstants['Stale_Prospect_Days'].value : 60;
     
     var prospectsResult = ErrorHandling.withErrorHandling(function() {
-      return SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, [
+      return SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, [
         'Company ID', 'Company Name', 'Last Outreach Date', 'Days Since Last Contact', 'Contact Status'
       ]);
     }, {
@@ -536,8 +536,8 @@ function checkStaleProspects() {
                   ' (Last contact: ' + daysSinceContact + ' days ago)');
         
         // Optional: Update urgency band to "Overdue" for stale prospects
-        updateCellSafe(CONFIG.SHEET_PROSPECTS, prospect._rowIndex, 'UrgencyBand', 'Overdue');
-        updateCellSafe(CONFIG.SHEET_PROSPECTS, prospect._rowIndex, 'Urgency Score', 120);
+        updateCellSafe(CONFIG.SHEETS.PROSPECTS, prospect._rowIndex, 'UrgencyBand', 'Overdue');
+        updateCellSafe(CONFIG.SHEETS.PROSPECTS, prospect._rowIndex, 'Urgency Score', 120);
       }
     });
 
@@ -645,12 +645,12 @@ function recalculateNextStepCountdown(rowIndex) {
       throw new Error('Spreadsheet not available for recalculateNextStepCountdown');
     }
     
-    var sheet = ss.getSheetByName(CONFIG.SHEET_PROSPECTS);
+    var sheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
     if (!sheet) {
-      throw new Error('Sheet not found: ' + CONFIG.SHEET_PROSPECTS);
+      throw new Error('Sheet not found: ' + CONFIG.SHEETS.PROSPECTS);
     }
     
-    var dueDateValue = sheet.getRange(rowIndex + 1, ColumnMapper.getColumnIndex(CONFIG.SHEET_PROSPECTS, 'Next Steps Due Date')).getValue();
+    var dueDateValue = sheet.getRange(rowIndex + 1, ColumnMapper.getColumnIndex(CONFIG.SHEETS.PROSPECTS, 'Next Steps Due Date')).getValue();
 
     if (dueDateValue) {
       var dueDate = new Date(dueDateValue);
@@ -661,9 +661,9 @@ function recalculateNextStepCountdown(rowIndex) {
       var diffTime = dueDate.getTime() - today.getTime();
       var daysUntilDue = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Next Step Due Countdown', daysUntilDue);
+      updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Next Step Due Countdown', daysUntilDue);
     } else {
-      updateCellSafe(CONFIG.SHEET_PROSPECTS, rowIndex, 'Next Step Due Countdown', '');
+      updateCellSafe(CONFIG.SHEETS.PROSPECTS, rowIndex, 'Next Step Due Countdown', '');
     }
   } catch (e) {
     console.error('Error recalculating countdown:', e.message);
@@ -692,9 +692,186 @@ function createNewProspect(companyId, companyName, outcome, status, activityType
     'contact status': status,
     'close probability': 0,
     'priority score': 50, // Default priority score
-    'urgencyband': 'Low',
+    'urgency band': 'Low',
     'urgency score': 20, // Default urgency score
   };
 
-  appendRowSafe(CONFIG.SHEET_PROSPECTS, prospectRow);
+  appendRowSafe(CONFIG.SHEETS.PROSPECTS, prospectRow);
 }
+
+/**
+ * Runs precise industry mapping based on company name keywords.
+ * Uses SMART_MAP to identify industries and only overwrites weak or generic values.
+ * Uses batch processing (getValues/setValues) for performance.
+ */
+function runPreciseIndustryMapper() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const prospectSheet = ss.getSheetByName('Prospects');
+  if (!prospectSheet) {
+    console.error('Prospects sheet not found');
+    return;
+  }
+
+  const SMART_MAP = [
+    { industry: "Junk Removal", keywords: ["junk", "haul", "cleanout", "scrap removal", "demo guys"] },
+    { industry: "Welding", keywords: ["welding", "welder", "braze", "arc n spark", "weld"] },
+    { industry: "Metal Fabrication", keywords: ["metal", "steel", "fabrication", "fab", "iron", "machine shop", "cnc", "tooling", "ornamental", "wire", "alloy"] },
+    { industry: "HVAC", keywords: ["hvac", "air conditioning", "heating", "cooling", "furnace", "air condition", "ac ", "a/c"] },
+    { industry: "Automotive", keywords: ["auto", "collision", "body shop", "tire", "brake", "transmission", "radiator", "diesel", "motors", "car care", "alignment", "truck repair"] },
+    { industry: "Roofing", keywords: ["roof"] },
+    { industry: "Gutter", keywords: ["gutter", "seamless"] },
+    { industry: "Plumbing", keywords: ["plumbing", "plumber", "septic", "rooter", "drain"] },
+    { industry: "Electrical", keywords: ["electric", "lighting"] },
+    { industry: "Appliance", keywords: ["appliance", "washer", "dryer", "refrigerator"] },
+    { industry: "Fence", keywords: ["fence", "fencing"] },
+    { industry: "Construction", keywords: ["construction", "builder", "contractor", "remodeling", "excavation", "dirt"] }
+  ];
+
+  const range = prospectSheet.getDataRange();
+  const data = range.getValues();
+  const headers = data[0];
+  const nameIdx = headers.indexOf('Company Name');
+  const industryIdx = headers.indexOf('Industry');
+
+  if (nameIdx === -1 || industryIdx === -1) {
+    console.error('Required columns not found: Company Name or Industry');
+    return;
+  }
+
+  let updateCount = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const companyName = String(data[i][nameIdx]).toLowerCase();
+    const currentIndustry = String(data[i][industryIdx]);
+    let matchFound = null;
+
+    for (const rule of SMART_MAP) {
+      if (rule.keywords.some(kw => companyName.includes(kw))) {
+        matchFound = rule.industry;
+        break;
+      }
+    }
+
+    if (matchFound) {
+      const isWeak = ["Other", "Retail", "Construction", "", "0"].includes(currentIndustry);
+      const isUpgrade = (currentIndustry === "Construction" && ["Roofing", "Gutter", "Metal Fabrication"].includes(matchFound));
+      
+      if ((isWeak || isUpgrade) && currentIndustry !== matchFound) {
+        data[i][industryIdx] = matchFound;
+        updateCount++;
+      }
+    }
+  }
+
+  if (updateCount > 0) {
+    range.setValues(data);
+    console.log("Updated " + updateCount + " industries.");
+    SpreadsheetApp.getActiveSpreadsheet().toast("Updated " + updateCount + " industry classifications.", "Industry Mapper", 5);
+  } else {
+    console.log("No industries needed updating.");
+    SpreadsheetApp.getActiveSpreadsheet().toast("No industries needed updating.", "Industry Mapper", 5);
+  }
+}
+
+/**
+ * Normalizes company names and generates unique Company IDs.
+ * Normalization: Removes "LLC", "Inc", "Co", punctuation, and extra spaces.
+ * ID Format: CID- + First 3 chars of Normalized Name + 3-digit sequence number.
+ * Only processes rows where Company ID is missing or empty.
+ */
+function normalizeAndGenerateIDs() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const prospectSheet = ss.getSheetByName('Prospects');
+  if (!prospectSheet) {
+    console.error('Prospects sheet not found');
+    return;
+  }
+
+  const range = prospectSheet.getDataRange();
+  const data = range.getValues();
+  const headers = data[0];
+  const companyIdIdx = headers.indexOf('Company ID');
+  const companyNameIdx = headers.indexOf('Company Name');
+
+  if (companyIdIdx === -1 || companyNameIdx === -1) {
+    console.error('Required columns not found: Company ID or Company Name');
+    return;
+  }
+
+  // Track used IDs to prevent duplicates
+  const usedIds = new Set();
+  
+  // First pass: collect all existing IDs
+  for (let i = 1; i < data.length; i++) {
+    const existingId = String(data[i][companyIdIdx]).trim();
+    if (existingId && existingId.startsWith('CID-')) {
+      usedIds.add(existingId);
+    }
+  }
+
+  let updateCount = 0;
+  const idCounters = {}; // Track sequence numbers per prefix
+
+  for (let i = 1; i < data.length; i++) {
+    const currentId = String(data[i][companyIdIdx]).trim();
+    const companyName = String(data[i][companyNameIdx]).trim();
+    
+    // Skip if ID already exists and is valid
+    if (currentId && currentId.startsWith('CID-')) {
+      continue;
+    }
+
+    // Skip if no company name
+    if (!companyName) {
+      continue;
+    }
+
+    // Normalize the company name
+    let normalized = companyName
+      .replace(/\b(LLC|Inc\.?|Ltd\.?|Co\.?|Corporation|Corp\.?)\b/gi, '')
+      .replace(/[^\w\s]/g, ' ') // Remove punctuation
+      .replace(/\s+/g, ' ')      // Collapse multiple spaces
+      .trim()
+      .toUpperCase();
+
+    // Get first 3 characters, padded if needed
+    let prefix = normalized.substring(0, 3).padEnd(3, 'X');
+    
+    // Initialize counter for this prefix if not exists
+    if (!(prefix in idCounters)) {
+      idCounters[prefix] = 1;
+    }
+
+    // Generate unique ID
+    let newId;
+    let attempts = 0;
+    do {
+      const sequence = String(idCounters[prefix]).padStart(3, '0');
+      newId = 'CID-' + prefix + sequence;
+      idCounters[prefix]++;
+      attempts++;
+    } while (usedIds.has(newId) && attempts < 999);
+
+    if (attempts >= 999) {
+      console.warn('Could not generate unique ID for: ' + companyName);
+      continue;
+    }
+
+    usedIds.add(newId);
+    data[i][companyIdIdx] = newId;
+    updateCount++;
+  }
+
+  if (updateCount > 0) {
+    range.setValues(data);
+    console.log("Generated " + updateCount + " new Company IDs.");
+    SpreadsheetApp.getActiveSpreadsheet().toast("Generated " + updateCount + " new Company IDs.", "ID Generator", 5);
+  } else {
+    console.log("No new IDs needed.");
+    SpreadsheetApp.getActiveSpreadsheet().toast("No new IDs needed - all rows have valid Company IDs.", "ID Generator", 5);
+  }
+}
+
+// Export the new functions to the namespace
+ProspectFunctions.runPreciseIndustryMapper = runPreciseIndustryMapper;
+ProspectFunctions.normalizeAndGenerateIDs = normalizeAndGenerateIDs;

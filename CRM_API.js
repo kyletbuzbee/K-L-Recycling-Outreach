@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Unified CRM Suite Gateway
  * NOTE: This file is deprecated. All CRM API functions have been consolidated
  * into DashboardBackend.js for better error handling and logging.

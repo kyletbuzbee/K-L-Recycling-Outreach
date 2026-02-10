@@ -1,4 +1,4 @@
-/**
+﻿/**
  * CRITICAL FIXES for Date Parsing and Status Mapping
  * 
  * These functions fix the bugs found in testing:
@@ -235,7 +235,7 @@ function testDateFixes() {
     var result = parseDateSafely(test.input);
     var resultStr = result ? result.toDateString() : 'null';
     var passed = resultStr.includes(test.expected);
-    console.log((passed ? '✅' : '❌') + ' ' + test.desc + ': ' + resultStr);
+    console.log((passed ? 'âœ…' : 'âŒ') + ' ' + test.desc + ': ' + resultStr);
   });
   
   console.log('\nTesting status mapping fixes...\n');
@@ -251,6 +251,6 @@ function testDateFixes() {
   statusTests.forEach(function(test) {
     var result = mapStatusToStage(test.input);
     var passed = result === test.expected;
-    console.log((passed ? '✅' : '❌') + ' ' + test.input + ' → ' + result);
+    console.log((passed ? 'âœ…' : 'âŒ') + ' ' + test.input + ' â†’ ' + result);
   });
 }

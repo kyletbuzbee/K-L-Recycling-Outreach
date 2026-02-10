@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Data Helpers - The Safe-Fetch Engine
  * Handles reading/writing data with dynamic column mapping.
  * 
@@ -316,10 +316,22 @@ function prependRowSafe(sheetName, rowObj) {
 
       // Perform the prepend with error handling
       try {
-        sheet.insertRowAfter(1); // Insert new row below header (row 2)
-        var range = sheet.getRange(2, 1, 1, rowArray.length);
-        range.setValues([rowArray]);
-        console.log('Successfully prepended row to sheet "' + sheetName + '" with ' + rowArray.length + ' columns');
+        var lastRow = sheet.getLastRow();
+        var lastCol = sheet.getLastColumn();
+        
+        // If sheet only has header row (row 1) or is empty, append the row
+        // Otherwise, insert at row 2 (right below header)
+        if (lastRow <= 1) {
+          // Sheet only has header or is empty - append the row
+          sheet.appendRow(rowArray);
+          console.log('Successfully appended row to sheet "' + sheetName + '" (sheet was empty or had only header)');
+        } else {
+          // Sheet has data - insert at row 2 (top of data)
+          sheet.insertRowBefore(2);
+          var range = sheet.getRange(2, 1, 1, rowArray.length);
+          range.setValues([rowArray]);
+          console.log('Successfully prepended row to sheet "' + sheetName + '" with ' + rowArray.length + ' columns');
+        }
         return { success: true, message: 'Row prepended successfully', columns: rowArray.length };
       } catch (e) {
         var errorMsg = 'Failed to prepend row to sheet "' + sheetName + '": ' + e.message;

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Report Functions
  * Generates HTML reports for the dashboard modal with professional formatting and KPIs.
  */
@@ -33,7 +33,7 @@ function generateReportHtml(startDate, endDate) {
 
     // 1. Safe Data Fetching
     var requiredCols = ['Visit Date', 'Company', 'Outcome', 'Notes', 'Next Visit Date', 'Owner'];
-    var outreach = SharedUtils.getSafeSheetData(CONFIG.SHEET_OUTREACH, requiredCols);
+    var outreach = SharedUtils.getSafeSheetData(CONFIG.SHEETS.OUTREACH, requiredCols);
     
     // 2. Date Normalization - FIXED TIMEZONE BUG
     // Isolate Filter vs. Display Dates to prevent "off by one day" errors
@@ -115,7 +115,7 @@ function generateReportHtml(startDate, endDate) {
     // 5. Error Handling: Return a valid HTML page displaying the error
     // This ensures the modal opens even if the script crashes, helping debug.
     var errorHtml = '<div style="font-family: Arial, sans-serif; padding: 20px; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px;">';
-    errorHtml += '<h3 style="margin-top:0;">⚠️ Report Generation Error</h3>';
+    errorHtml += '<h3 style="margin-top:0;">âš ï¸ Report Generation Error</h3>';
     errorHtml += '<p>The report could not be generated due to the following error:</p>';
     errorHtml += '<pre style="background: #fff; padding: 10px; border: 1px solid #ddd; overflow-x: auto; font-size: 11px;">' + e.message + '</pre>';
     errorHtml += '<p><strong>Troubleshooting:</strong><br>1. Check if "Outreach" sheet exists.<br>2. Check if column headers match (Visit Date, Company, Outcome, etc.).</p>';
@@ -145,7 +145,7 @@ function generateProfessionalReport(startDate, endDate) {
     };
 
     // Get outreach data
-    var outreachData = SharedUtils.getSafeSheetData(CONFIG.SHEET_OUTREACH, ['Visit Date', 'Company', 'Outcome', 'Status', 'Notes']);
+    var outreachData = SharedUtils.getSafeSheetData(CONFIG.SHEETS.OUTREACH, ['Visit Date', 'Company', 'Outcome', 'Status', 'Notes']);
 
     // Get prospects data for action plan (use flexible column access)
     var prospectsColumns = ['Company Name', 'Contact Status'];
@@ -154,12 +154,12 @@ function generateProfessionalReport(startDate, endDate) {
     // Try to get data with available columns - prevent undefined values
     var prospectsData = []; // Default to empty array
     try {
-      var rawData = SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, prospectsColumns.concat(optionalColumns));
+      var rawData = SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, prospectsColumns.concat(optionalColumns));
       if (rawData) prospectsData = rawData;
     } catch (e) {
       console.warn("Failed to get full columns, retrying with basics...");
       try {
-        var rawDataFallback = SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, prospectsColumns);
+        var rawDataFallback = SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, prospectsColumns);
         if (rawDataFallback) prospectsData = rawDataFallback;
       } catch (e2) {
         console.error("Could not load prospects: " + e2.message);
@@ -437,28 +437,28 @@ function generateProfessionalReport(startDate, endDate) {
     <body>
       <div class="report-container">
         <div class="header">
-          <h1>🚀 K&L Recycling</h1>
+          <h1>ðŸš€ K&L Recycling</h1>
           <p>Enterprise Operations Report | ${format(start)} - ${format(end)}</p>
         </div>
 
         <div class="kpi-section">
           <div class="kpi-card total">
             <div class="kpi-value">${totalVisits}</div>
-            <div class="kpi-label">📊 Total Visits</div>
+            <div class="kpi-label">ðŸ“Š Total Visits</div>
           </div>
           <div class="kpi-card wins">
             <div class="kpi-value">${wins}</div>
-            <div class="kpi-label">🏆 New Wins</div>
+            <div class="kpi-label">ðŸ† New Wins</div>
           </div>
           <div class="kpi-card hot">
             <div class="kpi-value">${hotLeads}</div>
-            <div class="kpi-label">🔥 Hot Leads</div>
+            <div class="kpi-label">ðŸ”¥ Hot Leads</div>
           </div>
         </div>
 
         <div class="content-section">
           <h2 class="section-title">
-            📈 Activity Details
+            ðŸ“ˆ Activity Details
           </h2>`;
 
     if (filteredOutreach.length === 0) {
@@ -468,10 +468,10 @@ function generateProfessionalReport(startDate, endDate) {
           <table class="activity-table">
             <thead>
               <tr>
-                <th>🏢 Company</th>
-                <th>📅 Date</th>
-                <th>🎯 Outcome</th>
-                <th>📝 Notes</th>
+                <th>ðŸ¢ Company</th>
+                <th>ðŸ“… Date</th>
+                <th>ðŸŽ¯ Outcome</th>
+                <th>ðŸ“ Notes</th>
               </tr>
             </thead>
             <tbody>`;
@@ -502,23 +502,23 @@ function generateProfessionalReport(startDate, endDate) {
     // Next Day Action Plan
     html += `
           <div class="action-plan">
-            <h3>🎯 Next Day Action Plan</h3>`;
+            <h3>ðŸŽ¯ Next Day Action Plan</h3>`;
 
     if (actionPlan.length === 0) {
       html += '<p style="color: #64748b; font-style: italic;">No high-priority actions identified for tomorrow.</p>';
     } else {
       html += '<ul class="action-list">';
       actionPlan.forEach(function(action) {
-        var priorityIcon = '⭐';
-        if (action.priority >= 80) priorityIcon = '🔥';
-        else if (action.priority >= 60) priorityIcon = '⚡';
+        var priorityIcon = 'â­';
+        if (action.priority >= 80) priorityIcon = 'ðŸ”¥';
+        else if (action.priority >= 60) priorityIcon = 'âš¡';
 
         html += `
               <li class="action-item">
                 <span class="priority-icon">${priorityIcon}</span>
                 <div>
                   <div class="action-company">${action.company}</div>
-                  <div class="action-reason">${action.reason} • Priority: ${action.priority}/100</div>
+                  <div class="action-reason">${action.reason} â€¢ Priority: ${action.priority}/100</div>
                 </div>
               </li>`;
       });
@@ -530,7 +530,7 @@ function generateProfessionalReport(startDate, endDate) {
         </div>
 
         <div class="footer">
-          <p>© ${new Date().getFullYear()} K&L Recycling CRM | Enterprise Operations Suite</p>
+          <p>Â© ${new Date().getFullYear()} K&L Recycling CRM | Enterprise Operations Suite</p>
         </div>
       </div>
     </body>
@@ -555,11 +555,11 @@ function generateProfessionalReport(startDate, endDate) {
     </head>
     <body>
       <div class="error-box">
-        <div class="error-icon">⚠️</div>
+        <div class="error-icon">âš ï¸</div>
         <h2>Report Generation Error</h2>
         <p>The professional report could not be generated due to the following error:</p>
         <pre>${e.message}</pre>
-        <p><strong>Troubleshooting:</strong><br>• Check if Prospects and Outreach sheets exist<br>• Verify column headers match expected names<br>• Ensure data is properly formatted</p>
+        <p><strong>Troubleshooting:</strong><br>â€¢ Check if Prospects and Outreach sheets exist<br>â€¢ Verify column headers match expected names<br>â€¢ Ensure data is properly formatted</p>
         <button onclick="google.script.host.close()" style="padding: 10px 20px; background: #0F2537; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px;">Close</button>
       </div>
     </body>
@@ -680,7 +680,7 @@ function calculateActionPriority(row, recentOutreach, today, tomorrow) {
 
     // --- URGENCY BAND ---
     // SAFETY CHECK 3: specific check for urgency band
-    var urgencyBandRaw = row['urgencyband'] || row['urgency band'] || row['urgency'] || '';
+    var urgencyBandRaw = row['UrgencyBand'] || row['urgency band'] || row['urgency'] || '';
     if (String(urgencyBandRaw).toLowerCase().includes('high')) {
       score += 20;
       if (!status.includes('hot')) reasons.push("High Urgency");
@@ -705,7 +705,7 @@ function calculateActionPriority(row, recentOutreach, today, tomorrow) {
     return {
       company: company,
       priority: Math.max(0, score),
-      reason: reasons.join(' • ') || 'General Follow-up',
+      reason: reasons.join(' â€¢ ') || 'General Follow-up',
       daysOverdue: daysOverdue,
       actionType: score > 60 ? 'urgent' : 'follow-up'
     };
@@ -806,7 +806,7 @@ function analyzeRecentActivity(companyName, recentOutreach, tomorrow) {
 
   if (recentFailures.length > 0) {
     penalty += 10;
-    reason += ' • Recent unsuccessful attempts';
+    reason += ' â€¢ Recent unsuccessful attempts';
   }
 
   return { score: score, penalty: penalty, reason: reason, lastActivityDays: daysSinceLastActivity };
@@ -910,7 +910,7 @@ function getRecentOutreachContext(daysBack) {
     var cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
-    var outreachData = SharedUtils.getSafeSheetData(CONFIG.SHEET_OUTREACH,
+    var outreachData = SharedUtils.getSafeSheetData(CONFIG.SHEETS.OUTREACH,
       ['Company', 'Visit Date', 'Outcome', 'Notes']);
 
     return outreachData.filter(function(row) {
@@ -973,7 +973,7 @@ function hasAccountBeenWon(companyName, recentOutreach) {
     // Also check if there's an Accounts sheet entry for this company
     // FIX: Use SHEET_ACCOUNTS since there's no separate "New Accounts" sheet
     try {
-      var accountsSheetName = CONFIG.SHEET_ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
+      var accountsSheetName = CONFIG.SHEETS.ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
       var newAccountsData = SharedUtils.getSafeSheetData(accountsSheetName, ['Company name']);
       for (var j = 0; j < newAccountsData.length; j++) {
         var accountCompany = (newAccountsData[j]['company name'] || '').toLowerCase().trim();
@@ -1141,7 +1141,7 @@ function generatePlainTextReportForRange(startDate, endDate) {
 
     // 1. Safe Data Fetching
     var requiredCols = ['Visit Date', 'Company', 'Outcome', 'Notes', 'Next Visit Date', 'Owner'];
-    var outreach = SharedUtils.getSafeSheetData(CONFIG.SHEET_OUTREACH, requiredCols);
+    var outreach = SharedUtils.getSafeSheetData(CONFIG.SHEETS.OUTREACH, requiredCols);
 
     // 2. Date Normalization - FIXED TIMEZONE BUG
     var start, end;
@@ -1340,7 +1340,7 @@ function showProfessionalReport() {
       .setWidth(900)
       .setHeight(800);
     
-    SpreadsheetApp.getUi().showModalDialog(output, '📊 Professional Operations Report');
+    SpreadsheetApp.getUi().showModalDialog(output, 'ðŸ“Š Professional Operations Report');
     
   } catch (e) {
     console.error('Error showing professional report:', e);
@@ -1363,7 +1363,7 @@ function showProfessionalReportWithDates(startDate, endDate) {
       .setWidth(900)
       .setHeight(800);
     
-    SpreadsheetApp.getUi().showModalDialog(output, '📊 Professional Operations Report');
+    SpreadsheetApp.getUi().showModalDialog(output, 'ðŸ“Š Professional Operations Report');
     
   } catch (e) {
     console.error('Error showing professional report:', e);

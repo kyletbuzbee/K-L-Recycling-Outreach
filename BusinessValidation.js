@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Business Validation Utilities - FunctionRefactorer Integration
  * Centralized business rule validation functions with FunctionRefactorer patterns.
  * Provides decomposed, testable pipeline components using withLogging and withErrorHandling wrappers.
@@ -1306,7 +1306,7 @@ BusinessValidation.validateBusinessLogic = function(data, options) {
 BusinessValidation._checkForDuplicateCompanies = function(companyName) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var prospectsSheet = ss.getSheetByName(CONFIG.SHEET_PROSPECTS);
+    var prospectsSheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
     
     if (!prospectsSheet) {
       return [];

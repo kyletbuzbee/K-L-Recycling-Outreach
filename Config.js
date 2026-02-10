@@ -29,6 +29,7 @@ var CONFIG = {
   APP_TITLE: 'K&L Recycling CRM',
   
   // Header Definitions (Must match Sheet Headers EXACTLY)
+  // Aligned with System_Schema.csv - DO NOT MODIFY without updating schema
   HEADERS: {
     OUTREACH: [
       'Outreach ID', 'Company ID', 'Company', 'Visit Date', 'Notes', 
@@ -37,7 +38,7 @@ var CONFIG = {
       'Prospects Match', 'Contact Type', 'Email Sent', 'Competitor'
     ],
     PROSPECTS: [
-      'Company ID', 'Address', 'Zip Code', 'Company Name', 'Industry', 
+      'Company ID', 'Address', 'City', 'Zip Code', 'Company Name', 'Industry', 
       'Latitude', 'Longitude', 'Last Outcome', 'Last Outreach Date', 
       'Days Since Last Contact', 'Next Step Due Countdown', 'Next Steps Due Date', 
       'Contact Status', 'Close Probability', 'Priority Score', 
@@ -53,8 +54,68 @@ var CONFIG = {
       'Email', 'Address'
     ],
     SETTINGS: [
-      'Category', 'Key', 'Value_1', 'Value_2', 'Value_3', 'Value_4', 'Description','Column 8'
+      'Category', 'Key', 'Value_1', 'Value_2', 'Value_3', 'Value_4', 'Description'
     ]
+  },
+
+  // Schema Normalizer Configuration
+  SCHEMA: {
+    PROSPECTS: {
+      companyId: { header: 'Company ID', type: 'string', required: true },
+      address: { header: 'Address', type: 'string', required: false },
+      city: { header: 'City', type: 'string', required: false },
+      zipCode: { header: 'Zip Code', type: 'string', required: false },
+      companyName: { header: 'Company Name', type: 'string', required: true },
+      industry: { header: 'Industry', type: 'string', required: false },
+      latitude: { header: 'Latitude', type: 'number', required: false },
+      longitude: { header: 'Longitude', type: 'number', required: false },
+      lastOutcome: { header: 'Last Outcome', type: 'string', required: false },
+      lastOutreachDate: { header: 'Last Outreach Date', type: 'date', required: false },
+      daysSinceLastContact: { header: 'Days Since Last Contact', type: 'number', required: false },
+      nextStepDueCountdown: { header: 'Next Step Due Countdown', type: 'number', required: false },
+      nextStepsDueDate: { header: 'Next Steps Due Date', type: 'date', required: false },
+      contactStatus: { header: 'Contact Status', type: 'string', required: true },
+      closeProbability: { header: 'Close Probability', type: 'number', required: false },
+      priorityScore: { header: 'Priority Score', type: 'number', required: false, default: 60 },
+      urgencyBand: { header: 'UrgencyBand', type: 'string', required: false },
+      urgencyScore: { header: 'Urgency Score', type: 'number', required: false },
+      totals: { header: 'Totals', type: 'text', required: false }
+    },
+    OUTREACH: {
+      outreachId: { header: 'Outreach ID', type: 'string', required: true },
+      companyId: { header: 'Company ID', type: 'string', required: true },
+      company: { header: 'Company', type: 'string', required: true },
+      visitDate: { header: 'Visit Date', type: 'date', required: true },
+      notes: { header: 'Notes', type: 'text', required: false },
+      outcome: { header: 'Outcome', type: 'string', required: true },
+      stage: { header: 'Stage', type: 'string', required: false },
+      status: { header: 'Status', type: 'string', required: false },
+      nextVisitDate: { header: 'Next Visit Date', type: 'date', required: false },
+      daysSinceLastVisit: { header: 'Days Since Last Visit', type: 'string', required: false },
+      nextVisitCountdown: { header: 'Next Visit Countdown', type: 'number', required: false },
+      outcomeCategory: { header: 'Outcome Category', type: 'string', required: false },
+      followUpAction: { header: 'Follow Up Action', type: 'string', required: false },
+      owner: { header: 'Owner', type: 'string', required: false, default: 'Kyle Buzbee' },
+      prospectsMatch: { header: 'Prospects Match', type: 'string', required: false },
+      contactType: { header: 'Contact Type', type: 'string', required: false, default: 'Visit' },
+      emailSent: { header: 'Email Sent', type: 'boolean', required: false, default: false },
+      competitor: { header: 'Competitor', type: 'string', required: false }
+    },
+    ACCOUNTS: {
+      deployed: { header: 'Deployed', type: 'string', required: false },
+      timestamp: { header: 'Timestamp', type: 'date', required: true },
+      companyName: { header: 'Company Name', type: 'string', required: true },
+      contactName: { header: 'Contact Name', type: 'string', required: false },
+      contactPhone: { header: 'Contact Phone', type: 'string', required: false },
+      contactRole: { header: 'Contact Role', type: 'string', required: false },
+      siteLocation: { header: 'Site Location', type: 'string', required: false },
+      mailingLocation: { header: 'Mailing Location', type: 'string', required: false },
+      rollOffFee: { header: 'Roll-Off Fee', type: 'string', required: false, default: 'Yes' },
+      handlingOfMetal: { header: 'Handling of Metal', type: 'string', required: false },
+      rolloffContainerSize: { header: 'Roll Off Container Size', type: 'string', required: false, default: '30 yd' },
+      notes: { header: 'Notes', type: 'text', required: false },
+      payoutPrice: { header: 'Payout Price', type: 'text', required: false }
+    }
   },
 
   // Standardized Variables (can be overridden by settings)

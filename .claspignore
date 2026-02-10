@@ -25,8 +25,6 @@ system-schema.json
 
 # HTML reports - not web app files
 CRM_BLUEPRINT_REPORT.html
-dateRangeReport.html
-report.html
 
 # Configuration and rules directories
 .clinerules/
@@ -37,7 +35,7 @@ Formulas/
 
 # Node.js modules and package files (if any)
 node_modules/
-package*.json
+package.json
 
 # OS and editor files
 .DS_Store
@@ -47,3 +45,18 @@ package*.json
 .idea/
 node_modules/bundle-name/index.gs
 index.gs
+test_data_operations.js
+test_deploy.js
+test_integration.js
+test_outreach_prospects_logic.js
+test_runner.html
+test_runners.js
+test_schema_aligned.js
+TEST_SCHEMA_ALIGNMENT_SUMMARY.md
+test_unit.js
+TEST_USAGE_GUIDE.md
+test_validation.js
+test_workflow_aligned.js
+TESTING_COMPLETION_REPORT.md
+TODO_UPDATED.md
+TODO.md

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Fuzzy Matching Utilities for K&L Recycling CRM
  * Handles company name/ID differences between Outreach and Prospects sheets
  * Version: 1.0.0

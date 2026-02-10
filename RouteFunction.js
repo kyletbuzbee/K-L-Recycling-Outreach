@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Route Functions
  * Geocoding and Routing URL Generation.
  */
@@ -7,7 +7,7 @@ function updateGeocodes(batchLimit) {
   var limit = batchLimit || 15; // Process max 15 addresses per run
   
   // Use Safe-Fetch pattern: get headers dynamically instead of hardcoded indices
-  var sheetAccess = SharedUtils.getSheetSafe(CONFIG.SHEET_PROSPECTS, 'updateGeocodes');
+  var sheetAccess = SharedUtils.getSheetSafe(CONFIG.SHEETS.PROSPECTS, 'updateGeocodes');
   if (!sheetAccess.success) {
     console.error('Failed to access Prospects sheet: ' + sheetAccess.error);
     return;
@@ -25,7 +25,7 @@ function updateGeocodes(batchLimit) {
   });
 
   // Get data using Safe-Fetch pattern
-  var prospects = SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, ['Address', 'Latitude', 'Longitude']);
+  var prospects = SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, ['Address', 'Latitude', 'Longitude']);
 
   var processedCount = 0;
 
@@ -53,8 +53,8 @@ function updateGeocodes(batchLimit) {
         var geo = Maps.newGeocoder().geocode(address);
         if (geo.status === 'OK' && geo.results.length > 0) {
           var loc = geo.results[0].geometry.location;
-          updateCellSafe(CONFIG.SHEET_PROSPECTS, p._rowIndex, 'Latitude', loc.lat);
-          updateCellSafe(CONFIG.SHEET_PROSPECTS, p._rowIndex, 'Longitude', loc.lng);
+          updateCellSafe(CONFIG.SHEETS.PROSPECTS, p._rowIndex, 'Latitude', loc.lat);
+          updateCellSafe(CONFIG.SHEETS.PROSPECTS, p._rowIndex, 'Longitude', loc.lng);
           processedCount++;
         }
       } catch (e) {
@@ -76,7 +76,7 @@ function buildRouteUrl(companyNames) {
     }
 
     // Get prospect data for address/coord lookup
-    var prospects = SharedUtils.getSafeSheetData(CONFIG.SHEET_PROSPECTS, ['Company Name', 'Address', 'Latitude', 'Longitude']);
+    var prospects = SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, ['Company Name', 'Address', 'Latitude', 'Longitude']);
     var prospectMap = {};
     prospects.forEach(function(p) {
       var key = (p['company name'] || '').toLowerCase().trim();

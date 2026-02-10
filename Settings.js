@@ -10,7 +10,7 @@ function getSettings() {
       throw new Error('SpreadsheetApp service not available in getSettings');
     }
     
-    var rawData = SharedUtils.getSafeSheetData(CONFIG.SHEET_SETTINGS, ['Category', 'Key', 'Value_1', 'Value_2', 'Value_3', 'Value_4', 'Description']);
+    var rawData = SharedUtils.getSafeSheetData(CONFIG.SHEETS.SETTINGS, ['Category', 'Key', 'Value_1', 'Value_2', 'Value_3', 'Value_4', 'Description']);
 
     var settings = {
       industryScores: {},
@@ -150,27 +150,143 @@ function getCRMSettings() {
  * Returns validation lists from Settings for dashboard dropdowns.
  * Returns an object with category keys mapping to {values: [], description: ''}.
  * Used by dashboard.html to populate dropdowns dynamically from Settings.
+ * 
+ * @returns {Object} Standard response object with success flag and validation lists data
  */
 function getValidationLists() {
   try {
     var settings = getSettings();
     
+    // Default validation lists as fallback
+    var defaultLists = {
+      'Competitors': { values: ['AIM', 'Tyler Iron', 'Huntwell', 'Other', 'None'], description: 'Top competitors' },
+      'Container Sizes': { values: ['20 yd', '30 yd', '40 yd', 'Lugger'], description: 'Standard bin types' },
+      'Activity Types': { values: ['Visit', 'Phone', 'Email'], description: 'Contact types' },
+      'Contact Types': { values: ['Visit', 'Phone', 'Email'], description: 'Contact methods' },
+      'Outcomes': { values: ['Account Won', 'Interested (Hot)', 'Interested (Warm)', 'Initial Contact', 'Follow-Up', 'No Answer', 'Not Interested', 'Disqualified'], description: 'Visit outcomes' },
+      'Stages': { values: ['Prospect', 'Outreach', 'Nurture', 'Won', 'Lost'], description: 'Pipeline stages' },
+      'Statuses': { values: ['Active', 'Interested (Hot)', 'Interested (Warm)', 'Cold', 'Disqualified', 'Won'], description: 'Contact statuses' }
+    };
+    
     if (!settings || !settings.validationLists) {
-      // Return empty validation lists with defaults
-      return {
-        'Competitors': { values: ['AIM', 'Tyler Iron', 'Huntwell', 'Other', 'None'], description: 'Top competitors' },
-        'Container Sizes': { values: ['20 yd', '30 yd', '40 yd', 'Lugger'], description: 'Standard bin types' },
-        'Activity Types': { values: ['Visit', 'Phone', 'Email'], description: 'Contact types' },
-        'Outcomes': { values: ['Account Won', 'Interested (Hot)', 'Interested (Warm)', 'Initial Contact', 'Follow-Up', 'No Answer', 'Not Interested', 'Disqualified'], description: 'Visit outcomes' },
-        'Stages': { values: ['Prospect', 'Outreach', 'Nurture', 'Won', 'Lost'], description: 'Pipeline stages' },
-        'Statuses': { values: ['Active', 'Interested (Hot)', 'Interested (Warm)', 'Cold', 'Disqualified', 'Won'], description: 'Contact statuses' }
-      };
+      console.warn('getValidationLists: No settings data found, returning defaults');
+      return defaultLists;
     }
     
-    return settings.validationLists;
+    // Merge with defaults to ensure all required lists are present
+    var mergedLists = {};
+    
+    // First add defaults
+    for (var key in defaultLists) {
+      mergedLists[key] = defaultLists[key];
+    }
+    
+    // Then override with actual settings data
+    for (var listKey in settings.validationLists) {
+      if (settings.validationLists.hasOwnProperty(listKey)) {
+        mergedLists[listKey] = settings.validationLists[listKey];
+      }
+    }
+    
+    console.log('getValidationLists: Returning ' + Object.keys(mergedLists).length + ' validation lists');
+    return mergedLists;
     
   } catch (e) {
     console.error('Error in getValidationLists: ' + e.message);
-    return {};
+    // Return defaults on error
+    return {
+      'Competitors': { values: ['AIM', 'Tyler Iron', 'Huntwell', 'Other', 'None'], description: 'Top competitors' },
+      'Container Sizes': { values: ['20 yd', '30 yd', '40 yd', 'Lugger'], description: 'Standard bin types' },
+      'Activity Types': { values: ['Visit', 'Phone', 'Email'], description: 'Contact types' },
+      'Contact Types': { values: ['Visit', 'Phone', 'Email'], description: 'Contact methods' },
+      'Outcomes': { values: ['Account Won', 'Interested (Hot)', 'Interested (Warm)', 'Initial Contact', 'Follow-Up', 'No Answer', 'Not Interested', 'Disqualified'], description: 'Visit outcomes' },
+      'Stages': { values: ['Prospect', 'Outreach', 'Nurture', 'Won', 'Lost'], description: 'Pipeline stages' },
+      'Statuses': { values: ['Active', 'Interested (Hot)', 'Interested (Warm)', 'Cold', 'Disqualified', 'Won'], description: 'Contact statuses' }
+    };
+  }
+}
+
+/**
+ * Test function to verify dashboard API connectivity
+ * Can be called from browser console to debug issues
+ * @returns {Object} Test results
+ */
+function testDashboardAPI() {
+  try {
+    var results = {
+      success: true,
+      timestamp: new Date().toISOString(),
+      tests: {}
+    };
+    
+    // Test PipelineService availability
+    try {
+      if (typeof PipelineService !== 'undefined' && PipelineService !== null) {
+        results.tests.pipelineService = 'available';
+        // Test a simple method
+        if (typeof PipelineService.calculateFunnel === 'function') {
+          results.tests.calculateFunnel = 'available';
+          var funnel = PipelineService.calculateFunnel();
+          results.tests.funnelData = funnel;
+        } else {
+          results.tests.calculateFunnel = 'method not found';
+        }
+      } else {
+        results.tests.pipelineService = 'not available';
+      }
+    } catch (e) {
+      results.tests.pipelineService = 'error: ' + e.message;
+    }
+    
+    // Test Settings
+    try {
+      var validationLists = getValidationLists();
+      results.tests.validationLists = {
+        status: 'success',
+        count: Object.keys(validationLists).length,
+        keys: Object.keys(validationLists)
+      };
+    } catch (e) {
+      results.tests.validationLists = {
+        status: 'error',
+        error: e.message
+      };
+    }
+    
+    // Test CONFIG
+    try {
+      if (typeof CONFIG !== 'undefined' && CONFIG !== null) {
+        results.tests.config = {
+          status: 'available',
+          sheets: CONFIG.SHEETS ? Object.keys(CONFIG.SHEETS) : 'SHEETS not defined'
+        };
+      } else {
+        results.tests.config = 'not available';
+      }
+    } catch (e) {
+      results.tests.config = 'error: ' + e.message;
+    }
+    
+    // Test SharedUtils
+    try {
+      if (typeof SharedUtils !== 'undefined' && SharedUtils !== null) {
+        results.tests.sharedUtils = 'available';
+      } else {
+        results.tests.sharedUtils = 'not available';
+      }
+    } catch (e) {
+      results.tests.sharedUtils = 'error: ' + e.message;
+    }
+    
+    console.log('Dashboard API Test Results:', results);
+    return results;
+    
+  } catch (e) {
+    console.error('Error in testDashboardAPI:', e);
+    return {
+      success: false,
+      error: e.message,
+      timestamp: new Date().toISOString()
+    };
   }
 }

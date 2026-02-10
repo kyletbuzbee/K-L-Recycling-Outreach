@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Alerting Service
  * Provides notification capabilities for system events
  */
@@ -16,7 +16,7 @@ var AlertingService = {
 
     try {
       var recipient = Session.getActiveUser().getEmail();
-      var subject = '🚨 K&L CRM - Account Processing Errors';
+      var subject = 'ðŸš¨ K&L CRM - Account Processing Errors';
       
       var htmlBody = this._generateAccountErrorHtml(errors, summary);
       var plainBody = this._generateAccountErrorPlain(errors, summary);
@@ -44,13 +44,13 @@ var AlertingService = {
       var type = 'info';
 
       if (summary.errors > 0) {
-        message = '⚠️ Account processing completed with ' + summary.errors + ' error(s)';
+        message = 'âš ï¸ Account processing completed with ' + summary.errors + ' error(s)';
         type = 'warning';
       } else if (summary.processed > 0) {
-        message = '✅ Successfully processed ' + summary.processed + ' account(s)';
+        message = 'âœ… Successfully processed ' + summary.processed + ' account(s)';
         type = 'success';
       } else {
-        message = 'ℹ️ No new accounts to process';
+        message = 'â„¹ï¸ No new accounts to process';
         type = 'info';
       }
 
@@ -69,7 +69,7 @@ var AlertingService = {
    */
   _generateAccountErrorHtml: function(errors, summary) {
     var html = '<html><body style="font-family: Arial, sans-serif; padding: 20px;">';
-    html += '<h2 style="color: #c0392b;">🚨 Account Processing Errors</h2>';
+    html += '<h2 style="color: #c0392b;">ðŸš¨ Account Processing Errors</h2>';
     html += '<p>The following errors occurred during account processing:</p>';
     
     html += '<table style="border-collapse: collapse; width: 100%; margin: 20px 0;">';

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * String utilities for safe operations
  */
 var StringUtils = {

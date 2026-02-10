@@ -818,3 +818,458 @@ function openDashboardInNewTab() {
 
 [FILE_END: WebApp.gs]
 ################################################################################
+
+================================================================================
+FILE_BEGIN: SystemAlignment.gs
+METADATA: Size=12192 bytes | Last_Modified=2026-02-06 11:15:32.801120
+================================================================================
+/**
+ * K&L Recycling CRM - System Alignment Tool
+ * * This script automatically:
+ * 1. Overwrites 'Settings' with the Optimized Schema.
+ * 2. Cleans up messy 'Industry' names in Prospects.
+ * 3. Fixes 'Hot/Warm' shorthand in Outreach.
+ * 4. Adds the missing 'Competitor' column to Outreach.
+ * 5. Standardizes Accounts sheet headers.
+ * 6. Adds Account_Handling validation list to Settings.
+ */
+
+function main_alignSystemSchema() {
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert(
+    'System Alignment',
+    'This will update your Settings, clean up Industry names, fix Outreach statuses, and standardize Accounts headers. Are you sure?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response == ui.Button.YES) {
+    updateSettingsTable();
+    addAccountHandlingToSettings();
+    cleanProspectIndustries();
+    fixOutreachStatuses();
+    addCompetitorColumn();
+    fixAccountsHeaders();
+    
+    ui.alert('✅ System Alignment Complete! Your sheets are now perfectly synced with the Master Schema.');
+  }
+}
+
+/**
+ * 1. Updates Settings Sheet with the Master Configuration
+ */
+function updateSettingsTable() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Settings');
+  if (!sheet) {
+    sheet = ss.insertSheet('Settings');
+  }
+
+  // The Master Configuration Block
+  var newSettings = [
+    ["Category","Key","Value_1","Value_2","Value_3","Value_4","Description"],
+    ["INDUSTRY_SCORE","Metal Fabrication",90,"Metal, Metal fabricator, Metal supplier, Steel fabricator, Iron works, Metal construction company","","","High priority target"],
+    ["INDUSTRY_SCORE","Automotive",70,"Auto, Automotive, Auto repair, Auto repair shop, Auto body shop, Auto parts store, Mechanic","","","Volume scrap source"],
+    ["INDUSTRY_SCORE","Welding",70,"Welder, Welders, Welding supply store, Welding gas supplier","","","High value alloys likely"],
+    ["INDUSTRY_SCORE","HVAC",70,"HVAC, Heating contractor, Air conditioning contractor, HVAC supplier, Furnace repair service","","","Seasonal volume"],
+    ["INDUSTRY_SCORE","Roofing",60,"Roofing, Roof, Roofing contractor, Roofing supply store","","",""],
+    ["INDUSTRY_SCORE","Gutter",60,"Gutter, Gutter service, Gutter cleaning service","","",""],
+    ["INDUSTRY_SCORE","Manufacturing",75,"Manufacturing, Machine shop, Industrial equipment supplier","","",""],
+    ["INDUSTRY_SCORE","Electrical",65,"Electrician, Electrical installation service, Lighting contractor","","","Copper/Wire sources"],
+    ["INDUSTRY_SCORE","Construction",70,"Construction, Contractor, Building contractor, General contractor, Excavating contractor, Demolition","","","Project based"],
+    ["INDUSTRY_SCORE","Plumbing",50,"Plumber, Plumbing, Drainage service, Septic system service","","",""],
+    ["INDUSTRY_SCORE","Retail",45,"Retail, Appliance repair service, Convenience store, Body shop","","","Low priority"],
+    ["INDUSTRY_SCORE","Appliance",60,"","","",""],
+    ["INDUSTRY_SCORE","Fence",70,"Fence, Fencing, Iron fence","","","Added for data coverage"],
+    ["INDUSTRY_SCORE","Agriculture",60,"Agriculture, Farming, Tractor","","","Added for data coverage"],
+    ["INDUSTRY_SCORE","Trailer Dealer",70,"Trailer, Trailers, Utility trailer","","","Added for data coverage"],
+    ["INDUSTRY_SCORE","Junk Removal",65,"Junk, Cleanout, Scrap removal","","","Added for data coverage"],
+    ["INDUSTRY_SCORE","Warehouses",55,"Warehouse, Logistics, Storage","","","Added for data coverage"],
+    ["INDUSTRY_SCORE","Other",50,"Business to business, Other, TBD","","","Catch-all"],
+    ["URGENCY_BAND","Overdue",-9999,-1,"Red","","Past due items"],
+    ["URGENCY_BAND","High",0,7,"Orange","","Immediate action required"],
+    ["URGENCY_BAND","Medium",8,30,"Yellow","","Upcoming this month"],
+    ["URGENCY_BAND","Low",31,9999,"Green","","Long term nurture"],
+    ["WORKFLOW_RULE","Account Won","Won","Active",1,"High","Contract signed or bin dropped"],
+    ["WORKFLOW_RULE","Interested (Hot)","Nurture","Interested (Hot)",7,"High","Ready to close soon"],
+    ["WORKFLOW_RULE","Interested (Warm)","Nurture","Interested (Warm)",14,"Medium","Needs nurturing"],
+    ["WORKFLOW_RULE","Interested","Nurture","Interested (Warm)",14,"Medium","Legacy data fallback"],
+    ["WORKFLOW_RULE","Initial Contact","Outreach","Interested (Warm)",30,"Medium","First meeting complete"],
+    ["WORKFLOW_RULE","Follow-Up","Nurture","Interested (Warm)",14,"Medium","Ongoing conversation"],
+    ["WORKFLOW_RULE","No Answer","Outreach","Cold",3,"High","Try again soon"],
+    ["WORKFLOW_RULE","Not Interested","Lost","Disqualified",180,"Low","Check back in 6 months"],
+    ["WORKFLOW_RULE","Disqualified","Lost","Disqualified",0,"","Do not contact"],
+    ["VALIDATION_LIST","Container Sizes","20 yd","30 yd","40 yd","Lugger","Standard bin types"],
+    ["VALIDATION_LIST","Payout Types","Base","Formula","Spot Price","",""],
+    ["GLOBAL_CONST","Stale_Prospect_Days",60,"","","","Days before a prospect is marked stale"],
+    ["GLOBAL_CONST","Max_Batch_Size",50,"","","","Max rows to process in one script execution"],
+    ["VALIDATION_LIST","Outcomes","Account Won","Interested (Hot)","Interested (Warm)","Initial Contact","Follow-Up, No Answer, Not Interested, Disqualified"],
+    ["VALIDATION_LIST","Stages","Prospect","Outreach","Nurture","Won","Lost"],
+    ["VALIDATION_LIST","Statuses","Active","Interested (Hot)","Interested (Warm)","Cold","Disqualified","Won"],
+    ["VALIDATION_LIST","Competitors","AIM, Tyler Iron, Huntwell, Other, None","","","","Top competitors mentioned in notes"],
+    ["VALIDATION_LIST","Current_Handling","Employees take, Scrap guy picks up, Haul themselves","Roll-off vendor, Unknown","","","How prospect currently disposes scrap"],
+    ["VALIDATION_LIST","Route_Zones","Hwy 31 W, Spur 364, S Broadway, Loop 323 N","Loop 323 S, Flint, Whitehouse, Lindale","","","Territory grouping for routing"],
+    ["FOLLOWUP_TEMPLATE","Interested→Send pricing",7,"","","","Default pricing follow-up"],
+    ["FOLLOWUP_TEMPLATE","Has Vendor→Follow 90d",90,"","","","Longer nurture cadence"],
+    ["FOLLOWUP_TEMPLATE","Other→General follow",14,"","","","Default catch-all"],
+    ["FOLLOWUP_TEMPLATE","No scrap→Check periodic",180,"","","","Disqualified - periodic check (not total no-contact)"],
+    ["GLOBAL_CONST","Default_Next_Step_Days",14,"","","","Days offset when outcome type not mapped"],
+    ["GLOBAL_CONST","Timezone","America/Chicago","","","","Prevents date drift in AppScript"]
+  ];
+
+  sheet.clear(); // Clear old settings
+  sheet.getRange(1, 1, newSettings.length, newSettings[0].length).setValues(newSettings);
+  console.log("Settings updated.");
+}
+
+/**
+ * 2. Cleans up messy 'Industry' names in Prospects
+ */
+function cleanProspectIndustries() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Prospects');
+  if (!sheet) return;
+  
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var industryCol = headers.indexOf('Industry');
+  
+  if (industryCol === -1) {
+    console.error("Industry column not found in Prospects");
+    return;
+  }
+  
+  // Clean-up Map
+  var mapping = {
+    "metal": "Metal Fabrication",
+    "metal ": "Metal Fabrication",
+    "metal fabrication": "Metal Fabrication",
+    "metal fabricator": "Metal Fabrication",
+    "steel fabricators": "Metal Fabrication",
+    "metalworking": "Metal Fabrication",
+    "metal materials & experts": "Metal Fabrication",
+    "auto": "Automotive",
+    "automotive": "Automotive",
+    "parts": "Automotive",
+    "used car dealer": "Automotive",
+    "trailer dealer": "Trailer Dealer",
+    "contruction": "Construction",
+    "construction": "Construction",
+    "building contractor": "Construction",
+    "plumber": "Plumbing",
+    "plumbing & hvac": "Plumbing",
+    "welder": "Welding",
+    "welders": "Welding",
+    "electrician": "Electrical",
+    "junk removal": "Junk Removal",
+    "agriculture": "Agriculture",
+    "agriculture ": "Agriculture",
+    "fence": "Fence",
+    "warehouses": "Warehouses",
+    "business to business": "Business to business",
+    "appliance": "Appliance",
+    "retail": "Retail",
+    "roofing": "Roofing",
+    "gutter": "Gutter",
+    "manufacturing": "Manufacturing"
+  };
+
+  var updates = 0;
+  for (var i = 1; i < data.length; i++) {
+    var rawVal = String(data[i][industryCol]).toLowerCase().trim();
+    if (mapping[rawVal]) {
+      // Only update if it's not already correct (case sensitive check for aesthetics)
+      if (data[i][industryCol] !== mapping[rawVal]) {
+        data[i][industryCol] = mapping[rawVal];
+        updates++;
+      }
+    }
+  }
+
+  // Write back efficiently
+  if (updates > 0) {
+    sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+    console.log("Cleaned " + updates + " industry rows.");
+  }
+}
+
+/**
+ * 3. Fixes 'Hot/Warm' shorthand in Outreach Statuses
+ */
+function fixOutreachStatuses() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Outreach');
+  if (!sheet) return;
+  
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var statusCol = headers.indexOf('Status');
+  
+  if (statusCol === -1) return;
+
+  var updates = 0;
+  for (var i = 1; i < data.length; i++) {
+    var val = data[i][statusCol];
+    if (val === 'Hot') {
+      data[i][statusCol] = 'Interested (Hot)';
+      updates++;
+    } else if (val === 'Warm') {
+      data[i][statusCol] = 'Interested (Warm)';
+      updates++;
+    }
+  }
+
+  if (updates > 0) {
+    sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+    console.log("Fixed " + updates + " Outreach statuses.");
+  }
+}
+
+/**
+ * 4. Adds 'Competitor' Column if missing
+ */
+function addCompetitorColumn() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Outreach');
+  if (!sheet) return;
+  
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  
+  if (headers.indexOf('Competitor') === -1) {
+    var nextCol = headers.length + 1;
+    sheet.getRange(1, nextCol).setValue('Competitor');
+    
+    // Optional: Add Dropdown Validation
+    var rule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(['AIM', 'Tyler Iron', 'Huntwell', 'Other', 'None'], true)
+      .setAllowInvalid(true)
+      .build();
+    
+    // Apply to the whole column (Row 2 down to 1000)
+    sheet.getRange(2, nextCol, 999).setDataValidation(rule);
+    
+    console.log("Added 'Competitor' column to Outreach.");
+  }
+}
+
+/**
+ * 5. Standardizes Headers in Accounts Sheet (Fixes Capitalization)
+ */
+function fixAccountsHeaders() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Accounts');
+  if (!sheet) return;
+  
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var newHeaders = [...headers];
+  var updates = 0;
+  
+  // Map of Old -> New Headers
+  var headerMap = {
+    "Company name": "Company Name",
+    "Contact name": "Contact Name",
+    "Contact phone": "Contact Phone",
+    "Mailing location": "Mailing Location",
+    "Roll off Container Size": "Roll Off Container Size",
+    "Payout Price": "Payout Price" // Ensuring this matches too
+  };
+
+  for (var i = 0; i < headers.length; i++) {
+    var current = headers[i];
+    if (headerMap[current]) {
+      newHeaders[i] = headerMap[current];
+      updates++;
+    }
+  }
+
+  if (updates > 0) {
+    sheet.getRange(1, 1, 1, newHeaders.length).setValues([newHeaders]);
+    console.log("Fixed " + updates + " headers in Accounts sheet.");
+  }
+}
+
+/**
+ * 6. Adds the Missing 'Account Handling' List to Settings
+ * Run this to ensure your Accounts dropdown works for "All together/Separate"
+ */
+function addAccountHandlingToSettings() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Settings');
+  if (!sheet) return;
+  
+  var lastRow = sheet.getLastRow();
+  var data = sheet.getRange(1, 1, lastRow, 2).getValues();
+  
+  // Check if it already exists to avoid duplicates
+  for (var i = 0; i < data.length; i++) {
+    if (data[i][1] === 'Account_Handling') return; 
+  }
+  
+  // Append the new rule
+  sheet.appendRow([
+    "VALIDATION_LIST", 
+    "Account_Handling", 
+    "All together", 
+    "Separate", 
+    "", 
+    "", 
+    "How metal is separated in the bin"
+  ]);
+  console.log("Added Account_Handling to Settings.");
+}
+
+
+[FILE_END: SystemAlignment.gs]
+################################################################################
+
+================================================================================
+FILE_BEGIN: WebApp.gs
+METADATA: Size=4432 bytes | Last_Modified=2026-02-07 03:38:59.041436
+================================================================================
+/**
+ * Web App and Sidebar Functions
+ * K&L Recycling CRM Dashboard
+ */
+
+/**
+ * doGet - Required for Web App deployment
+ * Serves the dashboard HTML when accessed as a web app
+ * @param {Object} e - Event parameter (not used but required)
+ * @returns {HtmlOutput} The dashboard HTML
+ */
+function doGet(e) {
+  try {
+    // Get the dashboard HTML content
+    var htmlOutput = HtmlService.createHtmlOutputFromFile('dashboard')
+      .setTitle('K&L CRM Dashboard')
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    
+    // Set dimensions for the web app
+    htmlOutput.setWidth(450);
+    htmlOutput.setHeight(800);
+    
+    return htmlOutput;
+  } catch (error) {
+    console.error('Error in doGet:', error);
+    return HtmlService.createHtmlOutput(
+      '<h1>Error Loading Dashboard</h1><p>' + error.message + '</p>'
+    );
+  }
+}
+
+/**
+ * Shows the dashboard as a sidebar in Google Sheets
+ * Called from the K&L CRM menu
+ */
+function showSidebar() {
+  try {
+    var html = HtmlService.createHtmlOutputFromFile('dashboard')
+      .setTitle('K&L CRM Dashboard')
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    
+    SpreadsheetApp.getUi().showSidebar(html);
+    console.log('Sidebar shown successfully');
+  } catch (error) {
+    console.error('Error showing sidebar:', error);
+    SpreadsheetApp.getUi().alert(
+      'Error',
+      'Failed to open dashboard sidebar: ' + error.message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
+ * Alternative function to show dashboard as a modal dialog
+ * Useful for testing or when sidebar is not appropriate
+ */
+function showDashboardDialog() {
+  try {
+    var html = HtmlService.createHtmlOutputFromFile('dashboard')
+      .setWidth(500)
+      .setHeight(800)
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    
+    SpreadsheetApp.getUi().showModalDialog(html, 'K&L CRM Dashboard');
+  } catch (error) {
+    console.error('Error showing dashboard dialog:', error);
+    SpreadsheetApp.getUi().alert(
+      'Error',
+      'Failed to open dashboard: ' + error.message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
+ * Opens the dashboard in a new browser tab
+ * Uses the web app URL
+ */
+function openDashboardInNewTab() {
+  try {
+    // Get the script's web app URL
+    var scriptId = ScriptApp.getScriptId();
+    var webAppUrl = 'https://script.google.com/macros/s/' + scriptId + '/exec';
+    
+    // Show a message with the URL
+    var html = HtmlService.createHtmlOutput(
+      '<p>Dashboard URL (copy and open in new tab):</p>' +
+      '<input type="text" value="' + webAppUrl + '" style="width:100%;padding:8px;" onclick="this.select();" readonly>' +
+      '<p style="margin-top:10px;font-size:12px;color:#666;">Note: Make sure you have deployed this script as a web app first.</p>'
+    )
+    .setWidth(400)
+    .setHeight(150);
+    
+    SpreadsheetApp.getUi().showModalDialog(html, 'Dashboard Web App URL');
+  } catch (error) {
+    console.error('Error getting web app URL:', error);
+    SpreadsheetApp.getUi().alert(
+      'Error',
+      'Failed to get web app URL: ' + error.message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
+ * Shows the CRM Suite as a modal dialog
+ * This opens the full CRM Suite interface
+ */
+function showCRMSuite() {
+  try {
+    var html = HtmlService.createHtmlOutputFromFile('CRM_Suite')
+      .setWidth(1200)
+      .setHeight(800)
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    
+    SpreadsheetApp.getUi().showModalDialog(html, 'K&L Recycling CRM Suite');
+    console.log('CRM Suite shown successfully');
+  } catch (error) {
+    console.error('Error showing CRM Suite:', error);
+    SpreadsheetApp.getUi().alert(
+      'Error',
+      'Failed to open CRM Suite: ' + error.message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+/**
+ * Shows the CRM Suite as a sidebar
+ * Alternative way to access the CRM Suite
+ */
+function showCRMSuiteSidebar() {
+  try {
+    var html = HtmlService.createHtmlOutputFromFile('CRM_Suite')
+      .setTitle('K&L Recycling CRM Suite')
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    
+    SpreadsheetApp.getUi().showSidebar(html);
+    console.log('CRM Suite sidebar shown successfully');
+  } catch (error) {
+    console.error('Error showing CRM Suite sidebar:', error);
+    SpreadsheetApp.getUi().alert(
+      'Error',
+      'Failed to open CRM Suite sidebar: ' + error.message,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  }
+}
+
+
+[FILE_END: WebApp.gs]
+################################################################################

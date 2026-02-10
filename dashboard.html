@@ -1384,16 +1384,6 @@
             <label for="newEmail" class="form-label">Email</label>
             <input type="email" id="newEmail" class="form-input" placeholder="Email">
           </div>
-          <div class="form-group">
-            <label for="competitor" class="form-label">Current Competitor</label>
-            <select id="competitor" class="form-select">
-              <option value="None">None / Unknown</option>
-              <option value="AIM">AIM</option>
-              <option value="Tyler Iron">Tyler Iron</option>
-              <option value="Huntwell">Huntwell</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
         </div>
 
         <!-- Last Touch Card -->
@@ -1486,6 +1476,18 @@
               <option value="Email">Email</option>
             </select>
           </div>
+        </div>
+
+        <!-- Competitor -->
+        <div class="form-group">
+          <label for="competitor" class="form-label">Current Competitor</label>
+          <select id="competitor" class="form-select">
+            <option value="None">None / Unknown</option>
+            <option value="AIM">AIM</option>
+            <option value="Tyler Iron">Tyler Iron</option>
+            <option value="Huntwell">Huntwell</option>
+            <option value="Other">Other</option>
+          </select>
         </div>
 
         <!-- Notes -->
@@ -3136,10 +3138,25 @@
     function loadValidationLists() {
       google.script.run
         .withSuccessHandler(function (result) {
-          if (result.success && result.data) {
-            populateValidationLists(result.data);
+          // Handle both direct return (legacy) and wrapped response (new API)
+          var validationData;
+          if (result && typeof result === 'object') {
+            if (result.success && result.data) {
+              validationData = result.data;
+            } else if (!result.success && result.error) {
+              console.warn('Failed to load validation lists:', result.error);
+              return;
+            } else {
+              // Legacy format - result is the validation lists directly
+              validationData = result;
+            }
+          }
+          
+          if (validationData && Object.keys(validationData).length > 0) {
+            populateValidationLists(validationData);
+            console.log('Validation lists loaded successfully');
           } else {
-            console.warn('Failed to load validation lists:', result.error);
+            console.warn('No validation lists data received');
           }
         })
         .withFailureHandler(function (error) {

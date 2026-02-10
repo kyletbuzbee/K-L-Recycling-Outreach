@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Comprehensive data validation utilities
  */
 var ValidationUtils = {

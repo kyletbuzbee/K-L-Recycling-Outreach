@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Setup Functions
  * Installation scripts.
  */
@@ -15,7 +15,7 @@ function installTriggers() {
     .atHour(6)
     .create();
 
-  // ❌ DO NOT create an onOpen trigger here
+  // âŒ DO NOT create an onOpen trigger here
   // Google Sheets automatically calls onOpen()
 }
 

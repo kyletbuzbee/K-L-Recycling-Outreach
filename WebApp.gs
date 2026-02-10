@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Web App and Sidebar Functions
  * K&L Recycling CRM Dashboard
  */

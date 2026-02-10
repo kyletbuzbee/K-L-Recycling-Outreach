@@ -13,6 +13,13 @@ function onOpen() {
     .addItem('📱 Open CRM Suite (Sidebar)', 'showCRMSuiteSidebar')
     .addSeparator()
     
+    // Data Cleaning & Normalization
+    .addSubMenu(ui.createMenu('🛠️ Data Cleaning')
+      .addItem('🛠️ Fix Data: Industries', 'runPreciseIndustryMapper')
+      .addItem('🆔 Generate IDs', 'normalizeAndGenerateIDs'))
+    
+    .addSeparator()
+    
     // Automation & Maintenance
     .addSubMenu(ui.createMenu('⚙️ System Maintenance')
       .addItem('Run Daily Automation', 'runDailyAutomation')

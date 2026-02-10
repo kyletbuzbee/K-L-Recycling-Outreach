@@ -1,4 +1,4 @@
-/**
+﻿/**
  * K&L Recycling CRM - Master Autofill Utility
  * Runs through the Prospects and Outreach sheets and applies the latest 
  * architectural logic based on the Settings sheet.
@@ -14,7 +14,7 @@ function runMasterAutofill() {
   autofillProspects(ss);
   autofillOutreach(ss);
   
-  ui.alert('✅ Autofill Complete', 'All formulas have been refreshed and aligned with your Settings.', ui.ButtonSet.OK);
+  ui.alert('âœ… Autofill Complete', 'All formulas have been refreshed and aligned with your Settings.', ui.ButtonSet.OK);
 }
 
 function autofillProspects(ss) {

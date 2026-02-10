@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Data Validation and Normalization Utilities
  * Addresses data quality issues in Outreach and Prospects sheets
  */
@@ -131,8 +131,8 @@ var Normalization = {
   findOrphanedRecords: function() {
     try {
       var ss = SpreadsheetApp.getActiveSpreadsheet();
-      var outreachSheet = ss.getSheetByName(CONFIG.SHEET_OUTREACH);
-      var prospectsSheet = ss.getSheetByName(CONFIG.SHEET_PROSPECTS);
+      var outreachSheet = ss.getSheetByName(CONFIG.SHEETS.OUTREACH);
+      var prospectsSheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
       
       if (!outreachSheet || !prospectsSheet) {
         throw new Error('Required sheets not found');
@@ -208,7 +208,7 @@ var Normalization = {
   runFullDataValidation: function() {
     try {
       var ss = SpreadsheetApp.getActiveSpreadsheet();
-      var outreachSheet = ss.getSheetByName(CONFIG.SHEET_OUTREACH);
+      var outreachSheet = ss.getSheetByName(CONFIG.SHEETS.OUTREACH);
       
       if (!outreachSheet) {
         throw new Error('Outreach sheet not found');
@@ -233,7 +233,7 @@ var Normalization = {
       report.totalRecords = data.length - 1; // Subtract header row
       
       // Find duplicates
-      report.duplicates = this.findDuplicateIDs(CONFIG.SHEET_OUTREACH);
+      report.duplicates = this.findDuplicateIDs(CONFIG.SHEETS.OUTREACH);
       
       // Find orphaned records
       report.orphanedRecords = this.findOrphanedRecords();
@@ -286,7 +286,7 @@ var Normalization = {
   cleanOutreachData: function() {
     try {
       var ss = SpreadsheetApp.getActiveSpreadsheet();
-      var outreachSheet = ss.getSheetByName(CONFIG.SHEET_OUTREACH);
+      var outreachSheet = ss.getSheetByName(CONFIG.SHEETS.OUTREACH);
       
       if (!outreachSheet) {
         throw new Error('Outreach sheet not found');

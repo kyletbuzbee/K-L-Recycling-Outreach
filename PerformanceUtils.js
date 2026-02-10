@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Performance and Timeout Prevention Utilities
  * Strategies to prevent Google Apps Script timeout errors and improve reliability
  */
@@ -110,7 +110,7 @@ function checkExecutionTime(startTime, functionName) {
   var warningThreshold = timeoutLimit * 0.7; // Warn at 70% of limit
 
   if (elapsed > warningThreshold) {
-    console.warn('⚠️ TIMEOUT WARNING: ' + functionName + ' has been running for ' +
+    console.warn('âš ï¸ TIMEOUT WARNING: ' + functionName + ' has been running for ' +
                 (elapsed/1000).toFixed(1) + ' seconds. Approaching 6-minute limit.');
   }
 }
@@ -484,7 +484,7 @@ function handleErrorWithContext(error, context) {
         var emailBody = formatErrorEmail(errorInfo);
         MailApp.sendEmail(
           emailValidation.email,
-          '🚨 CRM Error Report: ' + errorInfo.message,
+          'ðŸš¨ CRM Error Report: ' + errorInfo.message,
           emailBody
         );
       } else {

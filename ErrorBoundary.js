@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ErrorBoundary - Standardized Error Handling & Logging
  * Resolves 37 error handling issues across the codebase
  * 

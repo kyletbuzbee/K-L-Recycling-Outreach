@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Account Functions
  * Manages New Account submissions.
  */
@@ -36,7 +36,7 @@ function createNewAccount(accountData) {
     };
 
     // Append to Accounts sheet
-    appendRowSafe(CONFIG.SHEET_ACCOUNTS, accountRow);
+    appendRowSafe(CONFIG.SHEETS.ACCOUNTS, accountRow);
 
     console.log('Created new account: ' + accountData.companyName);
 
@@ -58,7 +58,7 @@ function processNewAccount(rowIndex) {
   try {
     // Handle missing rowIndex - find first undeployed account
     // FIX: Use SHEET_ACCOUNTS since there's no separate "New Accounts" sheet
-    var accountsSheetName = CONFIG.SHEET_ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
+    var accountsSheetName = CONFIG.SHEETS.ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
     
     if (rowIndex === null || rowIndex === undefined) {
       console.log('No rowIndex provided - finding first undeployed account...');
@@ -185,7 +185,7 @@ function checkNewAccounts() {
     var ss = accessResult.spreadsheet;
 
     // FIX: Use SHEET_ACCOUNTS since there's no separate "New Accounts" sheet
-    var accountsSheetName = CONFIG.SHEET_ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
+    var accountsSheetName = CONFIG.SHEETS.ACCOUNTS || CONFIG.SHEET_NEW_ACCOUNTS || 'Accounts';
     
     // FIX: getSafeSheetData returns [] on error, not an error object
     // So we call it directly without ErrorHandling wrapper
