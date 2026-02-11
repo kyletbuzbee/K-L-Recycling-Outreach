@@ -20,16 +20,26 @@ function onOpen() {
     
     .addSeparator()
     
+    // Data Sync & Processing
+    .addSubMenu(ui.createMenu('🔄 Sync & Process')
+      .addItem('🔄 Sync Outreach → Prospects', 'runFullCRM_Sync')
+      .addItem('🏆 Process Account Wins', 'processAccountWon'))
+    
+    .addSeparator()
+    
+    // Reports & Analytics
+    .addSubMenu(ui.createMenu('📊 Reports')
+      .addItem('📊 Generate Professional Report', 'showProfessionalReport')
+      .addItem('⏰ Stale Prospects (>60 days)', 'findStaleProspects'))
+    
+    .addSeparator()
+    
     // Automation & Maintenance
     .addSubMenu(ui.createMenu('⚙️ System Maintenance')
       .addItem('Run Daily Automation', 'runDailyAutomation')
       .addItem('Update Geocodes', 'updateGeocodes')
       .addItem('Refresh Priority Scores', 'runBatchScoring'))
     
-    .addSeparator()
-    
-    // Specialized Reporting
-    .addItem('📊 Generate Professional Report', 'showProfessionalReport')
     .addToUi();
 }
 

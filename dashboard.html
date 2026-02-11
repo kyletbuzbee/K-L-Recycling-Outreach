@@ -1651,10 +1651,11 @@
           <div id="tool-report" class="control-tool">
             <!-- Quick Date Options -->
             <div class="quick-date-options">
-              <button type="button" class="quick-date-btn" onclick="setReportDates('thisWeek')">This Week</button>
-              <button type="button" class="quick-date-btn" onclick="setReportDates('thisMonth')">This Month</button>
               <button type="button" class="quick-date-btn" onclick="setReportDates('last7')">Last 7 Days</button>
+              <button type="button" class="quick-date-btn" onclick="setReportDates('last14')">Last 14 Days</button>
               <button type="button" class="quick-date-btn" onclick="setReportDates('last30')">Last 30 Days</button>
+              <button type="button" class="quick-date-btn" onclick="setReportDates('last90')">Last 90 Days</button>
+              <button type="button" class="quick-date-btn" onclick="setReportDates('last180')">Last 180 Days</button>
             </div>
 
             <div class="date-grid">
@@ -2830,6 +2831,12 @@
         return;
       }
 
+      // Validate start date is before end date
+      if (new Date(startDate) > new Date(endDate)) {
+        showToast('Start date must be before end date', 'error');
+        return;
+      }
+
       // Show loading immediately
       showLoading(true);
 
@@ -2853,21 +2860,30 @@
       let start, end;
 
       switch (range) {
-        case 'thisWeek':
-          // Start from Sunday of current week
-          start = new Date(today);
-          start.setDate(today.getDate() - today.getDay());
-          break;
-        case 'thisMonth':
-          start = new Date(today.getFullYear(), today.getMonth(), 1);
-          break;
         case 'last7':
+          // FOLLOWUP_TEMPLATE: Send pricing (7 days)
           start = new Date(today);
           start.setDate(today.getDate() - 7);
           break;
+        case 'last14':
+          // FOLLOWUP_TEMPLATE: General follow (14 days)
+          start = new Date(today);
+          start.setDate(today.getDate() - 14);
+          break;
         case 'last30':
+          // Monthly reporting
           start = new Date(today);
           start.setDate(today.getDate() - 30);
+          break;
+        case 'last90':
+          // FOLLOWUP_TEMPLATE: Follow 90d (90 days)
+          start = new Date(today);
+          start.setDate(today.getDate() - 90);
+          break;
+        case 'last180':
+          // FOLLOWUP_TEMPLATE: Check periodic (180 days)
+          start = new Date(today);
+          start.setDate(today.getDate() - 180);
           break;
       }
 
@@ -2878,7 +2894,11 @@
     }
 
     function formatDate(date) {
-      return date.toISOString().split('T')[0];
+      // Match Config.js DATE_FORMAT: 'MM/dd/yyyy'
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
     }
 
     // ========================================
