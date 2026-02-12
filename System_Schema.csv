@@ -1,6 +1,7 @@
 Object,API_Name,Label,Type,Required,Options (Aligned & Validated),Default_Value,Is_System
 Prospects,companyID,Company ID,Text,FALSE,,,FALSE
 Prospects,address,Address,Text,FALSE,,,FALSE
+Prospects,city,City,Text,FALSE,,,FALSE
 Prospects,zipCode,Zip Code,Text,FALSE,,,FALSE
 Prospects,companyName,Company Name,Text,FALSE,,,FALSE
 Prospects,industry,Industry,Dropdown,FALSE,"Agriculture, Appliance, Automotive, Business to business, Construction, Electrical, Fabrication, Fence, Gutter, HVAC, Junk Removal, Manufacturing, Metal Fabrication, Other, Plumbing, Retail, Roofing, Trailer Dealer, Warehouses, Welding",,FALSE

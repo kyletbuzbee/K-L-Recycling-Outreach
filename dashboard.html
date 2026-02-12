@@ -1324,12 +1324,12 @@
           </button>
         </div>
 
-        <!-- New Company Additional Fields -->
-        <div id="newCompanyFields" class="new-company-fields" style="display:none;">
-          <div class="form-group">
-            <label for="newAddress" class="form-label">Address</label>
-            <input type="text" id="newAddress" class="form-input" placeholder="Street address">
-          </div>
+    <!-- New Company Additional Fields -->
+    <div id="newCompanyFields" class="new-company-fields" style="display:none;">
+      <div class="form-group">
+        <label for="newCompanyAddress" class="form-label">Address</label>
+        <input type="text" id="newCompanyAddress" class="form-input" placeholder="Street address">
+      </div>
           <div class="form-row">
             <div class="form-group">
               <label for="newCity" class="form-label">City</label>
@@ -1370,20 +1370,20 @@
               <option value="Welding">Welding</option>
             </select>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="newContact" class="form-label">Contact Name</label>
-              <input type="text" id="newContact" class="form-input" placeholder="Contact">
-            </div>
-            <div class="form-group">
-              <label for="newPhone" class="form-label">Phone</label>
-              <input type="tel" id="newPhone" class="form-input" placeholder="Phone">
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="newEmail" class="form-label">Email</label>
-            <input type="email" id="newEmail" class="form-input" placeholder="Email">
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="newCompanyContact" class="form-label">Contact Name</label>
+          <input type="text" id="newCompanyContact" class="form-input" placeholder="Contact">
+        </div>
+        <div class="form-group">
+          <label for="newCompanyPhone" class="form-label">Phone</label>
+          <input type="tel" id="newCompanyPhone" class="form-input" placeholder="Phone">
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="newCompanyEmail" class="form-label">Email</label>
+        <input type="email" id="newCompanyEmail" class="form-input" placeholder="Email">
+      </div>
         </div>
 
         <!-- Last Touch Card -->
@@ -1503,11 +1503,11 @@
             <span>New Account Details</span>
           </div>
           <div class="form-group">
-            <input type="text" id="newContact" class="form-input" placeholder="Contact Name">
+            <input type="text" id="accountContact" class="form-input" placeholder="Contact Name">
           </div>
           <div class="date-grid">
-            <input type="text" id="newPhone" class="form-input" placeholder="Phone">
-            <input type="text" id="newAddress" class="form-input" placeholder="Address">
+            <input type="text" id="accountPhone" class="form-input" placeholder="Phone">
+            <input type="text" id="accountAddress" class="form-input" placeholder="Address">
           </div>
         </div>
 
@@ -1823,7 +1823,7 @@
 
         // Autofill available fields
         if (details.address) {
-          const field = document.getElementById('newAddress');
+          const field = document.getElementById('newCompanyAddress');
           if (field) field.value = details.address;
         }
         if (details.industry) {
@@ -1831,15 +1831,15 @@
           if (field) field.value = details.industry;
         }
         if (details.contactName) {
-          const field = document.getElementById('newContact');
+          const field = document.getElementById('newCompanyContact');
           if (field) field.value = details.contactName;
         }
         if (details.phone) {
-          const field = document.getElementById('newPhone');
+          const field = document.getElementById('newCompanyPhone');
           if (field) field.value = details.phone;
         }
         if (details.email) {
-          const field = document.getElementById('newEmail');
+          const field = document.getElementById('newCompanyEmail');
           if (field) field.value = details.email;
         }
 
@@ -2318,7 +2318,7 @@
       // Autofill the expanded new company fields with existing company data
       // Contact Name
       if (companyData.contactName && companyData.contactName.trim()) {
-        const contactField = document.getElementById('newContact');
+        const contactField = document.getElementById('newCompanyContact');
         if (contactField) {
           contactField.value = companyData.contactName.trim();
           autofillResults.push('Contact Name');
@@ -2331,7 +2331,7 @@
 
       // Phone
       if (companyData.phone && companyData.phone.trim()) {
-        const phoneField = document.getElementById('newPhone');
+        const phoneField = document.getElementById('newCompanyPhone');
         if (phoneField) {
           phoneField.value = companyData.phone.trim();
           autofillResults.push('Phone');
@@ -2344,7 +2344,7 @@
 
       // Address
       if (companyData.address && companyData.address.trim()) {
-        const addressField = document.getElementById('newAddress');
+        const addressField = document.getElementById('newCompanyAddress');
         if (addressField) {
           addressField.value = companyData.address.trim();
           autofillResults.push('Address');
@@ -2357,7 +2357,7 @@
 
       // Email
       if (companyData.email && companyData.email.trim()) {
-        const emailField = document.getElementById('newEmail');
+        const emailField = document.getElementById('newCompanyEmail');
         if (emailField) {
           emailField.value = companyData.email.trim();
           autofillResults.push('Email');
@@ -2438,8 +2438,18 @@
       // Highlight the autofilled fields temporarily
       if (filledCount > 0) {
         autofillResults.forEach(function (fieldName) {
-          const fieldId = fieldName.toLowerCase().replace(' ', '');
-          const field = document.getElementById('new' + fieldId.charAt(0).toUpperCase() + fieldId.slice(1));
+          const fieldMap = {
+            'Contact Name': 'newCompanyContact',
+            'Phone': 'newCompanyPhone',
+            'Address': 'newCompanyAddress',
+            'Email': 'newCompanyEmail',
+            'Industry': 'newIndustry',
+            'City': 'newCity',
+          'State': 'newState',
+            'Zip Code': 'newZip'
+          };
+          const fieldId = fieldMap[fieldName];
+          const field = document.getElementById(fieldId);
           if (field) {
             const originalBackground = field.style.backgroundColor;
             field.style.backgroundColor = 'rgba(39, 174, 96, 0.1)';
@@ -3245,14 +3255,13 @@
         document.getElementById('outreachId').value = '';
 
         // Reset new company fields
-        document.getElementById('newAddress').value = '';
-        document.getElementById('newPhone').value = '';
-        document.getElementById('newContact').value = '';
+        document.getElementById('newCompanyAddress').value = '';
+        document.getElementById('newCompanyPhone').value = '';
+        document.getElementById('newCompanyContact').value = '';
+        document.getElementById('newCompanyEmail').value = '';
         document.getElementById('newCity').value = 'Tyler';
         document.getElementById('newState').value = 'TX';
         document.getElementById('newZip').value = '';
-        document.getElementById('newEmail').value = '';
-        document.getElementById('newCompetitor').value = '';
         document.getElementById('newIndustry').value = '';
 
         // Reset date fields to today
@@ -3427,22 +3436,22 @@
       if (newCompanyFields && newCompanyFields.style.display !== 'none') {
         // Only collect new company data if the section is expanded
         data.newCompanyData = {
-          address: document.getElementById('newAddress').value,
+          address: document.getElementById('newCompanyAddress').value,
           city: document.getElementById('newCity').value,
           state: document.getElementById('newState').value,
           zip: document.getElementById('newZip').value,
           industry: document.getElementById('newIndustry').value,
-          contactName: document.getElementById('newContact').value,
-          phone: document.getElementById('newPhone').value,
-          email: document.getElementById('newEmail').value,
+          contactName: document.getElementById('newCompanyContact').value,
+          phone: document.getElementById('newCompanyPhone').value,
+          email: document.getElementById('newCompanyEmail').value,
           competitor: document.getElementById('competitor').value
         };
       }
 
       if (state.selectedOutcome === 'Account Won') {
-        data.contact = document.getElementById('newContact').value;
-        data.phone = document.getElementById('newPhone').value;
-        data.site = document.getElementById('newAddress').value;
+        data.contact = document.getElementById('accountContact').value;
+        data.phone = document.getElementById('accountPhone').value;
+        data.site = document.getElementById('accountAddress').value;
       }
 
       showLoading(true);

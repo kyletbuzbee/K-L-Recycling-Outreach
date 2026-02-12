@@ -37,8 +37,6 @@ GLOBAL_CONST,Max_Batch_Size,50,,,,Max rows to process in one script execution,
 VALIDATION_LIST,Outcomes,Account Won,Interested (Hot),Interested (Warm),Initial Contact,"Follow-Up, No Answer, Not Interested, Disqualified",
 VALIDATION_LIST,Stages,Prospect,Outreach,Nurture,Won,Lost,
 VALIDATION_LIST,Statuses,Active,Interested (Hot),Interested (Warm),Cold,Disqualified,Won
-VALIDATION_LIST,Activity Types,"Visit, Phone, Email",,,,Types of outreach activities,
-VALIDATION_LIST,Contact Types,"Visit, Phone, Email",,,,Types of contact methods,
 VALIDATION_LIST,Competitors,"AIM, Tyler Iron, Huntwell, Other, None",,,,Top competitors mentioned in notes,
 VALIDATION_LIST,Current_Handling,"Employees take, Scrap guy picks up, Haul themselves","Roll-off vendor, Unknown",,,How prospect currently disposes scrap,
 VALIDATION_LIST,Route_Zones,"Hwy 31 W, Spur 364, S Broadway, Loop 323 N","Loop 323 S, Flint, Whitehouse, Lindale",,,Territory grouping for routing,

@@ -58,18 +58,22 @@ function getSyncErrorBoundary() {
 function createSyncLogger(componentName) {
   var loggerInjector = getSyncLoggerInjector();
   if (loggerInjector && loggerInjector.createScopedLogger) {
-    return loggerInjector.createScopedLogger(componentName);
+    var scopedLogger = loggerInjector.createScopedLogger(componentName);
+    // Ensure the logger has all required methods
+    if (scopedLogger && typeof scopedLogger.log === 'function') {
+      return scopedLogger;
+    }
   }
-  // Fallback: simple console logging
+  // Fallback: simple console logging with all required methods
   return {
     log: function(message, data) {
-      console.log('[' + componentName + '] ' + message, data || '');
+      console.log('[' + componentName + '] ' + message, data !== undefined ? data : '');
     },
     warn: function(message, data) {
-      console.warn('[' + componentName + '] ' + message, data || '');
+      console.warn('[' + componentName + '] ' + message, data !== undefined ? data : '');
     },
     error: function(message, data) {
-      console.error('[' + componentName + '] ' + message, data || '');
+      console.error('[' + componentName + '] ' + message, data !== undefined ? data : '');
     },
     time: function(label) {
       console.time('[' + componentName + '] ' + label);
