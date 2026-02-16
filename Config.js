@@ -99,7 +99,7 @@ var CONFIG = {
       prospectsMatch: { header: 'Prospects Match', type: 'string', required: false },
       contactType: { header: 'Contact Type', type: 'string', required: false, default: 'Visit' },
       emailSent: { header: 'Email Sent', type: 'boolean', required: false, default: false },
-      competitor: { header: 'Competitor', type: 'string', required: false }
+      competitor: { header: 'Competitor', type: 'string', required: false, default: 'None' }
     },
     ACCOUNTS: {
       deployed: { header: 'Deployed', type: 'string', required: false },

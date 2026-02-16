@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>K&L Recycling Outreach Dashboard</title>
     <style>
         :root { --navy: #1a5276; --steel: #34495e; --green: #2ecc71; --orange: #e67e22; --red: #e74c3c; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
@@ -16,32 +19,40 @@
         .priority-high { background: rgba(26, 82, 118, 0.1); font-weight: bold; color: var(--navy); }
         .urgency-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; color: white; font-weight: bold; }
         .bg-Red { background: var(--red); } .bg-Orange { background: var(--orange); } .bg-Yellow { background: #f1c40f; color: #333; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .error { background: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .refresh-btn { background: var(--navy); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-bottom: 20px; }
+        .refresh-btn:hover { background: #2c3e50; }
     </style>
 </head>
 <body>
     <div class="dashboard">
-        <div class="header"><h1>♻️ K&L Recycling Outreach Dashboard</h1></div>
-        <div class="kpi-grid">
-            <div class="kpi-card win"><h3>6</h3><p>Accounts Won</p></div>
-            <div class="kpi-card hot"><h3>8</h3><p>Hot Leads</p></div>
-            <div class="kpi-card warm"><h3>54</h3><p>Warm Nurture</p></div>
-            <div class="kpi-card dq"><h3>32</h3><p>Disqualified</p></div>
+        <div class="header">
+            <h1>♻️ K&L Recycling Outreach Dashboard</h1>
+            <button class="refresh-btn" onclick="loadReport()">Refresh Report</button>
         </div>
-        <table>
-            <thead>
-                <tr><th>Date</th><th>Company</th><th>Outcome</th><th>Score</th><th>Urgency</th><th>Notes</th></tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>02/09/2026</td>
-                    <td><b>Eagle Steel Buildings</b></td>
-                    <td>Interested (Hot)</td>
-                    <td class="priority-high">90</td>
-                    <td><span class="urgency-badge bg-Orange">High</span></td>
-                    <td>Awaiting receipt from Tyler Iron; ready to switch.</td>
-                </tr>
-                </tbody>
-        </table>
+        
+        <div id="report-content">
+            <div class="loading">Loading report data...</div>
+        </div>
     </div>
+
+    <script>
+        // Load report on page load
+        google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onFailure).generateProfessionalReport(new Date(new Date().getFullYear(), new Date().getMonth(), 1), new Date());
+        
+        function loadReport() {
+            document.getElementById('report-content').innerHTML = '<div class="loading">Loading report data...</div>';
+            google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onFailure).generateProfessionalReport(new Date(new Date().getFullYear(), new Date().getMonth(), 1), new Date());
+        }
+        
+        function onSuccess(html) {
+            document.getElementById('report-content').innerHTML = html;
+        }
+        
+        function onFailure(error) {
+            document.getElementById('report-content').innerHTML = '<div class="error"><strong>Error loading report:</strong> ' + error.message + '</div>';
+        }
+    </script>
 </body>
 </html>

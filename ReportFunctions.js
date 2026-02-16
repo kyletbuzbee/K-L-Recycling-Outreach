@@ -509,7 +509,7 @@ function generateProfessionalReport(startDate, endDate) {
     } else {
       html += '<ul class="action-list">';
       actionPlan.forEach(function(action) {
-        var priorityIcon = 'â­';
+        var priorityIcon = '⭐';
         if (action.priority >= 80) priorityIcon = 'ðŸ”¥';
         else if (action.priority >= 60) priorityIcon = 'âš¡';
 
@@ -518,7 +518,7 @@ function generateProfessionalReport(startDate, endDate) {
                 <span class="priority-icon">${priorityIcon}</span>
                 <div>
                   <div class="action-company">${action.company}</div>
-                  <div class="action-reason">${action.reason} â€¢ Priority: ${action.priority}/100</div>
+                  <div class="action-reason">${action.reason} • Priority: ${action.priority}/100</div>
                 </div>
               </li>`;
       });
@@ -530,7 +530,7 @@ function generateProfessionalReport(startDate, endDate) {
         </div>
 
         <div class="footer">
-          <p>Â© ${new Date().getFullYear()} K&L Recycling CRM | Enterprise Operations Suite</p>
+          <p>© ${new Date().getFullYear()} K&L Recycling CRM | Enterprise Operations Suite</p>
         </div>
       </div>
     </body>
@@ -559,7 +559,7 @@ function generateProfessionalReport(startDate, endDate) {
         <h2>Report Generation Error</h2>
         <p>The professional report could not be generated due to the following error:</p>
         <pre>${e.message}</pre>
-        <p><strong>Troubleshooting:</strong><br>â€¢ Check if Prospects and Outreach sheets exist<br>â€¢ Verify column headers match expected names<br>â€¢ Ensure data is properly formatted</p>
+        <p><strong>Troubleshooting:</strong><br>• Check if Prospects and Outreach sheets exist<br>• Verify column headers match expected names<br>• Ensure data is properly formatted</p>
         <button onclick="google.script.host.close()" style="padding: 10px 20px; background: #0F2537; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px;">Close</button>
       </div>
     </body>
@@ -705,7 +705,7 @@ function calculateActionPriority(row, recentOutreach, today, tomorrow) {
     return {
       company: company,
       priority: Math.max(0, score),
-      reason: reasons.join(' â€¢ ') || 'General Follow-up',
+      reason: reasons.join(' • ') || 'General Follow-up',
       daysOverdue: daysOverdue,
       actionType: score > 60 ? 'urgent' : 'follow-up'
     };
@@ -806,7 +806,7 @@ function analyzeRecentActivity(companyName, recentOutreach, tomorrow) {
 
   if (recentFailures.length > 0) {
     penalty += 10;
-    reason += ' â€¢ Recent unsuccessful attempts';
+    reason += ' • Recent unsuccessful attempts';
   }
 
   return { score: score, penalty: penalty, reason: reason, lastActivityDays: daysSinceLastActivity };

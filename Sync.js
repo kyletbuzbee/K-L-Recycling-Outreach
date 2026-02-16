@@ -86,15 +86,14 @@ function createSyncLogger(componentName) {
 
 /**
  * Create a timer for performance tracking
+ * Always returns a timer with start(), stop(), and getElapsed() methods
  */
 function createSyncTimer() {
   var loggerInjector = getSyncLoggerInjector();
-  if (loggerInjector && loggerInjector.createTimer) {
-    return loggerInjector.createTimer();
-  }
-  // Fallback: simple timer
   var startTime = Date.now();
-  return {
+  
+  // Create the timer object with required API
+  var timer = {
     start: function() {
       startTime = Date.now();
     },
@@ -105,6 +104,22 @@ function createSyncTimer() {
       return Date.now() - startTime;
     }
   };
+  
+  // Try to get enhanced timer from LoggerInjector, but wrap it to ensure compatibility
+  if (loggerInjector && loggerInjector.createTimer) {
+    try {
+      var enhancedTimer = loggerInjector.createTimer();
+      // If enhanced timer has start method, use it; otherwise keep our implementation
+      if (enhancedTimer && typeof enhancedTimer.start === 'function') {
+        return enhancedTimer;
+      }
+    } catch (e) {
+      // Fall back to simple timer if LoggerInjector fails
+      console.warn('LoggerInjector.createTimer failed, using fallback timer');
+    }
+  }
+  
+  return timer;
 }
 
 /**
@@ -407,7 +422,7 @@ function processAccountWon(ss) {
     if (batchProcessor && batchProcessor.appendRows) {
       logger.log('Using BatchProcessor for ' + newAccounts.length + ' new accounts');
       
-      var batchResult = batchProcessor.appendRows(accountsSheet.getName(), newAccounts, {
+      var batchResult = batchProcessor.appendRows(accountsSheet, newAccounts, {
         useLock: true,
         validateHeaders: true,
         batchSize: 50

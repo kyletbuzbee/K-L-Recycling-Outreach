@@ -113,6 +113,19 @@ function importCSVData(csvText, sheetName) {
       }
     });
 
+    // 🔧 FIX: Apply default values from Config.SCHEMA
+    var schemaDefaults = getSchemaDefaults(sheetName);
+    
+    rowsToAppend.forEach(function(sheetRow) {
+      sheetHeaders.forEach(function(header, colIdx) {
+        var normalizedHeader = normalizeHeaderSafe(header);
+        // Apply default if cell is empty and schema has a default
+        if (!sheetRow[colIdx] && schemaDefaults[normalizedHeader] !== undefined) {
+          sheetRow[colIdx] = schemaDefaults[normalizedHeader];
+        }
+      });
+    });
+
     if (rowsToAppend.length === 0) {
       throw new Error('No valid data rows to import after mapping');
     }
@@ -275,4 +288,57 @@ function areSimilarHeaders(header1, header2) {
   }
 
   return h1.includes(h2) || h2.includes(h1);
+}
+
+/**
+ * Get schema defaults for a given sheet type
+ * Extracts default values from CONFIG.SCHEMA
+ * @param {string} sheetName - Name of the sheet (Prospects, Outreach, Accounts, etc.)
+ * @return {Object} Map of normalized header names to default values
+ */
+function getSchemaDefaults(sheetName) {
+  var defaults = {};
+  
+  try {
+    // Map sheet name to schema key
+    var schemaKey = null;
+    if (sheetName === 'Prospects') schemaKey = 'PROSPECTS';
+    else if (sheetName === 'Outreach') schemaKey = 'OUTREACH';
+    else if (sheetName === 'Accounts') schemaKey = 'ACCOUNTS';
+    else if (sheetName === 'Contacts') schemaKey = 'CONTACTS';
+    
+    if (!schemaKey) return defaults;
+    
+    // Check if CONFIG and CONFIG.SCHEMA exist
+    if (typeof CONFIG === 'undefined' || !CONFIG.SCHEMA) {
+      console.warn('CONFIG.SCHEMA not available, using hardcoded defaults');
+      // Hardcoded defaults as fallback
+      defaults = {
+        'owner': 'Kyle Buzbee',
+        'contact type': 'Visit',
+        'email sent': false,
+        'deployed': 'FALSE',
+        'roll-off fee': 'Yes',
+        'roll off container size': '30 yd',
+        'priority score': 60
+      };
+      return defaults;
+    }
+    
+    var schema = CONFIG.SCHEMA[schemaKey];
+    if (!schema) return defaults;
+    
+    // Extract defaults from schema
+    for (var key in schema) {
+      if (schema.hasOwnProperty(key) && schema[key].default !== undefined) {
+        var headerName = schema[key].header.toLowerCase().trim();
+        defaults[headerName] = schema[key].default;
+      }
+    }
+    
+  } catch (e) {
+    console.error('Error getting schema defaults:', e);
+  }
+  
+  return defaults;
 }

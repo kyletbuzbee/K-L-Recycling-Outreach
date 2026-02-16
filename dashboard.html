@@ -1223,6 +1223,359 @@
     }
 
     /* ========================================
+       Calendar Modal Styles
+       ======================================== */
+    .calendar-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000003;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .calendar-modal-overlay.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .calendar-modal-container {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      width: 95%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+    }
+
+    .calendar-modal-overlay.active .calendar-modal-container {
+      transform: scale(1);
+    }
+
+    .calendar-modal-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: var(--text-light);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .calendar-modal-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .calendar-modal-close {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: var(--text-light);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .calendar-modal-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+
+    .calendar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .calendar-nav-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .calendar-nav-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .calendar-month-year {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .calendar-stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .calendar-stat {
+      text-align: center;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+      background: var(--card-bg);
+    }
+
+    .calendar-stat-value {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .calendar-stat-value.overdue { color: var(--danger); }
+    .calendar-stat-value.today { color: var(--warning); }
+    .calendar-stat-value.upcoming { color: var(--success); }
+    .calendar-stat-value.total { color: var(--primary); }
+
+    .calendar-stat-label {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .calendar-grid {
+      padding: 16px;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .calendar-weekday {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      padding: 8px 0;
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      background: var(--card-bg);
+      border: 1px solid transparent;
+      min-height: 50px;
+    }
+
+    .calendar-day:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow);
+    }
+
+    .calendar-day.other-month {
+      opacity: 0.4;
+    }
+
+    .calendar-day.today {
+      background: linear-gradient(135deg, rgba(15, 37, 55, 0.1) 0%, transparent 100%);
+      border-color: var(--primary);
+    }
+
+    .calendar-day.has-events {
+      background: linear-gradient(135deg, rgba(39, 174, 96, 0.1) 0%, transparent 100%);
+    }
+
+    .calendar-day.overdue-day {
+      background: linear-gradient(135deg, rgba(192, 57, 43, 0.1) 0%, transparent 100%);
+    }
+
+    .calendar-day-number {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .calendar-day.today .calendar-day-number {
+      background: var(--primary);
+      color: var(--text-light);
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calendar-event-dots {
+      display: flex;
+      gap: 2px;
+      margin-top: 2px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .calendar-event-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .calendar-event-dot.overdue { background: var(--danger); }
+    .calendar-event-dot.today { background: var(--warning); }
+    .calendar-event-dot.high { background: var(--danger-light); }
+    .calendar-event-dot.medium { background: var(--warning); }
+    .calendar-event-dot.low { background: var(--success); }
+    .calendar-event-dot.scheduled { background: var(--primary); }
+
+    .calendar-event-count {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .calendar-modal-body {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .calendar-events-list {
+      display: none;
+    }
+
+    .calendar-events-list.active {
+      display: block;
+    }
+
+    .calendar-event-card {
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 8px;
+      border-left: 4px solid var(--border);
+      transition: var(--transition);
+    }
+
+    .calendar-event-card:hover {
+      box-shadow: var(--shadow);
+      transform: translateX(4px);
+    }
+
+    .calendar-event-card.overdue { border-left-color: var(--danger); }
+    .calendar-event-card.today { border-left-color: var(--warning); }
+    .calendar-event-card.high { border-left-color: var(--danger-light); }
+    .calendar-event-card.medium { border-left-color: var(--warning); }
+    .calendar-event-card.low { border-left-color: var(--success); }
+
+    .calendar-event-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .calendar-event-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .calendar-event-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .calendar-empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+    }
+
+    .calendar-empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    .calendar-empty-state-text {
+      font-size: 14px;
+    }
+
+    .calendar-view-toggle {
+      display: flex;
+      gap: 4px;
+      padding: 0 16px 12px;
+    }
+
+    .calendar-view-btn {
+      flex: 1;
+      padding: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .calendar-view-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .calendar-view-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: var(--text-light);
+    }
+
+    /* ========================================
        Responsive Design
        ======================================== */
     @media (max-width: 768px) {
@@ -1693,6 +2046,79 @@
 
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
+
+  <!-- Calendar Modal -->
+  <div class="calendar-modal-overlay" id="calendarModal">
+    <div class="calendar-modal-container">
+      <div class="calendar-modal-header">
+        <div class="calendar-modal-title">
+          <span>📅</span>
+          <span>Activity Calendar</span>
+        </div>
+        <button type="button" class="calendar-modal-close" onclick="closeCalendarModal()">×</button>
+      </div>
+      
+      <div class="calendar-nav">
+        <button type="button" class="calendar-nav-btn" onclick="calendarPrevMonth()">
+          <span>◀</span> Prev
+        </button>
+        <span class="calendar-month-year" id="calendarMonthYear">Loading...</span>
+        <button type="button" class="calendar-nav-btn" onclick="calendarNextMonth()">
+          Next <span>▶</span>
+        </button>
+      </div>
+
+      <div class="calendar-stats-bar" id="calendarStats">
+        <div class="calendar-stat">
+          <div class="calendar-stat-value overdue" id="calStatOverdue">0</div>
+          <div class="calendar-stat-label">Overdue</div>
+        </div>
+        <div class="calendar-stat">
+          <div class="calendar-stat-value today" id="calStatToday">0</div>
+          <div class="calendar-stat-label">Today</div>
+        </div>
+        <div class="calendar-stat">
+          <div class="calendar-stat-value upcoming" id="calStatUpcoming">0</div>
+          <div class="calendar-stat-label">Upcoming</div>
+        </div>
+        <div class="calendar-stat">
+          <div class="calendar-stat-value total" id="calStatTotal">0</div>
+          <div class="calendar-stat-label">Total</div>
+        </div>
+      </div>
+
+      <div class="calendar-view-toggle">
+        <button type="button" class="calendar-view-btn active" id="calViewMonth" onclick="setCalendarView('month')">Month</button>
+        <button type="button" class="calendar-view-btn" id="calViewList" onclick="setCalendarView('list')">List</button>
+        <button type="button" class="calendar-view-btn" id="calViewOverdue" onclick="setCalendarView('overdue')">Overdue</button>
+      </div>
+
+      <div class="calendar-modal-body" id="calendarBody">
+        <div class="calendar-grid" id="calendarGrid">
+          <div class="calendar-weekdays">
+            <div class="calendar-weekday">Sun</div>
+            <div class="calendar-weekday">Mon</div>
+            <div class="calendar-weekday">Tue</div>
+            <div class="calendar-weekday">Wed</div>
+            <div class="calendar-weekday">Thu</div>
+            <div class="calendar-weekday">Fri</div>
+            <div class="calendar-weekday">Sat</div>
+          </div>
+          <div class="calendar-days" id="calendarDays">
+            <!-- Calendar days will be rendered here -->
+          </div>
+        </div>
+
+        <div class="calendar-events-list" id="calendarEventsList">
+          <!-- Events list will be rendered here -->
+        </div>
+
+        <div class="calendar-events-list" id="calendarOverdueList">
+          <!-- Overdue items will be rendered here -->
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ========================================
@@ -2808,25 +3234,9 @@
         .showAccountsModal();
     }
 
-    // Show calendar view - delegates to backend
+    // Show calendar view - opens the interactive calendar modal
     function showCalendarView() {
-      showLoading(true);
-      showToast('📅 Loading calendar...', 'info');
-      
-      google.script.run
-        .withSuccessHandler(function (result) {
-          showLoading(false);
-          if (result.success) {
-            showToast('✅ Calendar view opened', 'success');
-          } else {
-            showToast('❌ ' + (result.error || 'Failed to open calendar'), 'error');
-          }
-        })
-        .withFailureHandler(function (error) {
-          showLoading(false);
-          showToast('❌ Calendar error: ' + (error.message || 'Unknown error'), 'error');
-        })
-        .showCalendarModal();
+      openCalendarModal();
     }
 
     // ========================================
@@ -3027,6 +3437,346 @@
       div.textContent = text;
       return div.innerHTML;
     }
+
+    // ========================================
+    // Calendar Functions
+    // ========================================
+    var calendarState = {
+      currentYear: new Date().getFullYear(),
+      currentMonth: new Date().getMonth() + 1,
+      currentView: 'month',
+      events: [],
+      overdue: [],
+      stats: { total: 0, overdue: 0, today: 0, upcoming: 0 }
+    };
+
+    function openCalendarModal() {
+      var modal = document.getElementById('calendarModal');
+      if (modal) {
+        modal.classList.add('active');
+        loadCalendarData();
+      }
+    }
+
+    function closeCalendarModal() {
+      var modal = document.getElementById('calendarModal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+    }
+
+    function loadCalendarData() {
+      showLoading(true);
+      
+      google.script.run
+        .withSuccessHandler(function(result) {
+          showLoading(false);
+          if (result && result.success && result.data) {
+            calendarState.events = result.data.events || [];
+            calendarState.overdue = result.data.overdue || [];
+            calendarState.stats = result.data.stats || { total: 0, overdue: 0, today: 0, upcoming: 0 };
+            
+            updateCalendarStats();
+            renderCalendarView();
+          } else {
+            showToast('❌ Failed to load calendar data', 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          showLoading(false);
+          showToast('❌ Error loading calendar: ' + (error.message || 'Unknown error'), 'error');
+        })
+        .getCalendarMonthData(calendarState.currentYear, calendarState.currentMonth);
+    }
+
+    function updateCalendarStats() {
+      document.getElementById('calStatOverdue').textContent = calendarState.stats.overdue || 0;
+      document.getElementById('calStatToday').textContent = calendarState.stats.today || 0;
+      document.getElementById('calStatUpcoming').textContent = calendarState.stats.upcoming || 0;
+      document.getElementById('calStatTotal').textContent = calendarState.stats.total || 0;
+    }
+
+    function renderCalendarView() {
+      var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+      document.getElementById('calendarMonthYear').textContent = 
+        monthNames[calendarState.currentMonth - 1] + ' ' + calendarState.currentYear;
+
+      if (calendarState.currentView === 'month') {
+        renderMonthView();
+      } else if (calendarState.currentView === 'list') {
+        renderListView();
+      } else if (calendarState.currentView === 'overdue') {
+        renderOverdueView();
+      }
+    }
+
+    function renderMonthView() {
+      document.getElementById('calendarGrid').style.display = 'block';
+      document.getElementById('calendarEventsList').classList.remove('active');
+      document.getElementById('calendarOverdueList').classList.remove('active');
+
+      var daysContainer = document.getElementById('calendarDays');
+      daysContainer.innerHTML = '';
+
+      // Calculate first day of month and total days
+      var firstDay = new Date(calendarState.currentYear, calendarState.currentMonth - 1, 1);
+      var lastDay = new Date(calendarState.currentYear, calendarState.currentMonth, 0);
+      var startingDay = firstDay.getDay();
+      var totalDays = lastDay.getDate();
+
+      // Get today for comparison
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Previous month days
+      var prevMonthLastDay = new Date(calendarState.currentYear, calendarState.currentMonth - 1, 0).getDate();
+      for (var i = startingDay - 1; i >= 0; i--) {
+        var dayEl = createDayElement(prevMonthLastDay - i, false, false, [], false);
+        daysContainer.appendChild(dayEl);
+      }
+
+      // Current month days
+      for (var day = 1; day <= totalDays; day++) {
+        var dateStr = calendarState.currentYear + '-' + 
+                      String(calendarState.currentMonth).padStart(2, '0') + '-' + 
+                      String(day).padStart(2, '0');
+        
+        var dayEvents = calendarState.events.filter(function(e) {
+          return e.date === dateStr;
+        });
+
+        var isToday = today.getFullYear() === calendarState.currentYear &&
+                      today.getMonth() === calendarState.currentMonth - 1 &&
+                      today.getDate() === day;
+
+        var hasOverdue = dayEvents.some(function(e) { return e.isOverdue; });
+
+        var dayEl = createDayElement(day, true, isToday, dayEvents, hasOverdue);
+        daysContainer.appendChild(dayEl);
+      }
+
+      // Next month days
+      var remainingDays = 42 - (startingDay + totalDays);
+      for (var i = 1; i <= remainingDays; i++) {
+        var dayEl = createDayElement(i, false, false, [], false);
+        daysContainer.appendChild(dayEl);
+      }
+    }
+
+    function createDayElement(day, isCurrentMonth, isToday, events, hasOverdue) {
+      var dayEl = document.createElement('div');
+      dayEl.className = 'calendar-day';
+      
+      if (!isCurrentMonth) dayEl.classList.add('other-month');
+      if (isToday) dayEl.classList.add('today');
+      if (events.length > 0) dayEl.classList.add('has-events');
+      if (hasOverdue) dayEl.classList.add('overdue-day');
+
+      var dayNumber = document.createElement('div');
+      dayNumber.className = 'calendar-day-number';
+      dayNumber.textContent = day;
+      dayEl.appendChild(dayNumber);
+
+      if (events.length > 0) {
+        var dotsContainer = document.createElement('div');
+        dotsContainer.className = 'calendar-event-dots';
+        
+        events.slice(0, 4).forEach(function(event) {
+          var dot = document.createElement('div');
+          dot.className = 'calendar-event-dot ' + (event.priorityClass || 'low');
+          dotsContainer.appendChild(dot);
+        });
+
+        if (events.length > 4) {
+          var countEl = document.createElement('div');
+          countEl.className = 'calendar-event-count';
+          countEl.textContent = '+' + (events.length - 4);
+          dotsContainer.appendChild(countEl);
+        }
+
+        dayEl.appendChild(dotsContainer);
+
+        // Click handler to show events
+        dayEl.onclick = function() {
+          showDayEvents(events);
+        };
+      }
+
+      return dayEl;
+    }
+
+    function showDayEvents(events) {
+      if (!events || events.length === 0) return;
+
+      var listContainer = document.getElementById('calendarEventsList');
+      listContainer.innerHTML = '';
+
+      events.forEach(function(event) {
+        var card = document.createElement('div');
+        card.className = 'calendar-event-card ' + (event.priorityClass || '');
+        
+        card.innerHTML = 
+          '<div class="calendar-event-title">' + escapeHtml(event.title) + '</div>' +
+          '<div class="calendar-event-meta">' +
+            '<span>📅 ' + (event.dateFormatted || event.date) + '</span>' +
+            '<span>📊 ' + (event.status || 'Unknown') + '</span>' +
+            (event.urgency ? '<span>🔥 ' + escapeHtml(event.urgency) + '</span>' : '') +
+          '</div>';
+
+        card.onclick = function() {
+          // Navigate to company if we have ID
+          if (event.companyId) {
+            closeCalendarModal();
+            document.getElementById('companyInput').value = event.title;
+            document.getElementById('selectedCompanyId').value = event.companyId;
+            loadLastTouchInfo(event.title);
+          }
+        };
+
+        listContainer.appendChild(card);
+      });
+
+      // Show list view
+      document.getElementById('calendarGrid').style.display = 'none';
+      document.getElementById('calendarEventsList').classList.add('active');
+      document.getElementById('calendarOverdueList').classList.remove('active');
+    }
+
+    function renderListView() {
+      document.getElementById('calendarGrid').style.display = 'none';
+      document.getElementById('calendarEventsList').classList.add('active');
+      document.getElementById('calendarOverdueList').classList.remove('active');
+
+      var listContainer = document.getElementById('calendarEventsList');
+      listContainer.innerHTML = '';
+
+      if (calendarState.events.length === 0) {
+        listContainer.innerHTML = 
+          '<div class="calendar-empty-state">' +
+            '<div class="calendar-empty-state-icon">📭</div>' +
+            '<div class="calendar-empty-state-text">No upcoming events this month</div>' +
+          '</div>';
+        return;
+      }
+
+      calendarState.events.forEach(function(event) {
+        var card = document.createElement('div');
+        card.className = 'calendar-event-card ' + (event.priorityClass || '');
+        
+        card.innerHTML = 
+          '<div class="calendar-event-title">' + escapeHtml(event.title) + '</div>' +
+          '<div class="calendar-event-meta">' +
+            '<span>📅 ' + (event.dateFormatted || event.date) + '</span>' +
+            '<span>📊 ' + (event.status || 'Unknown') + '</span>' +
+            (event.urgency ? '<span>🔥 ' + escapeHtml(event.urgency) + '</span>' : '') +
+          '</div>';
+
+        card.onclick = function() {
+          if (event.companyId) {
+            closeCalendarModal();
+            document.getElementById('companyInput').value = event.title;
+            document.getElementById('selectedCompanyId').value = event.companyId;
+            loadLastTouchInfo(event.title);
+          }
+        };
+
+        listContainer.appendChild(card);
+      });
+    }
+
+    function renderOverdueView() {
+      document.getElementById('calendarGrid').style.display = 'none';
+      document.getElementById('calendarEventsList').classList.remove('active');
+      document.getElementById('calendarOverdueList').classList.add('active');
+
+      var listContainer = document.getElementById('calendarOverdueList');
+      listContainer.innerHTML = '';
+
+      if (calendarState.overdue.length === 0) {
+        listContainer.innerHTML = 
+          '<div class="calendar-empty-state">' +
+            '<div class="calendar-empty-state-icon">✅</div>' +
+            '<div class="calendar-empty-state-text">No overdue items! Great job!</div>' +
+          '</div>';
+        return;
+      }
+
+      calendarState.overdue.forEach(function(event) {
+        var card = document.createElement('div');
+        card.className = 'calendar-event-card overdue';
+        
+        card.innerHTML = 
+          '<div class="calendar-event-title">' + escapeHtml(event.title) + '</div>' +
+          '<div class="calendar-event-meta">' +
+            '<span>📅 ' + (event.dateFormatted || event.date) + '</span>' +
+            '<span>📊 ' + (event.status || 'Unknown') + '</span>' +
+            '<span>⚠️ OVERDUE</span>' +
+          '</div>';
+
+        card.onclick = function() {
+          if (event.companyId) {
+            closeCalendarModal();
+            document.getElementById('companyInput').value = event.title;
+            document.getElementById('selectedCompanyId').value = event.companyId;
+            loadLastTouchInfo(event.title);
+          }
+        };
+
+        listContainer.appendChild(card);
+      });
+    }
+
+    function calendarPrevMonth() {
+      calendarState.currentMonth--;
+      if (calendarState.currentMonth < 1) {
+        calendarState.currentMonth = 12;
+        calendarState.currentYear--;
+      }
+      loadCalendarData();
+    }
+
+    function calendarNextMonth() {
+      calendarState.currentMonth++;
+      if (calendarState.currentMonth > 12) {
+        calendarState.currentMonth = 1;
+        calendarState.currentYear++;
+      }
+      loadCalendarData();
+    }
+
+    function setCalendarView(view) {
+      calendarState.currentView = view;
+      
+      // Update button states
+      document.querySelectorAll('.calendar-view-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+      
+      if (view === 'month') {
+        document.getElementById('calViewMonth').classList.add('active');
+      } else if (view === 'list') {
+        document.getElementById('calViewList').classList.add('active');
+      } else if (view === 'overdue') {
+        document.getElementById('calViewOverdue').classList.add('active');
+      }
+      
+      renderCalendarView();
+    }
+
+    // Close modal on overlay click
+    document.addEventListener('click', function(e) {
+      if (e.target && e.target.id === 'calendarModal') {
+        closeCalendarModal();
+      }
+    });
+
+    // Close modal on Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeCalendarModal();
+      }
+    });
 
     // ========================================
     // New Company Fields Toggle

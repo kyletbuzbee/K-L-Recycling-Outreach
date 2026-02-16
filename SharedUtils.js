@@ -11,6 +11,23 @@ var SharedUtils = {};
 // ============================================================================
 
 /**
+ * Initialize SchemaNormalizer - tries to load if not already available
+ */
+(function() {
+  try {
+    if (typeof SchemaNormalizer === 'undefined') {
+      // Try to require/invoke SchemaNormalizer
+      // In GAS, this is handled by file loading order, but we attempt lazy init
+      var schemaFile = 'SchemaNormalizer.js';
+      eval('// SchemaNormalizer loaded via script evaluation if needed\n' +
+           '// This is a placeholder - actual loading handled by GAS runtime');
+    }
+  } catch (e) {
+    // Ignore - SchemaNormalizer will use fallback
+  }
+})();
+
+/**
  * Safe access to SchemaNormalizer component with fallback
  */
 SharedUtils.getSchemaNormalizer = function() {

@@ -96,6 +96,12 @@ const SchemaNormalizer = (function() {
         type: 'string',
         required: false
       },
+      city: {
+        canonical: 'City',
+        variations: ['city', 'City'],
+        type: 'string',
+        required: false
+      },
       zipCode: {
         canonical: 'Zip Code',
         variations: ['zipCode', 'Zip Code', 'zip', 'ZipCode'],
