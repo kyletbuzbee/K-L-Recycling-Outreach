@@ -18,14 +18,13 @@ const HtmlSafeRenderer = (function() {
     ALLOWED_TAGS: [
       'div', 'span', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       'br', 'hr', 'strong', 'b', 'em', 'i', 'u', 'strike', 'del',
-      'a', 'img', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'td', 'th'
+      'a', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'td', 'th'
     ],
     
-    // Allowed attributes
+    // Allowed attributes - `style` attribute removed from global
     ALLOWED_ATTRIBUTES: {
-      '*': ['class', 'id', 'style', 'title'],
+      '*': ['class', 'id', 'title'],
       'a': ['href', 'target', 'rel'],
-      'img': ['src', 'alt', 'width', 'height'],
       'table': ['border', 'cellpadding', 'cellspacing'],
       'td': ['colspan', 'rowspan'],
       'th': ['colspan', 'rowspan']
@@ -177,7 +176,8 @@ const HtmlSafeRenderer = (function() {
       const tagName = element.tagName.toLowerCase();
       
       // Remove script and style tags entirely
-      if (tagName === 'script' || tagName === 'style' || tagName === 'iframe' || tagName === 'object') {
+      const dangerousTags = ['script', 'style', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'select', 'textarea'];
+      if (dangerousTags.includes(tagName)) {
         if (CONFIG.LOG_SECURITY_EVENTS) {
           console.warn(`HtmlSafeRenderer: Removed dangerous tag: ${tagName}`);
         }

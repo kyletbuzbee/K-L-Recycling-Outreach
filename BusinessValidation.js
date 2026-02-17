@@ -242,47 +242,93 @@ var BusinessValidation = (function() {
     var validationSteps = [
       function prospectRequiredFields(data, options) {
         var errors = [];
-        var requiredFields = ['company name', 'address'];
+        var warnings = [];
+        // Use normalized field names (Title Case as per system schema)
+        var requiredFields = ['Company Name', 'Address'];
         requiredFields.forEach(function(field) {
-          var value = data[field];
+          var normalizedField = SharedUtils ? SharedUtils.normalizeHeader(field) : field.toLowerCase();
+          var value = data[normalizedField] || data[field];
           if (!value || String(value).trim() === '') {
-            errors.push('Missing required field: ' + SharedUtils.capitalizeFirst(field));
+            errors.push('Missing required field: ' + field);
           }
         });
-        return { isValid: errors.length === 0, errors: errors };
+        return { isValid: errors.length === 0, errors: errors, warnings: warnings };
       },
       function prospectCompanyName(data) {
         var errors = [];
-        FieldValidators.validateCompanyName(data['company name'], errors);
-        return { isValid: errors.length === 0, errors: errors, warnings: [] };
+        var warnings = [];
+        // FIX: Capture and check return value from validator
+        var companyNameField = 'company name';
+        if (data[companyNameField] || data['Company Name']) {
+          var isValid = FieldValidators.validateCompanyName(data[companyNameField] || data['Company Name'], errors);
+          if (!isValid && errors.length === 0) {
+            // Validator returned false but didn't push errors - add generic error
+            errors.push('Company name validation failed');
+          }
+        }
+        return { isValid: errors.length === 0, errors: errors, warnings: warnings };
       },
       function prospectAddress(data) {
         var errors = [];
-        FieldValidators.validateAddress(data['address'], errors);
-        return { isValid: errors.length === 0, errors: errors, warnings: [] };
+        var warnings = [];
+        // FIX: Capture and check return value from validator
+        var addressField = 'address';
+        if (data[addressField] || data['Address']) {
+          var isValid = FieldValidators.validateAddress(data[addressField] || data['Address'], errors);
+          if (!isValid && errors.length === 0) {
+            errors.push('Address validation failed');
+          }
+        }
+        return { isValid: errors.length === 0, errors: errors, warnings: warnings };
       },
       function prospectScores(data) {
         var errors = [];
-        FieldValidators.validatePriorityScore(data['priority score'], errors);
-        FieldValidators.validateUrgencyScore(data['urgency score'], errors);
-        return { isValid: errors.length === 0, errors: errors, warnings: [] };
+        var warnings = [];
+        // FIX: Capture and check return values from validators
+        var priorityValid = FieldValidators.validatePriorityScore(data['priority score'], errors);
+        var urgencyValid = FieldValidators.validateUrgencyScore(data['urgency score'], errors);
+        
+        // If validators returned false but no errors pushed, add generic errors
+        if (!priorityValid && !errors.some(function(e) { return e.indexOf('Priority') > -1; })) {
+          errors.push('Priority score validation failed');
+        }
+        if (!urgencyValid && !errors.some(function(e) { return e.indexOf('Urgency') > -1; })) {
+          errors.push('Urgency score validation failed');
+        }
+        return { isValid: errors.length === 0, errors: errors, warnings: warnings };
       },
       function prospectDates(data) {
         var errors = [];
         var warnings = [];
-        if (data['last outreach date']) {
-          if (!FieldValidators.validateDate(data['last outreach date'], errors, {
+        
+        // Validate last outreach date - FIX: add allowPast option and check return value properly
+        if (data['last outreach date'] || data['Last Outreach Date']) {
+          var lastOutreachValue = data['last outreach date'] || data['Last Outreach Date'];
+          var isDateValid = FieldValidators.validateDate(lastOutreachValue, errors, {
+            minYear: 1900,
             maxYear: new Date().getFullYear() + 1,
             allowFuture: false,
+            allowPast: true, // FIX: Explicitly allow past dates (historical data)
             fieldName: 'last outreach date'
-          })) {
-            warnings.push('Invalid last outreach date format');
+          });
+          if (!isDateValid && !errors.some(function(e) { return e.indexOf('last outreach date') > -1; })) {
+            errors.push('Invalid last outreach date format');
           }
         }
-        if (data['next steps due date']) {
-          FieldValidators.validateDate(data['next steps due date'], errors, {
+        
+        // Validate next steps due date - FIX: check return value properly
+        if (data['next steps due date'] || data['Next Steps Due Date']) {
+          var nextStepsValue = data['next steps due date'] || data['Next Steps Due Date'];
+          var isNextStepsValid = FieldValidators.validateDate(nextStepsValue, errors, {
+            minYear: 1900,
+            maxYear: 2100,
+            allowFuture: true,
+            allowPast: true,
             fieldName: 'next steps due date'
           });
+          if (!isNextStepsValid && !errors.some(function(e) { return e.indexOf('next steps due date') > -1; })) {
+            errors.push('Invalid next steps due date format');
+          }
         }
         return { isValid: errors.length === 0, errors: errors, warnings: warnings };
       }

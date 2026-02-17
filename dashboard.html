@@ -2604,19 +2604,20 @@
       if (results && results.length > 0) {
         console.log('Generating HTML for', results.length, 'results');
         // Use data attributes with escaped values for safety
-        dropdown.innerHTML = results.map((r, index) => {
-          const escapedName = HtmlSafeRenderer.escapeHtml(r.companyName || r.company);
-          const companyId = r.companyId || '';
-          const address = HtmlSafeRenderer.escapeHtml(r.address || '');
-          const phone = HtmlSafeRenderer.escapeHtml(r.phone || '');
-          const email = HtmlSafeRenderer.escapeHtml(r.email || '');
-          const contactName = HtmlSafeRenderer.escapeHtml(r.contactName || '');
-          return '<div class="suggestion-item" data-index="' + index + '" data-name="' + escapedName + '" data-id="' + companyId + '" data-address="' + address + '" data-phone="' + phone + '" data-email="' + email + '" data-contact="' + contactName + '">' + escapedName + '</div>';
-        }).join('');
+        dropdown.innerHTML = ''; // Clear previous suggestions
+        results.forEach((r, index) => {
+          const item = document.createElement('div');
+          item.className = 'suggestion-item';
+          item.dataset.index = index;
+          const companyName = r.companyName || r.company;
+          item.dataset.name = companyName;
+          item.dataset.id = r.companyId || '';
+          item.dataset.address = r.address || '';
+          item.dataset.phone = r.phone || '';
+          item.dataset.email = r.email || '';
+          item.dataset.contact = r.contactName || '';
+          item.textContent = companyName; // Use textContent for safety
 
-        console.log('HTML set, adding click listeners');
-        // Add click listeners to suggestion items
-        dropdown.querySelectorAll('.suggestion-item').forEach(item => {
           item.onclick = function () {
             console.log('Suggestion clicked:', this.dataset.name);
             const companyData = {
@@ -2629,6 +2630,7 @@
             };
             selectCompany(companyData);
           };
+          dropdown.appendChild(item);
         });
 
         console.log('Adding active class to dropdown');
@@ -3616,13 +3618,29 @@
         var card = document.createElement('div');
         card.className = 'calendar-event-card ' + (event.priorityClass || '');
         
-        card.innerHTML = 
-          '<div class="calendar-event-title">' + escapeHtml(event.title) + '</div>' +
-          '<div class="calendar-event-meta">' +
-            '<span>📅 ' + (event.dateFormatted || event.date) + '</span>' +
-            '<span>📊 ' + (event.status || 'Unknown') + '</span>' +
-            (event.urgency ? '<span>🔥 ' + escapeHtml(event.urgency) + '</span>' : '') +
-          '</div>';
+        var titleDiv = document.createElement('div');
+        titleDiv.className = 'calendar-event-title';
+        titleDiv.textContent = event.title;
+        card.appendChild(titleDiv);
+
+        var metaDiv = document.createElement('div');
+        metaDiv.className = 'calendar-event-meta';
+        
+        var dateSpan = document.createElement('span');
+        dateSpan.textContent = '📅 ' + (event.dateFormatted || event.date);
+        metaDiv.appendChild(dateSpan);
+
+        var statusSpan = document.createElement('span');
+        statusSpan.textContent = '📊 ' + (event.status || 'Unknown');
+        metaDiv.appendChild(statusSpan);
+
+        if (event.urgency) {
+          var urgencySpan = document.createElement('span');
+          urgencySpan.textContent = '🔥 ' + escapeHtml(event.urgency);
+          metaDiv.appendChild(urgencySpan);
+        }
+        
+        card.appendChild(metaDiv);
 
         card.onclick = function() {
           // Navigate to company if we have ID
@@ -3652,11 +3670,12 @@
       listContainer.innerHTML = '';
 
       if (calendarState.events.length === 0) {
-        listContainer.innerHTML = 
-          '<div class="calendar-empty-state">' +
-            '<div class="calendar-empty-state-icon">📭</div>' +
-            '<div class="calendar-empty-state-text">No upcoming events this month</div>' +
-          '</div>';
+        var emptyState = document.createElement('div');
+        emptyState.className = 'calendar-empty-state';
+        emptyState.innerHTML = 
+          '<div class="calendar-empty-state-icon">📭</div>' +
+          '<div class="calendar-empty-state-text">No upcoming events this month</div>';
+        listContainer.appendChild(emptyState);
         return;
       }
 
@@ -3664,13 +3683,29 @@
         var card = document.createElement('div');
         card.className = 'calendar-event-card ' + (event.priorityClass || '');
         
-        card.innerHTML = 
-          '<div class="calendar-event-title">' + escapeHtml(event.title) + '</div>' +
-          '<div class="calendar-event-meta">' +
-            '<span>📅 ' + (event.dateFormatted || event.date) + '</span>' +
-            '<span>📊 ' + (event.status || 'Unknown') + '</span>' +
-            (event.urgency ? '<span>🔥 ' + escapeHtml(event.urgency) + '</span>' : '') +
-          '</div>';
+        var titleDiv = document.createElement('div');
+        titleDiv.className = 'calendar-event-title';
+        titleDiv.textContent = event.title;
+        card.appendChild(titleDiv);
+
+        var metaDiv = document.createElement('div');
+        metaDiv.className = 'calendar-event-meta';
+        
+        var dateSpan = document.createElement('span');
+        dateSpan.textContent = '📅 ' + (event.dateFormatted || event.date);
+        metaDiv.appendChild(dateSpan);
+
+        var statusSpan = document.createElement('span');
+        statusSpan.textContent = '📊 ' + (event.status || 'Unknown');
+        metaDiv.appendChild(statusSpan);
+
+        if (event.urgency) {
+          var urgencySpan = document.createElement('span');
+          urgencySpan.textContent = '🔥 ' + escapeHtml(event.urgency);
+          metaDiv.appendChild(urgencySpan);
+        }
+        
+        card.appendChild(metaDiv);
 
         card.onclick = function() {
           if (event.companyId) {
@@ -3706,13 +3741,27 @@
         var card = document.createElement('div');
         card.className = 'calendar-event-card overdue';
         
-        card.innerHTML = 
-          '<div class="calendar-event-title">' + escapeHtml(event.title) + '</div>' +
-          '<div class="calendar-event-meta">' +
-            '<span>📅 ' + (event.dateFormatted || event.date) + '</span>' +
-            '<span>📊 ' + (event.status || 'Unknown') + '</span>' +
-            '<span>⚠️ OVERDUE</span>' +
-          '</div>';
+        var titleDiv = document.createElement('div');
+        titleDiv.className = 'calendar-event-title';
+        titleDiv.textContent = event.title;
+        card.appendChild(titleDiv);
+
+        var metaDiv = document.createElement('div');
+        metaDiv.className = 'calendar-event-meta';
+        
+        var dateSpan = document.createElement('span');
+        dateSpan.textContent = '📅 ' + (event.dateFormatted || event.date);
+        metaDiv.appendChild(dateSpan);
+
+        var statusSpan = document.createElement('span');
+        statusSpan.textContent = '📊 ' + (event.status || 'Unknown');
+        metaDiv.appendChild(statusSpan);
+
+        var overdueSpan = document.createElement('span');
+        overdueSpan.textContent = '⚠️ OVERDUE';
+        metaDiv.appendChild(overdueSpan);
+        
+        card.appendChild(metaDiv);
 
         card.onclick = function() {
           if (event.companyId) {

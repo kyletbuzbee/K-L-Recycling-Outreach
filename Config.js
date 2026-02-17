@@ -14,7 +14,8 @@ var CONFIG = {
     METRICS: 'MetricsHistory',
     SYSTEM_LOG: 'System_OpsLog',
     GEO_CACHE: 'System_GeoCache',
-    SETTINGS: 'Settings'
+    SETTINGS: 'Settings',
+    STALE_PROSPECTS: 'Stale Prospects'
   },
 
   // Legacy compatibility - keep old names but mark as deprecated

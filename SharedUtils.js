@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Shared Utilities for K&L Recycling CRM
  * Version: 2.8.0 (Merged Clean-Room + Enhanced Functionality + SchemaNormalizer Integration)
  * Logic: Safe-Fetch Pattern + Enhanced Date Validation + Schema Integration
@@ -10,31 +10,50 @@ var SharedUtils = {};
 // SCHEMA NORMALIZER INTEGRATION
 // ============================================================================
 
-/**
- * Initialize SchemaNormalizer - tries to load if not already available
- */
-(function() {
-  try {
-    if (typeof SchemaNormalizer === 'undefined') {
-      // Try to require/invoke SchemaNormalizer
-      // In GAS, this is handled by file loading order, but we attempt lazy init
-      var schemaFile = 'SchemaNormalizer.js';
-      eval('// SchemaNormalizer loaded via script evaluation if needed\n' +
-           '// This is a placeholder - actual loading handled by GAS runtime');
-    }
-  } catch (e) {
-    // Ignore - SchemaNormalizer will use fallback
-  }
-})();
+
 
 /**
  * Safe access to SchemaNormalizer component with fallback
+ * Tries multiple methods to find SchemaNormalizer
  */
 SharedUtils.getSchemaNormalizer = function() {
   try {
-    return typeof SchemaNormalizer !== 'undefined' ? SchemaNormalizer : null;
-  } catch (e) {
+    // Method 1: Direct global (works in V8 when const is used)
+    if (typeof SchemaNormalizer !== 'undefined') {
+      return SchemaNormalizer;
+    }
+    // Method 2: globalThis (modern V8)
+    if (typeof globalThis !== 'undefined' && globalThis.SchemaNormalizer) {
+      return globalThis.SchemaNormalizer;
+    }
+    // Method 3: Try to evaluate and find it
+    try {
+      if (eval('typeof SchemaNormalizer') !== 'undefined') {
+        return eval('SchemaNormalizer');
+      }
+    } catch(e) {}
     return null;
+  } catch (e) {
+    console.warn('SchemaNormalizer lookup failed:', e.message);
+    return null;
+  }
+};
+
+/**
+ * Initialize SchemaNormalizer - call this from any function that needs it
+ * Provides a manual binding as fallback
+ */
+SharedUtils.initSchemaNormalizer = function(schemaNormalizerInstance) {
+  if (schemaNormalizerInstance) {
+    try {
+      // Assign to all possible global scopes
+      SchemaNormalizer = schemaNormalizerInstance;
+      if (typeof globalThis !== 'undefined') globalThis.SchemaNormalizer = schemaNormalizerInstance;
+      if (typeof global !== 'undefined') global.SchemaNormalizer = schemaNormalizerInstance;
+      console.log('SchemaNormalizer manually initialized');
+    } catch (e) {
+      console.warn('Failed to initialize SchemaNormalizer:', e.message);
+    }
   }
 };
 
@@ -401,6 +420,113 @@ var DateValidationUtils = {
 SharedUtils.normalizeHeader = function(header) {
   if (!header) return "";
   return header.toString().trim().toLowerCase();
+};
+
+/**
+ * Find column index using fuzzy matching
+ * Uses SchemaNormalizer if available, falls back to loose matching
+ * @param {Array} headers - Array of header names from sheet
+ * @param {string} targetColumn - The column name to find (can be canonical, variation, or loose match)
+ * @param {string} sheetType - Sheet type for SchemaNormalizer
+ * @returns {number} Column index or -1 if not found
+ */
+SharedUtils.findColumnIndex = function(headers, targetColumn, sheetType) {
+  if (!headers || !targetColumn || headers.length === 0) return -1;
+  
+  var normalizedTarget = SharedUtils.normalizeHeader(targetColumn);
+  
+  // Try SchemaNormalizer first for fuzzy matching
+  var schemaNormalizer = SharedUtils.getSchemaNormalizer();
+  if (schemaNormalizer && schemaNormalizer.buildHeaderMap) {
+    try {
+      var headerMap = schemaNormalizer.buildHeaderMap(headers, sheetType);
+      // Try canonical name
+      var canonicalTarget = schemaNormalizer.getCanonicalName ? 
+        schemaNormalizer.getCanonicalName(targetColumn, sheetType) : normalizedTarget;
+      
+      if (headerMap[canonicalTarget] !== undefined) {
+        return headerMap[canonicalTarget];
+      }
+    } catch (e) {
+      console.warn('SchemaNormalizer findColumnIndex failed, falling back to loose matching');
+    }
+  }
+  
+  // Fallback: loose matching (contains, spaces, underscores ignored)
+  var targetLoose = normalizedTarget.replace(/[\s_]/g, '');
+  
+  for (var i = 0; i < headers.length; i++) {
+    var header = headers[i];
+    if (!header) continue;
+    
+    var normalizedHeader = SharedUtils.normalizeHeader(header);
+    var headerLoose = normalizedHeader.replace(/[\s_]/g, '');
+    
+    // Exact match
+    if (normalizedHeader === normalizedTarget || headerLoose === targetLoose) {
+      return i;
+    }
+    // Contains match
+    if (normalizedHeader.indexOf(normalizedTarget) > -1 || 
+        normalizedTarget.indexOf(normalizedHeader) > -1) {
+      return i;
+    }
+    // Loose match (remove spaces/underscores)
+    if (headerLoose.indexOf(targetLoose) > -1 || targetLoose.indexOf(headerLoose) > -1) {
+      return i;
+    }
+  }
+  
+  return -1;
+};
+
+/**
+ * Get value from row by column name with fuzzy matching
+ * @param {Array} row - Data row
+ * @param {Array} headers - Header array from sheet
+ * @param {string} targetColumn - Column name to find
+ * @param {string} sheetType - Sheet type for SchemaNormalizer
+ * @returns {*} Cell value or null
+ */
+SharedUtils.getRowValue = function(row, headers, targetColumn, sheetType) {
+  var idx = SharedUtils.findColumnIndex(headers, targetColumn, sheetType);
+  if (idx > -1 && idx < row.length) {
+    return row[idx];
+  }
+  return null;
+};
+
+/**
+ * Build a robust header map with fuzzy matching
+ * @param {Array} headers - Array of header names from sheet
+ * @param {string} sheetType - Sheet type (PROSPECTS, OUTREACH, etc)
+ * @param {Array} requiredFields - Optional array of required field names
+ * @returns {Object} Map of canonical names to column indices
+ */
+SharedUtils.buildFuzzyHeaderMap = function(headers, sheetType, requiredFields) {
+  var map = {};
+  var fields = requiredFields || [];
+  
+  // Get canonical field names from schema if available
+  var schemaNormalizer = SharedUtils.getSchemaNormalizer();
+  var schema = schemaNormalizer && schemaNormalizer.SCHEMA ? 
+    schemaNormalizer.SCHEMA[sheetType] : null;
+  
+  // Add all required fields to the map
+  fields.forEach(function(field) {
+    var idx = SharedUtils.findColumnIndex(headers, field, sheetType);
+    if (idx > -1) {
+      var canonical = field;
+      if (schema && schema[field]) {
+        canonical = schema[field].header || field;
+      }
+      map[SharedUtils.normalizeHeader(canonical)] = idx;
+      map[SharedUtils.normalizeHeader(field)] = idx;
+      map[field] = idx;
+    }
+  });
+  
+  return map;
 };
 
 /**

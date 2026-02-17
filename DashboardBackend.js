@@ -207,6 +207,8 @@ function crmGateway(payload) {
         return getRecentWins();
       case 'GET_VALIDATION_LISTS':
         return getValidationListsForDashboard();
+      case 'GET_PROSPECT_DETAILS':
+        return getProspectDetails(data.companyId);
       default:
         console.warn('Unknown CRM Gateway action:', action);
         return { success: false, error: 'Unknown action: ' + action, data: null };
@@ -426,6 +428,162 @@ function getRecentWins() {
       success: false, 
       error: e.message,
       data: []
+    };
+  }
+}
+
+/**
+ * GET_PROSPECT_DETAILS - Returns detailed prospect info with outreach history
+ * Includes contact info, activity timeline, and all outreach records
+ * @param {string} companyId - Company ID to look up
+ * @returns {Object} Prospect details with outreach history
+ */
+function getProspectDetails(companyId) {
+  try {
+    if (!companyId) {
+      return { success: false, error: 'Missing companyId', data: null };
+    }
+    
+    console.log('getProspectDetails: Looking up companyId:', companyId);
+    
+    // Get prospect data
+    var prospectCols = SharedUtils._getHeaders ? SharedUtils._getHeaders('PROSPECTS', [
+      'companyId', 'companyName', 'address', 'city', 'zipCode', 'industry',
+      'contactStatus', 'lastOutcome', 'lastOutreachDate', 'daysSinceLastContact',
+      'nextStepsDueDate', 'priorityScore', 'urgencyScore', 'urgencyBand', 'totals'
+    ]) : ['Company ID', 'Company Name', 'Address', 'City', 'Zip Code', 'Industry', 
+           'Contact Status', 'Last Outcome', 'Last Outreach Date', 'Days Since Last Contact',
+           'Next Steps Due Date', 'Priority Score', 'Urgency Score', 'UrgencyBand', 'Totals'];
+    
+    var prospects = SharedUtils.getSafeSheetData(CONFIG.SHEETS.PROSPECTS, prospectCols);
+    
+    // Find matching prospect
+    var prospect = null;
+    var normalizedCompanyId = companyId.toString().toLowerCase().trim();
+    
+    for (var i = 0; i < prospects.length; i++) {
+      var p = prospects[i];
+      var pId = (p.companyid || p.companyId || p['company id'] || '').toString().toLowerCase().trim();
+      if (pId === normalizedCompanyId) {
+        prospect = p;
+        break;
+      }
+    }
+    
+    if (!prospect) {
+      // Try by company name if ID not found
+      for (var j = 0; j < prospects.length; j++) {
+        var p2 = prospects[j];
+        var pName = (p2.companyname || p2.companyName || p2['company name'] || '').toString().toLowerCase().trim();
+        if (pName === normalizedCompanyId) {
+          prospect = p2;
+          break;
+        }
+      }
+    }
+    
+    if (!prospect) {
+      return { success: false, error: 'Prospect not found: ' + companyId, data: null };
+    }
+    
+    // Get outreach history for this prospect
+    var outreachCols = ['Outreach ID', 'Company ID', 'Company', 'Visit Date', 'Outcome', 
+                        'Stage', 'Status', 'Next Visit Date', 'Notes', 'Contact Type', 'Owner'];
+    var outreach = SharedUtils.getSafeSheetData(CONFIG.SHEETS.OUTREACH, outreachCols);
+    
+    // Filter to this company's outreach
+    var outreachHistory = [];
+    for (var k = 0; k < outreach.length; k++) {
+      var o = outreach[k];
+      var oCompId = (o.companyid || o.companyId || o['company id'] || '').toString().toLowerCase().trim();
+      var oCompName = (o.company || o.companyname || o['company'] || '').toString().toLowerCase().trim();
+      
+      if (oCompId === normalizedCompanyId || oCompName === normalizedCompanyId) {
+        outreachHistory.push({
+          outreachId: o.outreachid || o.outreachId || o['outreach id'] || '',
+          visitDate: o.visitdate || o.visitDate || o['visit date'] || '',
+          outcome: o.outcome || '',
+          stage: o.stage || '',
+          status: o.status || '',
+          nextVisitDate: o.nextvisitdate || o.nextVisitDate || o['next visit date'] || '',
+          notes: o.notes || '',
+          contactType: o.contacttype || o.contactType || o['contact type'] || 'Visit',
+          owner: o.owner || ''
+        });
+      }
+    }
+    
+    // Sort by date descending (most recent first)
+    outreachHistory.sort(function(a, b) {
+      var dateA = new Date(a.visitDate || 0);
+      var dateB = new Date(b.visitDate || 0);
+      return dateB - dateA;
+    });
+    
+    // Calculate summary stats
+    var totalOutreach = outreachHistory.length;
+    var wonCount = outreachHistory.filter(function(o) {
+      var outcome = (o.outcome || '').toString().toLowerCase();
+      return outcome.includes('won') || outcome.includes('account won');
+    }).length;
+    var warmCount = outreachHistory.filter(function(o) {
+      var outcome = (o.outcome || '').toString().toLowerCase();
+      return outcome.includes('warm') || outcome.includes('interested');
+    }).length;
+    
+    // Build activity timeline
+    var timeline = [];
+    for (var m = 0; m < Math.min(outreachHistory.length, 10); m++) {
+      var item = outreachHistory[m];
+      timeline.push({
+        date: item.visitDate,
+        type: item.contactType || 'Visit',
+        outcome: item.outcome,
+        notes: item.notes ? (item.notes.substring(0, 100) + (item.notes.length > 100 ? '...' : '')) : '',
+        nextDate: item.nextVisitDate
+      });
+    }
+    
+    var result = {
+      success: true,
+      data: {
+        prospect: {
+          companyId: prospect.companyid || prospect.companyId || prospect['company id'] || '',
+          companyName: prospect.companyname || prospect.companyName || prospect['company name'] || 'Unknown',
+          address: prospect.address || prospect.address || '',
+          city: prospect.city || '',
+          zipCode: prospect.zipcode || prospect.zipCode || prospect['zip code'] || '',
+          industry: prospect.industry || '',
+          contactStatus: prospect.contactstatus || prospect.contactStatus || prospect['contact status'] || '',
+          lastOutcome: prospect.lastoutcome || prospect.lastOutcome || prospect['last outcome'] || '',
+          lastOutreachDate: prospect.lastoutreachdate || prospect.lastOutreachDate || prospect['last outreach date'] || '',
+          daysSinceContact: prospect.dayssincelastcontact || prospect.daysSinceLastContact || prospect['days since last contact'] || 0,
+          nextStepsDueDate: prospect.nextstepsduedate || prospect.nextStepsDueDate || prospect['next steps due date'] || '',
+          priorityScore: prospect.priorityscore || prospect.priorityScore || prospect['priority score'] || 0,
+          urgencyScore: prospect.urgencyscore || prospect.urgencyScore || prospect['urgency score'] || 0,
+          urgencyBand: prospect.urgencyband || prospect.urgencyBand || prospect['urgency band'] || '',
+          totals: prospect.totals || 0
+        },
+        outreachHistory: outreachHistory,
+        timeline: timeline,
+        stats: {
+          totalOutreach: totalOutreach,
+          wonCount: wonCount,
+          warmCount: warmCount,
+          lastContactDate: outreachHistory.length > 0 ? outreachHistory[0].visitDate : ''
+        }
+      }
+    };
+    
+    console.log('getProspectDetails: Found', totalOutreach, 'outreach records for', prospect.companyName || companyId);
+    
+    return result;
+  } catch (e) {
+    console.error('Error in getProspectDetails:', e);
+    return { 
+      success: false, 
+      error: e.message,
+      data: null
     };
   }
 }
@@ -688,14 +846,14 @@ function getCalendarEvents(startDate, endDate) {
         if (outreachSheet) {
           var lastRow = outreachSheet.getLastRow();
           if (lastRow > 1) {
-            var headers = outreachSheet.getRange(1, 1, 1, outreachSheet.getLastColumn()).getValues()[0];
+            var headers = outreachSheet.getRange(1, 1, 1, outreachSheet.getLastColumn()).getValues()[0].map(function(h) { return String(h).trim(); });
             var dataRows = outreachSheet.getRange(2, 1, Math.min(lastRow - 1, 500), headers.length).getValues();
             
-            var companyIdx = headers.indexOf('Company');
-            var dateIdx = headers.indexOf('Visit Date');
-            var outcomeIdx = headers.indexOf('Outcome');
-            var nextVisitIdx = headers.indexOf('Next Visit Date');
-            var typeIdx = headers.indexOf('Contact Type');
+            var companyIdx = SharedUtils.findColumnIndex(headers, 'Company', 'OUTREACH');
+            var dateIdx = SharedUtils.findColumnIndex(headers, 'Visit Date', 'OUTREACH');
+            var outcomeIdx = SharedUtils.findColumnIndex(headers, 'Outcome', 'OUTREACH');
+            var nextVisitIdx = SharedUtils.findColumnIndex(headers, 'Next Visit Date', 'OUTREACH');
+            var typeIdx = SharedUtils.findColumnIndex(headers, 'Contact Type', 'OUTREACH');
 
             for (var i = 0; i < dataRows.length; i++) {
               var row = dataRows[i];

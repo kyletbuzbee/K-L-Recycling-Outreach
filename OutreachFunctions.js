@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Outreach Functions
  * Handles Logging, Duplicate Checks, and History Retrieval.
  */
@@ -271,8 +271,18 @@ function processOutreachSubmission(data) {
  */
 function fetchOutreachHistory(startDateStr, endDateStr, options) {
   options = options || {};
-  var maxRecords = options.maxRecords || 1000; // Default limit to prevent memory issues
+  var maxRecords = options.maxRecords || 1000;
   var includeAllColumns = options.includeAllColumns || false;
+  
+  // Default to last 90 days if no dates provided
+  if (!startDateStr || !endDateStr) {
+    var today = new Date();
+    var ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(today.getDate() - 90);
+    startDateStr = startDateStr || ninetyDaysAgo.toISOString().split('T')[0];
+    endDateStr = endDateStr || today.toISOString().split('T')[0];
+    console.log('fetchOutreachHistory: Using default dates', startDateStr, 'to', endDateStr);
+  }
 
   // Validate date parameters
   var validation = validateParameters({ startDateStr: startDateStr, endDateStr: endDateStr }, ['startDateStr', 'endDateStr'], {
@@ -788,7 +798,7 @@ function getContactDetails(companyName) {
     }
     
     var company = companyName.trim();
-    var contactsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Contacts');
+    var contactsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG.SHEETS.CONTACTS);
     
     if (!contactsSheet || contactsSheet.getLastRow() <= 1) {
       return null;

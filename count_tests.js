@@ -19,8 +19,13 @@ function countTests() {
   
   testFiles.forEach(function(file) {
     try {
-      var count = Object.keys(eval(file.suite)).filter(function(key) {
-        return typeof eval(file.suite)[key] === 'function';
+      var suite = this[file.suite];
+      if (!suite) {
+        console.error('Test suite not found: ' + file.suite);
+        return;
+      }
+      var count = Object.keys(suite).filter(function(key) {
+        return typeof suite[key] === 'function';
       }).length;
       
       summary.push({

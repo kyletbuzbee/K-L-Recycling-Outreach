@@ -41,17 +41,39 @@
         // Load report on page load
         google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onFailure).generateProfessionalReport(new Date(new Date().getFullYear(), new Date().getMonth(), 1), new Date());
         
+        function sanitizeHtml(html) {
+          if (!html || typeof html !== 'string') return '';
+          // Remove script tags and event handlers
+          html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+          html = html.replace(/\s+on\w+\s*=\s*(['"])[^'"]*\1/gi, '');
+          html = html.replace(/href\s*=\s*(['"])\s*javascript:[^'"]*\1/gi, 'href="#"');
+          return html;
+        }
+
         function loadReport() {
-            document.getElementById('report-content').innerHTML = '<div class="loading">Loading report data...</div>';
+            var reportContent = document.getElementById('report-content');
+            reportContent.innerHTML = '';
+            var loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading';
+            loadingDiv.textContent = 'Loading report data...';
+            reportContent.appendChild(loadingDiv);
             google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onFailure).generateProfessionalReport(new Date(new Date().getFullYear(), new Date().getMonth(), 1), new Date());
         }
         
         function onSuccess(html) {
-            document.getElementById('report-content').innerHTML = html;
+            document.getElementById('report-content').innerHTML = sanitizeHtml(html);
         }
         
         function onFailure(error) {
-            document.getElementById('report-content').innerHTML = '<div class="error"><strong>Error loading report:</strong> ' + error.message + '</div>';
+            var reportContent = document.getElementById('report-content');
+            reportContent.innerHTML = '';
+            var errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            var strong = document.createElement('strong');
+            strong.textContent = 'Error loading report:';
+            errorDiv.appendChild(strong);
+            errorDiv.appendChild(document.createTextNode(' ' + error.message));
+            reportContent.appendChild(errorDiv);
         }
     </script>
 </body>

@@ -183,24 +183,37 @@ function syncCRMLogic(ss) {
   logger.log('Starting CRM sync logic');
   timer.start();
   
-  var prospectsSheet = ss.getSheetByName('Prospects');
-  var outreachSheet = ss.getSheetByName('Outreach');
-  var settingsSheet = ss.getSheetByName('Settings');
+  var prospectsSheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
+  var outreachSheet = ss.getSheetByName(CONFIG.SHEETS.OUTREACH);
+  var settingsSheet = ss.getSheetByName(CONFIG.SHEETS.SETTINGS);
 
   if (!prospectsSheet || !outreachSheet || !settingsSheet) {
     throw new Error('CRITICAL: Missing required sheets (Prospects, Outreach, Settings).');
   }
 
-  // --- HELPER: Dynamic Column Finder ---
-  function getColLetter(sheet, headerName) {
+  // --- HELPER: Dynamic Column Finder (Optimized with Caching) ---
+  // Cache headers and last row to avoid repeated sheet queries
+  var _headerCache = {};
+  
+  function getHeaders(sheet) {
+    var sheetName = sheet.getName();
+    if (_headerCache[sheetName]) {
+      return _headerCache[sheetName];
+    }
     var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    var index = headers.indexOf(headerName);
+    _headerCache[sheetName] = headers;
+    return headers;
+  }
+  
+  function getColLetter(sheet, headerName) {
+    var headers = getHeaders(sheet);
+    var index = SharedUtils.findColumnIndex(headers, headerName, sheet.getName().toUpperCase());
     return index === -1 ? null : columnToLetter(index + 1);
   }
 
   function getColIndex(sheet, headerName) {
-    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    return headers.indexOf(headerName) + 1;
+    var headers = getHeaders(sheet);
+    return SharedUtils.findColumnIndex(headers, headerName, sheet.getName().toUpperCase()) + 1;
   }
 
   function columnToLetter(column) {
@@ -311,20 +324,20 @@ function syncCRMLogic(ss) {
   // --- STEP 3: APPLY FORMULAS (Corrected Logic) ---
   
   // 1. Last Outcome
-  var f_LastOutcome = '=XLOOKUP(' + p_ID + '2, Outreach!$' + o_ID + ':$' + o_ID + ', Outreach!$' + o_Outcome + ':$' + o_Outcome + ', "Not Contacted", 0, -1)';
+  var f_LastOutcome = `=XLOOKUP(${p_ID}2, ${CONFIG.SHEETS.OUTREACH}!$${o_ID}:$${o_ID}, ${CONFIG.SHEETS.OUTREACH}!$${o_Outcome}:$${o_Outcome}, "Not Contacted", 0, -1)`;
   
   // 2. Last Outreach Date
-  var f_LastDate = '=XLOOKUP(' + p_ID + '2, Outreach!$' + o_ID + ':$' + o_ID + ', Outreach!$' + o_Date + ':$' + o_Date + ', "", 0, -1)';
+  var f_LastDate = `=XLOOKUP(${p_ID}2, ${CONFIG.SHEETS.OUTREACH}!$${o_ID}:$${o_ID}, ${CONFIG.SHEETS.OUTREACH}!$${o_Date}:$${o_Date}, "", 0, -1)`;
   
   // 3. Days Since
   var f_DaysSince = '=IF(' + p_LastDate + '2="", "", TODAY() - ' + p_LastDate + '2)';
   
   // 4. Contact Status (FIXED)
   // Removed hardcoded "Prospect". Uses XLOOKUP to find "Not Contacted" -> "Cold" in Settings.
-  var f_Status = '=IFERROR(XLOOKUP(' + p_LastOutcome + '2, Settings!$' + s_Key + ':$' + s_Key + ', Settings!$' + s_Status + ':$' + s_Status + '), "Cold")';
+  var f_Status = `=IFERROR(XLOOKUP(${p_LastOutcome}2, ${CONFIG.SHEETS.SETTINGS}!$${s_Key}:$${s_Key}, ${CONFIG.SHEETS.SETTINGS}!$${s_Status}:$${s_Status}), "Cold")`;
 
   // 5. Next Steps Due Date
-  var f_NextDate = '=IF(' + p_LastDate + '2="", TODAY()+30, ' + p_LastDate + '2 + IFERROR(XLOOKUP(' + p_LastOutcome + '2, Settings!$' + s_Key + ':$' + s_Key + ', Settings!$' + s_Days + ':$' + s_Days + '), 14))';
+  var f_NextDate = `=IF(${p_LastDate}2="", TODAY()+30, ${p_LastDate}2 + IFERROR(XLOOKUP(${p_LastOutcome}2, ${CONFIG.SHEETS.SETTINGS}!$${s_Key}:$${s_Key}, ${CONFIG.SHEETS.SETTINGS}!$${s_Days}:$${s_Days}), 14))`;
 
   // 6. Countdown
   var f_Countdown = '=IF(' + p_NextDate + '2="", "", ' + p_NextDate + '2 - TODAY())';
@@ -356,9 +369,9 @@ function processAccountWon(ss) {
   logger.log('Starting account won processing');
   timer.start();
   
-  var outreachSheet = ss.getSheetByName('Outreach');
-  var accountsSheet = ss.getSheetByName('Accounts');
-  var prospectsSheet = ss.getSheetByName('Prospects');
+  var outreachSheet = ss.getSheetByName(CONFIG.SHEETS.OUTREACH);
+  var accountsSheet = ss.getSheetByName(CONFIG.SHEETS.ACCOUNTS);
+  var prospectsSheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
   
   if (!accountsSheet) {
     logger.warn('Accounts sheet not found, skipping account won processing');
@@ -366,18 +379,19 @@ function processAccountWon(ss) {
   }
 
   var oData = outreachSheet.getDataRange().getValues();
-  var oHeaders = oData.shift();
+  var oHeaders = oData.shift().map(function(h) { return String(h).trim(); });
   
-  var idxOutcome = oHeaders.indexOf('Outcome');
-  var idxCompID = oHeaders.indexOf('Company ID');
-  var idxCompName = oHeaders.indexOf('Company');
-  var idxNotes = oHeaders.indexOf('Notes');
-  var idxDate = oHeaders.indexOf('Visit Date');
+  var idxOutcome = SharedUtils.findColumnIndex(oHeaders, 'Outcome', 'OUTREACH');
+  var idxCompID = SharedUtils.findColumnIndex(oHeaders, 'Company ID', 'OUTREACH');
+  var idxCompName = SharedUtils.findColumnIndex(oHeaders, 'Company', 'OUTREACH');
+  var idxNotes = SharedUtils.findColumnIndex(oHeaders, 'Notes', 'OUTREACH');
+  var idxDate = SharedUtils.findColumnIndex(oHeaders, 'Visit Date', 'OUTREACH');
 
   // Get existing Account IDs to prevent duplicates
   var accData = accountsSheet.getDataRange().getValues();
-  var accHeaders = accData.shift(); // Remove header
-  var accIdIdx = accHeaders.indexOf('Company ID') > -1 ? accHeaders.indexOf('Company ID') : 0; // Default to col A if missing
+  var accHeaders = accData.shift().map(function(h) { return String(h).trim(); }); // Remove header
+  var accIdIdx = SharedUtils.findColumnIndex(accHeaders, 'Company ID', 'ACCOUNTS');
+  if (accIdIdx === -1) accIdIdx = 0; // Default to col A if missing
   var existingIDs = accData.map(function(r) { return r[accIdIdx]; });
 
   var newAccounts = [];
@@ -437,15 +451,20 @@ function processAccountWon(ss) {
         newAccounts = 0;
       }
     } else {
-      // Fallback: individual appendRow operations
-      logger.log('BatchProcessor not available, using individual appendRow operations');
+      // Fallback: use setValues for batch append
+      logger.log('BatchProcessor not available, using setValues for batch append');
       
       var lock = LockService.getScriptLock();
       if (lock.tryLock(30000)) {
         try {
-          newAccounts.forEach(function(newRow) {
-            accountsSheet.appendRow(newRow);
-          });
+          if (newAccounts.length > 0) {
+              var lastRow = accountsSheet.getLastRow();
+              // Ensure the range is correctly sized based on the number of columns in the first new account row
+              var numColumns = newAccounts[0] ? newAccounts[0].length : 0;
+              if (numColumns > 0) {
+                accountsSheet.getRange(lastRow + 1, 1, newAccounts.length, numColumns).setValues(newAccounts);
+              }
+          }
           logger.log('Successfully added ' + newAccounts.length + ' accounts');
         } finally {
           lock.releaseLock();

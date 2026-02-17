@@ -65,7 +65,7 @@ function findStaleProspects() {
  */
 function getStaleProspectThreshold(ss) {
   try {
-    var settingsSheet = ss.getSheetByName('Settings');
+    var settingsSheet = ss.getSheetByName(CONFIG.SHEETS.SETTINGS);
     if (!settingsSheet) return 60;
     
     var settingsData = settingsSheet.getDataRange().getValues();
@@ -100,7 +100,7 @@ function getStaleProspectThreshold(ss) {
  * @returns {Array} Array of stale prospect objects
  */
 function getStaleProspectsData(ss, staleDays) {
-  var prospectsSheet = ss.getSheetByName('Prospects');
+  var prospectsSheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
   if (!prospectsSheet) {
     throw new Error('Prospects sheet not found');
   }
@@ -108,13 +108,13 @@ function getStaleProspectsData(ss, staleDays) {
   var data = prospectsSheet.getDataRange().getValues();
   if (data.length < 2) return [];
   
-  var headers = data.shift();
+  var headers = data.shift().map(function(h) { return String(h).trim(); });
   
-  // Find column indices
-  var companyIdx = headers.indexOf('Company Name');
-  var daysSinceIdx = headers.indexOf('Days Since Last Contact');
-  var lastOutcomeIdx = headers.indexOf('Last Outcome');
-  var statusIdx = headers.indexOf('Contact Status');
+  // Find column indices using fuzzy matching
+  var companyIdx = SharedUtils.findColumnIndex(headers, 'Company Name', 'PROSPECTS');
+  var daysSinceIdx = SharedUtils.findColumnIndex(headers, 'Days Since Last Contact', 'PROSPECTS');
+  var lastOutcomeIdx = SharedUtils.findColumnIndex(headers, 'Last Outcome', 'PROSPECTS');
+  var statusIdx = SharedUtils.findColumnIndex(headers, 'Contact Status', 'PROSPECTS');
   
   if (companyIdx === -1 || daysSinceIdx === -1) {
     throw new Error('Required columns not found: Company Name, Days Since Last Contact');
@@ -168,13 +168,13 @@ function createStaleProspectsSheet() {
     }
     
     // Delete existing stale prospects sheet if exists
-    var existingSheet = ss.getSheetByName('Stale Prospects');
+    var existingSheet = ss.getSheetByName(CONFIG.SHEETS.STALE_PROSPECTS);
     if (existingSheet) {
       ss.deleteSheet(existingSheet);
     }
     
     // Create new sheet
-    var newSheet = ss.insertSheet('Stale Prospects');
+    var newSheet = ss.insertSheet(CONFIG.SHEETS.STALE_PROSPECTS);
     
     // Add headers
     var headers = ['Company Name', 'Days Since Contact', 'Last Outcome', 'Status', 'Priority', 'Action Needed'];
@@ -196,19 +196,29 @@ function createStaleProspectsSheet() {
     
     newSheet.getRange(2, 1, data.length, headers.length).setValues(data);
     
-    // Format priority column with colors
+    // Format priority column with colors - batch operation
     var priorityCol = 5;
+    var priorityColors = [];
     for (var i = 0; i < data.length; i++) {
       var priority = data[i][4];
-      var cell = newSheet.getRange(i + 2, priorityCol);
-      
+      var bg = '#2ecc71';
+      var font = 'white';
       if (priority === 'HIGH') {
-        cell.setBackground('#e74c3c').setFontColor('white');
+        bg = '#e74c3c';
       } else if (priority === 'MEDIUM') {
-        cell.setBackground('#f39c12');
-      } else {
-        cell.setBackground('#2ecc71').setFontColor('white');
+        bg = '#f39c12';
+        font = 'black';
       }
+      priorityColors.push([bg, font]);
+    }
+    
+    // Apply colors in batch using getRange
+    if (priorityColors.length > 0) {
+      var priorityRange = newSheet.getRange(2, priorityCol, data.length, 1);
+      priorityColors.forEach(function(colors, idx) {
+        var cell = priorityRange.getCell(idx + 1, 1);
+        cell.setBackground(colors[0]).setFontColor(colors[1]);
+      });
     }
     
     // Auto-resize columns

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Performance and Timeout Prevention Utilities
  * Strategies to prevent Google Apps Script timeout errors and improve reliability
  */
@@ -268,7 +268,11 @@ var CacheManager = (function() {
   }
 
   function generateCacheKey(sheetName, requiredColumns, options) {
-    var key = sheetName + '_' + requiredColumns.join('_');
+    // Use a hash of columns to avoid key length issues
+    var colHash = requiredColumns.map(function(c) { 
+      return String(c).replace(/[^a-zA-Z0-9]/g, '').substring(0, 4); 
+    }).join('');
+    var key = sheetName + '_' + colHash;
     if (options && options.cacheKeySuffix) {
       key += '_' + options.cacheKeySuffix;
     }

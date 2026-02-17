@@ -330,13 +330,19 @@ function updateProspectAfterVisit(companyId, companyName, outcome, status, activ
  * @return {Object} Match result with match, matchType, and confidence
  */
 function fuzzyMatchCompany(outreachData, prospectsData) {
-  var outreachName = (outreachData.company || outreachData.companyName || '').toString().toLowerCase().trim();
-  var outreachId = (outreachData.companyId || '').toString().trim();
+  if (!outreachData) {
+    console.warn('fuzzyMatchCompany: outreachData is undefined');
+    return { match: null, matchType: 'NONE', confidence: 0 };
+  }
+  
+  var outreachName = (outreachData.company || outreachData.companyName || outreachData['company name'] || '').toString().toLowerCase().trim();
+  var outreachId = (outreachData.companyId || outreachData.companyId || outreachData['company id'] || '').toString().trim();
   
   // Try exact ID match first (most reliable)
   if (outreachId) {
     var idMatch = prospectsData.find(function(p) {
-      var prospectId = (p['company id'] || '').toString().trim();
+      if (!p) return false;
+      var prospectId = (p.companyid || p.companyId || p['company id'] || p['companyId'] || '').toString().trim();
       return prospectId === outreachId;
     });
     if (idMatch) {
@@ -407,31 +413,39 @@ function calculateStringSimilarity(str1, str2) {
  * @return {number} Levenshtein distance
  */
 function levenshteinDistance(str1, str2) {
-  var matrix = [];
-  
-  for (var i = 0; i <= str1.length; i++) {
-    matrix[i] = [i];
-  }
-  
-  for (var j = 0; j <= str2.length; j++) {
-    matrix[0][j] = j;
-  }
-  
-  for (var i = 1; i <= str1.length; i++) {
-    for (var j = 1; j <= str2.length; j++) {
-      if (str1.charAt(i - 1) === str2.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j - 1] + 1
-        );
+  try {
+    str1 = str1 || '';
+    str2 = str2 || '';
+    
+    var matrix = [];
+    
+    for (var i = 0; i <= str1.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (var j = 0; j <= str2.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (var i = 1; i <= str1.length; i++) {
+      for (var j = 1; j <= str2.length; j++) {
+        if (str1.charAt(i - 1) === str2.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j - 1] + 1
+          );
+        }
       }
     }
+    
+    return matrix[str1.length][str2.length];
+  } catch (e) {
+    console.error('levenshteinDistance error:', e.message);
+    return 0;
   }
-  
-  return matrix[str1.length][str2.length];
 }
 
 /**
@@ -705,71 +719,76 @@ function createNewProspect(companyId, companyName, outcome, status, activityType
  * Uses batch processing (getValues/setValues) for performance.
  */
 function runPreciseIndustryMapper() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const prospectSheet = ss.getSheetByName('Prospects');
-  if (!prospectSheet) {
-    console.error('Prospects sheet not found');
-    return;
-  }
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const prospectSheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
+    if (!prospectSheet) {
+      console.error('Prospects sheet not found');
+      return;
+    }
 
-  const SMART_MAP = [
-    { industry: "Junk Removal", keywords: ["junk", "haul", "cleanout", "scrap removal", "demo guys"] },
-    { industry: "Welding", keywords: ["welding", "welder", "braze", "arc n spark", "weld"] },
-    { industry: "Metal Fabrication", keywords: ["metal", "steel", "fabrication", "fab", "iron", "machine shop", "cnc", "tooling", "ornamental", "wire", "alloy"] },
-    { industry: "HVAC", keywords: ["hvac", "air conditioning", "heating", "cooling", "furnace", "air condition", "ac ", "a/c"] },
-    { industry: "Automotive", keywords: ["auto", "collision", "body shop", "tire", "brake", "transmission", "radiator", "diesel", "motors", "car care", "alignment", "truck repair"] },
-    { industry: "Roofing", keywords: ["roof"] },
-    { industry: "Gutter", keywords: ["gutter", "seamless"] },
-    { industry: "Plumbing", keywords: ["plumbing", "plumber", "septic", "rooter", "drain"] },
-    { industry: "Electrical", keywords: ["electric", "lighting"] },
-    { industry: "Appliance", keywords: ["appliance", "washer", "dryer", "refrigerator"] },
-    { industry: "Fence", keywords: ["fence", "fencing"] },
-    { industry: "Construction", keywords: ["construction", "builder", "contractor", "remodeling", "excavation", "dirt"] }
-  ];
+    const SMART_MAP = [
+      { industry: "Junk Removal", keywords: ["junk", "haul", "cleanout", "scrap removal", "demo guys"] },
+      { industry: "Welding", keywords: ["welding", "welder", "braze", "arc n spark", "weld"] },
+      { industry: "Metal Fabrication", keywords: ["metal", "steel", "fabrication", "fab", "iron", "machine shop", "cnc", "tooling", "ornamental", "wire", "alloy"] },
+      { industry: "HVAC", keywords: ["hvac", "air conditioning", "heating", "cooling", "furnace", "air condition", "ac ", "a/c"] },
+      { industry: "Automotive", keywords: ["auto", "collision", "body shop", "tire", "brake", "transmission", "radiator", "diesel", "motors", "car care", "alignment", "truck repair"] },
+      { industry: "Roofing", keywords: ["roof"] },
+      { industry: "Gutter", keywords: ["gutter", "seamless"] },
+      { industry: "Plumbing", keywords: ["plumbing", "plumber", "septic", "rooter", "drain"] },
+      { industry: "Electrical", keywords: ["electric", "lighting"] },
+      { industry: "Appliance", keywords: ["appliance", "washer", "dryer", "refrigerator"] },
+      { industry: "Fence", keywords: ["fence", "fencing"] },
+      { industry: "Construction", keywords: ["construction", "builder", "contractor", "remodeling", "excavation", "dirt"] }
+    ];
 
-  const range = prospectSheet.getDataRange();
-  const data = range.getValues();
-  const headers = data[0];
-  const nameIdx = headers.indexOf('Company Name');
-  const industryIdx = headers.indexOf('Industry');
+    const range = prospectSheet.getDataRange();
+    const data = range.getValues();
+    const headers = data[0].map(function(h) { return String(h).trim(); });
+    const nameIdx = SharedUtils.findColumnIndex(headers, 'Company Name', 'PROSPECTS');
+    const industryIdx = SharedUtils.findColumnIndex(headers, 'Industry', 'PROSPECTS');
 
-  if (nameIdx === -1 || industryIdx === -1) {
-    console.error('Required columns not found: Company Name or Industry');
-    return;
-  }
+    if (nameIdx === -1 || industryIdx === -1) {
+      console.error('Required columns not found: Company Name or Industry');
+      return;
+    }
 
-  let updateCount = 0;
+    let updateCount = 0;
 
-  for (let i = 1; i < data.length; i++) {
-    const companyName = String(data[i][nameIdx]).toLowerCase();
-    const currentIndustry = String(data[i][industryIdx]);
-    let matchFound = null;
+    for (let i = 1; i < data.length; i++) {
+      const companyName = String(data[i][nameIdx]).toLowerCase();
+      const currentIndustry = String(data[i][industryIdx]);
+      let matchFound = null;
 
-    for (const rule of SMART_MAP) {
-      if (rule.keywords.some(kw => companyName.includes(kw))) {
-        matchFound = rule.industry;
-        break;
+      for (const rule of SMART_MAP) {
+        if (rule.keywords.some(kw => companyName.includes(kw))) {
+          matchFound = rule.industry;
+          break;
+        }
+      }
+
+      if (matchFound) {
+        const isWeak = ["Other", "Retail", "Construction", "", "0"].includes(currentIndustry);
+        const isUpgrade = (currentIndustry === "Construction" && ["Roofing", "Gutter", "Metal Fabrication"].includes(matchFound));
+        
+        if ((isWeak || isUpgrade) && currentIndustry !== matchFound) {
+          data[i][industryIdx] = matchFound;
+          updateCount++;
+        }
       }
     }
 
-    if (matchFound) {
-      const isWeak = ["Other", "Retail", "Construction", "", "0"].includes(currentIndustry);
-      const isUpgrade = (currentIndustry === "Construction" && ["Roofing", "Gutter", "Metal Fabrication"].includes(matchFound));
-      
-      if ((isWeak || isUpgrade) && currentIndustry !== matchFound) {
-        data[i][industryIdx] = matchFound;
-        updateCount++;
-      }
+    if (updateCount > 0) {
+      range.setValues(data);
+      console.log("Updated " + updateCount + " industries.");
+      SpreadsheetApp.getActiveSpreadsheet().toast("Updated " + updateCount + " industry classifications.", "Industry Mapper", 5);
+    } else {
+      console.log("No industries needed updating.");
+      SpreadsheetApp.getActiveSpreadsheet().toast("No industries needed updating.", "Industry Mapper", 5);
     }
-  }
-
-  if (updateCount > 0) {
-    range.setValues(data);
-    console.log("Updated " + updateCount + " industries.");
-    SpreadsheetApp.getActiveSpreadsheet().toast("Updated " + updateCount + " industry classifications.", "Industry Mapper", 5);
-  } else {
-    console.log("No industries needed updating.");
-    SpreadsheetApp.getActiveSpreadsheet().toast("No industries needed updating.", "Industry Mapper", 5);
+  } catch (e) {
+    console.error('runPreciseIndustryMapper error:', e.message);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Error: " + e.message, "Industry Mapper", 5);
   }
 }
 
@@ -780,95 +799,100 @@ function runPreciseIndustryMapper() {
  * Only processes rows where Company ID is missing or empty.
  */
 function normalizeAndGenerateIDs() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const prospectSheet = ss.getSheetByName('Prospects');
-  if (!prospectSheet) {
-    console.error('Prospects sheet not found');
-    return;
-  }
-
-  const range = prospectSheet.getDataRange();
-  const data = range.getValues();
-  const headers = data[0];
-  const companyIdIdx = headers.indexOf('Company ID');
-  const companyNameIdx = headers.indexOf('Company Name');
-
-  if (companyIdIdx === -1 || companyNameIdx === -1) {
-    console.error('Required columns not found: Company ID or Company Name');
-    return;
-  }
-
-  // Track used IDs to prevent duplicates
-  const usedIds = new Set();
-  
-  // First pass: collect all existing IDs
-  for (let i = 1; i < data.length; i++) {
-    const existingId = String(data[i][companyIdIdx]).trim();
-    if (existingId && existingId.startsWith('CID-')) {
-      usedIds.add(existingId);
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const prospectSheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
+    if (!prospectSheet) {
+      console.error('Prospects sheet not found');
+      return;
     }
-  }
 
-  let updateCount = 0;
-  const idCounters = {}; // Track sequence numbers per prefix
+    const range = prospectSheet.getDataRange();
+    const data = range.getValues();
+    const headers = data[0].map(function(h) { return String(h).trim(); });
+    const companyIdIdx = SharedUtils.findColumnIndex(headers, 'Company ID', 'PROSPECTS');
+    const companyNameIdx = SharedUtils.findColumnIndex(headers, 'Company Name', 'PROSPECTS');
 
-  for (let i = 1; i < data.length; i++) {
-    const currentId = String(data[i][companyIdIdx]).trim();
-    const companyName = String(data[i][companyNameIdx]).trim();
+    if (companyIdIdx === -1 || companyNameIdx === -1) {
+      console.error('Required columns not found: Company ID or Company Name');
+      return;
+    }
+
+    // Track used IDs to prevent duplicates
+    const usedIds = new Set();
     
-    // Skip if ID already exists and is valid
-    if (currentId && currentId.startsWith('CID-')) {
-      continue;
+    // First pass: collect all existing IDs
+    for (let i = 1; i < data.length; i++) {
+      const existingId = String(data[i][companyIdIdx]).trim();
+      if (existingId && existingId.startsWith('CID-')) {
+        usedIds.add(existingId);
+      }
     }
 
-    // Skip if no company name
-    if (!companyName) {
-      continue;
+    let updateCount = 0;
+    const idCounters = {}; // Track sequence numbers per prefix
+
+    for (let i = 1; i < data.length; i++) {
+      const currentId = String(data[i][companyIdIdx]).trim();
+      const companyName = String(data[i][companyNameIdx]).trim();
+      
+      // Skip if ID already exists and is valid
+      if (currentId && currentId.startsWith('CID-')) {
+        continue;
+      }
+
+      // Skip if no company name
+      if (!companyName) {
+        continue;
+      }
+
+      // Normalize the company name
+      let normalized = companyName
+        .replace(/\b(LLC|Inc\.?|Ltd\.?|Co\.?|Corporation|Corp\.?)\b/gi, '')
+        .replace(/[^\w\s]/g, ' ') // Remove punctuation
+        .replace(/\s+/g, ' ')      // Collapse multiple spaces
+        .trim()
+        .toUpperCase();
+
+      // Get first 3 characters, padded if needed
+      let prefix = normalized.substring(0, 3).padEnd(3, 'X');
+      
+      // Initialize counter for this prefix if not exists
+      if (!(prefix in idCounters)) {
+        idCounters[prefix] = 1;
+      }
+
+      // Generate unique ID
+      let newId;
+      let attempts = 0;
+      do {
+        const sequence = String(idCounters[prefix]).padStart(3, '0');
+        newId = 'CID-' + prefix + sequence;
+        idCounters[prefix]++;
+        attempts++;
+      } while (usedIds.has(newId) && attempts < 999);
+
+      if (attempts >= 999) {
+        console.warn('Could not generate unique ID for: ' + companyName);
+        continue;
+      }
+
+      usedIds.add(newId);
+      data[i][companyIdIdx] = newId;
+      updateCount++;
     }
 
-    // Normalize the company name
-    let normalized = companyName
-      .replace(/\b(LLC|Inc\.?|Ltd\.?|Co\.?|Corporation|Corp\.?)\b/gi, '')
-      .replace(/[^\w\s]/g, ' ') // Remove punctuation
-      .replace(/\s+/g, ' ')      // Collapse multiple spaces
-      .trim()
-      .toUpperCase();
-
-    // Get first 3 characters, padded if needed
-    let prefix = normalized.substring(0, 3).padEnd(3, 'X');
-    
-    // Initialize counter for this prefix if not exists
-    if (!(prefix in idCounters)) {
-      idCounters[prefix] = 1;
+    if (updateCount > 0) {
+      range.setValues(data);
+      console.log("Generated " + updateCount + " new Company IDs.");
+      SpreadsheetApp.getActiveSpreadsheet().toast("Generated " + updateCount + " new Company IDs.", "ID Generator", 5);
+    } else {
+      console.log("No new IDs needed.");
+      SpreadsheetApp.getActiveSpreadsheet().toast("No new IDs needed - all rows have valid Company IDs.", "ID Generator", 5);
     }
-
-    // Generate unique ID
-    let newId;
-    let attempts = 0;
-    do {
-      const sequence = String(idCounters[prefix]).padStart(3, '0');
-      newId = 'CID-' + prefix + sequence;
-      idCounters[prefix]++;
-      attempts++;
-    } while (usedIds.has(newId) && attempts < 999);
-
-    if (attempts >= 999) {
-      console.warn('Could not generate unique ID for: ' + companyName);
-      continue;
-    }
-
-    usedIds.add(newId);
-    data[i][companyIdIdx] = newId;
-    updateCount++;
-  }
-
-  if (updateCount > 0) {
-    range.setValues(data);
-    console.log("Generated " + updateCount + " new Company IDs.");
-    SpreadsheetApp.getActiveSpreadsheet().toast("Generated " + updateCount + " new Company IDs.", "ID Generator", 5);
-  } else {
-    console.log("No new IDs needed.");
-    SpreadsheetApp.getActiveSpreadsheet().toast("No new IDs needed - all rows have valid Company IDs.", "ID Generator", 5);
+  } catch (e) {
+    console.error('normalizeAndGenerateIDs error:', e.message);
+    SpreadsheetApp.getActiveSpreadsheet().toast("Error: " + e.message, "ID Generator", 5);
   }
 }
 

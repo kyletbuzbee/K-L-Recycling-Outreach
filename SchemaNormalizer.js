@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Schema Normalizer - Single Source of Truth for Field Names
  * Resolves 133 schema inconsistency issues across the codebase
  * 
@@ -671,9 +671,32 @@ const SchemaNormalizer = (function() {
     }
   };
   
+  
 })();
 
-// Make available globally
+// Make available globally for Google Apps Script V8
+// In GAS, we need to attach to the global namespace differently
+(function() {
+  if (typeof globalThis !== 'undefined') {
+    globalThis.SchemaNormalizer = SchemaNormalizer;
+  }
+  if (typeof global !== 'undefined') {
+    global.SchemaNormalizer = SchemaNormalizer;
+  }
+  // In GAS V8, 'this' at top level is the global object
+  if (typeof this !== 'undefined') {
+    this.SchemaNormalizer = SchemaNormalizer;
+  }
+})();
+
+// Also try to assign directly for GAS
+try {
+  SchemaNormalizer = SchemaNormalizer;
+} catch(e) {
+  // Ignore if already defined
+}
+
+// Export for Node.js/testing
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = SchemaNormalizer;
 }

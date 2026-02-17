@@ -727,48 +727,219 @@
     }
 
     .prospects-table tbody tr:hover {
-        background: var(--bg-hover);
+        background: rgba(16, 185, 129, 0.05);
+        cursor: pointer;
     }
 
-    /* ===== Responsive Design ===== */
-    @media (max-width: 1400px) {
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-        .pipeline-container {
-            grid-template-columns: repeat(2, 1fr);
-        }
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
     }
 
-    @media (max-width: 1024px) {
-        .suite-nav {
-            width: 80px;
-        }
-        .brand span, .nav-item span {
-            display: none;
-        }
-        .nav-item {
-            justify-content: center;
-            padding: var(--spacing-md);
-        }
-        .content-split {
-            grid-template-columns: 1fr;
-        }
+    .modal-content {
+        background-color: var(--bg-card);
+        margin: 2% auto;
+        padding: 0;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-xl);
+        max-width: 600px;
+        position: relative;
+        animation: slideIn 0.3s ease-out;
     }
 
-    @media (max-width: 768px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-        }
-        .pipeline-container {
-            grid-template-columns: 1fr;
-            height: auto;
-        }
-        .prospects-toolbar {
-            flex-direction: column;
-        }
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
     }
-  </style>
+
+    .modal-close {
+        position: absolute;
+        right: 20px;
+        top: 15px;
+        font-size: 28px;
+        font-weight: bold;
+        color: var(--text-muted);
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .modal-close:hover {
+        color: var(--text-primary);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--bg-secondary), #0f172a);
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-header h2 {
+        margin: 0 0 8px 0;
+        font-size: 1.5rem;
+        color: var(--text-primary);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-badge.hot { background: #fee2e2; color: #dc2626; }
+    .status-badge.warm { background: #fef3c7; color: #d97706; }
+    .status-badge.cold { background: #e0f2fe; color: #0284c7; }
+    .status-badge.won { background: #dcfce7; color: #16a34a; }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 20px 24px;
+    }
+
+    .detail-section {
+        margin-bottom: 0;
+    }
+
+    .detail-section h3 {
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+    }
+
+    .detail-label {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .detail-value {
+        color: var(--text-primary);
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-align: right;
+    }
+
+    .count-badge {
+        background: var(--primary);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        margin-left: 8px;
+    }
+
+    /* Timeline Styles */
+    .timeline {
+        padding: 0 24px 20px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .timeline-empty {
+        text-align: center;
+        color: var(--text-muted);
+        padding: 40px;
+    }
+
+    .timeline-item {
+        display: flex;
+        padding: 12px 0;
+        border-left: 2px solid rgba(255, 255, 255, 0.1);
+        margin-left: 12px;
+        padding-left: 20px;
+        position: relative;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -6px;
+        top: 16px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--primary);
+    }
+
+    .timeline-item.won::before { background: #16a34a; }
+    .timeline-item.warm::before { background: #d97706; }
+    .timeline-item.cold::before { background: #0284c7; }
+
+    .timeline-date {
+        min-width: 80px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-outcome {
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .timeline-outcome.won { color: #16a34a; }
+    .timeline-outcome.warm { color: #d97706; }
+    .timeline-outcome.cold { color: #0284c7; }
+
+    .timeline-notes {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    /* Stats in Modal */
+    .detail-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        padding: 16px 24px 20px;
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 12px;
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+    </style>
 </head>
 
 <body>
@@ -858,6 +1029,91 @@
               <tr><td colspan="5">Loading...</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Prospect Detail Modal -->
+      <div id="prospect-detail-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+          <span class="modal-close" onclick="closeProspectModal()">&times;</span>
+          <div id="prospect-detail-content">
+            <div class="modal-header">
+              <h2 id="detail-company-name">Company Name</h2>
+              <span id="detail-status" class="status-badge">Status</span>
+            </div>
+            
+            <div class="detail-grid">
+              <div class="detail-section">
+                <h3>Contact Information</h3>
+                <div class="detail-row">
+                  <span class="detail-label">Company ID:</span>
+                  <span id="detail-company-id" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Address:</span>
+                  <span id="detail-address" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">City:</span>
+                  <span id="detail-city" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Zip:</span>
+                  <span id="detail-zip" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Industry:</span>
+                  <span id="detail-industry" class="detail-value">-</span>
+                </div>
+              </div>
+              
+              <div class="detail-section">
+                <h3>Pipeline Info</h3>
+                <div class="detail-row">
+                  <span class="detail-label">Priority Score:</span>
+                  <span id="detail-priority" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Urgency:</span>
+                  <span id="detail-urgency" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Last Outcome:</span>
+                  <span id="detail-outcome" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Last Contact:</span>
+                  <span id="detail-last-contact" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">Days Since:</span>
+                  <span id="detail-days-since" class="detail-value">-</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="detail-section">
+              <h3>Outreach History <span id="detail-outreach-count" class="count-badge"></span></h3>
+              <div id="detail-timeline" class="timeline">
+                <div class="timeline-empty">Loading outreach history...</div>
+              </div>
+            </div>
+            
+            <div class="detail-stats">
+              <div class="stat-card">
+                <div class="stat-value" id="stat-total-outreach">0</div>
+                <div class="stat-label">Total Outreach</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="stat-won">0</div>
+                <div class="stat-label">Won</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="stat-warm">0</div>
+                <div class="stat-label">Interested</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -1036,16 +1292,25 @@
        */
       function buildListItem(primary, secondary, options) {
         options = options || {};
-        var primaryEscaped = escapeHtml(primary || 'Unknown');
-        var secondaryEscaped = escapeHtml(secondary || '');
-        
-        var badgeClass = escapeAttribute((options.badgeClass || secondary || '').toLowerCase());
-        var onclick = options.onclick ? 'onclick="' + escapeAttribute(options.onclick) + '"' : '';
-        
-        return '<div class="list-item" ' + onclick + '>' +
-                 '<span><strong>' + primaryEscaped + '</strong></span>' +
-                 (secondary ? '<span class="badge ' + badgeClass + '">' + secondaryEscaped + '</span>' : '') +
-               '</div>';
+        var item = document.createElement('div');
+        item.className = 'list-item';
+        if (options.onclick) {
+          item.setAttribute('onclick', options.onclick);
+        }
+
+        var primarySpan = document.createElement('span');
+        var strong = document.createElement('strong');
+        strong.textContent = primary || 'Unknown';
+        primarySpan.appendChild(strong);
+        item.appendChild(primarySpan);
+
+        if (secondary) {
+          var secondarySpan = document.createElement('span');
+          secondarySpan.className = 'badge ' + (options.badgeClass || secondary || '').toLowerCase();
+          secondarySpan.textContent = secondary;
+          item.appendChild(secondarySpan);
+        }
+        return item;
       }
       
       /**
@@ -1054,18 +1319,22 @@
        * @return {string} HTML string for table row
        */
       function buildTableRow(cells) {
-        if (!Array.isArray(cells)) return '';
+        if (!Array.isArray(cells)) return document.createElement('tr');
         
-        var html = '<tr>';
+        var tr = document.createElement('tr');
         cells.forEach(function(cell) {
-          var text = escapeHtml(cell.text || cell || 'N/A');
-          var colspan = cell.colspan ? ' colspan="' + escapeAttribute(String(cell.colspan)) + '"' : '';
-          var className = cell.className ? ' class="' + escapeAttribute(cell.className) + '"' : '';
-          html += '<td' + colspan + className + '>' + text + '</td>';
+            var td = document.createElement('td');
+            td.textContent = cell.text || cell || 'N/A';
+            if (cell.colspan) {
+                td.setAttribute('colspan', String(cell.colspan));
+            }
+            if (cell.className) {
+                td.className = cell.className;
+            }
+            tr.appendChild(td);
         });
-        html += '</tr>';
         
-        return html;
+        return tr;
       }
       
       /**
@@ -1077,19 +1346,25 @@
       function buildPipelineDeal(deal, fields) {
         fields = fields || ['company name', 'urgencyband'];
         
-        var html = '<div class="pipeline-deal">';
+        var dealDiv = document.createElement('div');
+        dealDiv.className = 'pipeline-deal';
+
         fields.forEach(function(field) {
-          var value = deal[field] || '';
-          var escaped = escapeHtml(value);
-          if (field === 'company name') {
-            html += '<strong>' + escaped + '</strong><br>';
-          } else {
-            html += '<small>' + escaped + '</small><br>';
-          }
+            var value = deal[field] || '';
+            if (field === 'company name') {
+                var strong = document.createElement('strong');
+                strong.textContent = value;
+                dealDiv.appendChild(strong);
+                dealDiv.appendChild(document.createElement('br'));
+            } else {
+                var small = document.createElement('small');
+                small.textContent = value;
+                dealDiv.appendChild(small);
+                dealDiv.appendChild(document.createElement('br'));
+            }
         });
-        html += '</div>';
         
-        return html;
+        return dealDiv;
       }
       
       /**
@@ -1101,14 +1376,18 @@
        */
       function buildStatCard(title, value, options) {
         options = options || {};
-        var titleEscaped = escapeHtml(title || '');
-        var valueEscaped = escapeHtml(String(value || 0));
-        var className = 'stat-card' + (options.accent ? ' ' + options.accent : '') + (options.win ? ' win' : '');
+        var card = document.createElement('div');
+        card.className = 'stat-card' + (options.accent ? ' ' + options.accent : '') + (options.win ? ' win' : '');
         
-        return '<div class="' + escapeAttribute(className) + '">' +
-                 '<h4>' + titleEscaped + '</h4>' +
-                 '<h2>' + valueEscaped + '</h2>' +
-               '</div>';
+        var h4 = document.createElement('h4');
+        h4.textContent = title || '';
+        card.appendChild(h4);
+
+        var h2 = document.createElement('h2');
+        h2.textContent = String(value || 0);
+        card.appendChild(h2);
+
+        return card;
       }
       
       // ============================================================================
@@ -1214,39 +1493,46 @@
 
       var stats = data.pipeline || { total: 0, hot: 0, warm: 0, won: 0 };
       
-      var statCardsHtml = 
-        HtmlSafeRenderer.buildStatCard('PROSPECTS', stats.total || 0, {}) +
-        HtmlSafeRenderer.buildStatCard('HOT LEADS', stats.hot || 0, { accent: 'accent' }) +
-        HtmlSafeRenderer.buildStatCard('WARM LEADS', stats.warm || 0, {}) +
-        HtmlSafeRenderer.buildStatCard('TOTAL WINS', stats.won || 0, { win: true });
-      
-      HtmlSafeRenderer.setInnerHtml('stat-cards', statCardsHtml);
+      var statCardsContainer = document.getElementById('stat-cards');
+      statCardsContainer.innerHTML = ''; // Clear existing
+      statCardsContainer.appendChild(HtmlSafeRenderer.buildStatCard('PROSPECTS', stats.total || 0, {}));
+      statCardsContainer.appendChild(HtmlSafeRenderer.buildStatCard('HOT LEADS', stats.hot || 0, { accent: 'accent' }));
+      statCardsContainer.appendChild(HtmlSafeRenderer.buildStatCard('WARM LEADS', stats.warm || 0, {}));
+      statCardsContainer.appendChild(HtmlSafeRenderer.buildStatCard('TOTAL WINS', stats.won || 0, { win: true }));
 
+      var urgentList = document.getElementById('urgent-list');
+      urgentList.innerHTML = ''; // Clear existing
       if (data.prospects && Array.isArray(data.prospects) && data.prospects.length > 0) {
-        var urgentHtml = data.prospects.map(function(p) {
-          return HtmlSafeRenderer.buildListItem(
+        data.prospects.forEach(function(p) {
+          urgentList.appendChild(HtmlSafeRenderer.buildListItem(
             p.companyName || 'Unknown',
             p.urgencyBand || 'N/A',
             { badgeClass: (p.urgencyBand || '').toLowerCase() }
-          );
-        }).join('');
-        HtmlSafeRenderer.setInnerHtml('urgent-list', urgentHtml);
+          ));
+        });
       } else {
-        HtmlSafeRenderer.setInnerHtml('urgent-list', 
-          '<div style="padding: 10px; color: #666;">No urgent prospects</div>');
+        var empty = document.createElement('div');
+        empty.style.padding = '10px';
+        empty.style.color = '#666';
+        empty.textContent = 'No urgent prospects';
+        urgentList.appendChild(empty);
       }
 
+      var winsList = document.getElementById('wins-list');
+      winsList.innerHTML = ''; // Clear existing
       if (data.accounts && Array.isArray(data.accounts) && data.accounts.length > 0) {
-        var winsHtml = data.accounts.map(function(a) {
-          return HtmlSafeRenderer.buildListItem(
+        data.accounts.forEach(function(a) {
+          winsList.appendChild(HtmlSafeRenderer.buildListItem(
             a.companyName || 'Unknown Company',
             a.rolloffContainerSize || 'N/A'
-          );
-        }).join('');
-        HtmlSafeRenderer.setInnerHtml('wins-list', winsHtml);
+          ));
+        });
       } else {
-        HtmlSafeRenderer.setInnerHtml('wins-list', 
-          '<div style="padding: 10px; color: #666;">No recent wins</div>');
+        var empty = document.createElement('div');
+        empty.style.padding = '10px';
+        empty.style.color = '#666';
+        empty.textContent = 'No recent wins';
+        winsList.appendChild(empty);
       }
     }
 
@@ -1263,34 +1549,28 @@
         won: data.won || []
       };
 
-      var hotHtml = stages.hot.length > 0 ? 
-        stages.hot.map(function(p) { 
-          return HtmlSafeRenderer.buildPipelineDeal(p, ['companyName', 'urgencyBand']); 
-        }).join('') : 
-        '<div class="empty-state"><i class="fas fa-inbox"></i>No hot prospects</div>';
-      
-      var warmHtml = stages.warm.length > 0 ? 
-        stages.warm.map(function(p) { 
-          return HtmlSafeRenderer.buildPipelineDeal(p, ['companyName', 'urgencyBand']); 
-        }).join('') : 
-        '<div class="empty-state"><i class="fas fa-inbox"></i>No warm prospects</div>';
-      
-      var coldHtml = stages.cold.length > 0 ? 
-        stages.cold.map(function(p) { 
-          return HtmlSafeRenderer.buildPipelineDeal(p, ['companyName', 'urgencyBand']); 
-        }).join('') : 
-        '<div class="empty-state"><i class="fas fa-inbox"></i>No cold prospects</div>';
-      
-      var wonHtml = stages.won.length > 0 ? 
-        stages.won.map(function(p) { 
-          return HtmlSafeRenderer.buildPipelineDeal(p, ['companyName', 'timestamp']); 
-        }).join('') : 
-        '<div class="empty-state"><i class="fas fa-trophy"></i>No wins yet</div>';
-      
-      HtmlSafeRenderer.setInnerHtml('pipeline-hot', hotHtml);
-      HtmlSafeRenderer.setInnerHtml('pipeline-warm', warmHtml);
-      HtmlSafeRenderer.setInnerHtml('pipeline-cold', coldHtml);
-      HtmlSafeRenderer.setInnerHtml('pipeline-won', wonHtml);
+      function renderStage(stageName, deals, fields) {
+        var container = document.getElementById('pipeline-' + stageName);
+        container.innerHTML = ''; // Clear existing
+        if (deals.length > 0) {
+          deals.forEach(function(deal) {
+            container.appendChild(HtmlSafeRenderer.buildPipelineDeal(deal, fields));
+          });
+        } else {
+          var emptyState = document.createElement('div');
+          emptyState.className = 'empty-state';
+          var icon = document.createElement('i');
+          icon.className = 'fas ' + (stageName === 'won' ? 'fa-trophy' : 'fa-inbox');
+          emptyState.appendChild(icon);
+          emptyState.appendChild(document.createTextNode('No ' + stageName + ' prospects'));
+          container.appendChild(emptyState);
+        }
+      }
+
+      renderStage('hot', stages.hot, ['companyName', 'urgencyBand']);
+      renderStage('warm', stages.warm, ['companyName', 'urgencyBand']);
+      renderStage('cold', stages.cold, ['companyName', 'urgencyBand']);
+      renderStage('won', stages.won, ['companyName', 'timestamp']);
     }
 
     function renderProspects(data) {
@@ -1304,23 +1584,34 @@
     }
 
     function updateProspectsTable(prospects) {
+      var tableBody = document.getElementById('prospects-table-body');
+      tableBody.innerHTML = ''; // Clear existing
+
       if (!prospects || prospects.length === 0) {
-        HtmlSafeRenderer.setInnerHtml('prospects-table-body', 
-          '<tr><td colspan="5" style="text-align: center; color: #666;">No prospects found</td></tr>');
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.setAttribute('colspan', '5');
+        td.style.textAlign = 'center';
+        td.style.color = '#666';
+        td.textContent = 'No prospects found';
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
         return;
       }
       
-      var rowsHtml = prospects.map(function(p) {
-        return HtmlSafeRenderer.buildTableRow([
+      prospects.forEach(function(p) {
+        var row = HtmlSafeRenderer.buildTableRow([
           { text: p.companyName || 'Unknown', className: '' },
           { text: p.contactStatus || 'N/A', className: 'badge ' + (p.contactStatus || '').toLowerCase() },
           { text: p.urgencyBand || 'N/A', className: '' },
           { text: p.priorityScore || 'N/A', className: '' },
           { text: p.lastOutreachDate || 'N/A', className: '' }
         ]);
-      }).join('');
-      
-      HtmlSafeRenderer.setInnerHtml('prospects-table-body', rowsHtml);
+        // Add click handler to open detail modal
+        row.style.cursor = 'pointer';
+        row.onclick = function() { openProspectDetail(p.companyId || p.companyid || ''); };
+        tableBody.appendChild(row);
+      });
     }
 
     function filterProspects() {
@@ -1338,6 +1629,111 @@
 
       updateProspectsTable(filtered);
     }
+
+    // ============================================================================
+    // PROSPECT DETAIL MODAL FUNCTIONS
+    // ============================================================================
+
+    async function openProspectDetail(companyId) {
+      if (!companyId) {
+        console.warn('No companyId provided to openProspectDetail');
+        return;
+      }
+      
+      var modal = document.getElementById('prospect-detail-modal');
+      var content = document.getElementById('detail-company-name');
+      
+      // Show modal with loading state
+      content.textContent = 'Loading...';
+      modal.style.display = 'block';
+      
+      try {
+        var response = await google.script.run.withSuccessHandler(function(result) {
+          displayProspectDetails(result);
+        }).withFailureHandler(function(error) {
+          console.error('Error loading prospect details:', error);
+          content.textContent = 'Error loading details';
+        }).crmGateway({ action: 'GET_PROSPECT_DETAILS', payload: { companyId: companyId } });
+      } catch (e) {
+        console.error('Exception in openProspectDetail:', e);
+      }
+    }
+
+    function displayProspectDetails(data) {
+      if (!data || !data.success || !data.data) {
+        document.getElementById('detail-company-name').textContent = 'Not Found';
+        return;
+      }
+      
+      var prospect = data.data.prospect;
+      var stats = data.data.stats;
+      var timeline = data.data.timeline;
+      
+      // Basic info
+      document.getElementById('detail-company-name').textContent = prospect.companyName || 'Unknown';
+      document.getElementById('detail-company-id').textContent = prospect.companyId || '-';
+      document.getElementById('detail-address').textContent = prospect.address || '-';
+      document.getElementById('detail-city').textContent = prospect.city || '-';
+      document.getElementById('detail-zip').textContent = prospect.zipCode || '-';
+      document.getElementById('detail-industry').textContent = prospect.industry || '-';
+      
+      // Pipeline info
+      document.getElementById('detail-priority').textContent = prospect.priorityScore || '-';
+      document.getElementById('detail-urgency').textContent = prospect.urgencyBand || '-';
+      document.getElementById('detail-outcome').textContent = prospect.lastOutcome || '-';
+      document.getElementById('detail-last-contact').textContent = prospect.lastOutreachDate || '-';
+      document.getElementById('detail-days-since').textContent = prospect.daysSinceContact || '-';
+      
+      // Status badge
+      var statusEl = document.getElementById('detail-status');
+      var status = (prospect.contactStatus || '').toLowerCase();
+      statusEl.textContent = prospect.contactStatus || 'Unknown';
+      statusEl.className = 'status-badge';
+      if (status.includes('hot') || status.includes('won')) statusEl.classList.add('hot');
+      else if (status.includes('warm')) statusEl.classList.add('warm');
+      else if (status.includes('cold') || status.includes('disqualified')) statusEl.classList.add('cold');
+      
+      // Stats
+      document.getElementById('stat-total-outreach').textContent = stats.totalOutreach || 0;
+      document.getElementById('stat-won').textContent = stats.wonCount || 0;
+      document.getElementById('stat-warm').textContent = stats.warmCount || 0;
+      document.getElementById('detail-outreach-count').textContent = '(' + (stats.totalOutreach || 0) + ')';
+      
+      // Timeline
+      var timelineEl = document.getElementById('detail-timeline');
+      if (!timeline || timeline.length === 0) {
+        timelineEl.innerHTML = '<div class="timeline-empty">No outreach history</div>';
+      } else {
+        var html = '';
+        timeline.forEach(function(item) {
+          var outcomeClass = 'cold';
+          if ((item.outcome || '').toLowerCase().includes('won')) outcomeClass = 'won';
+          else if ((item.outcome || '').toLowerCase().includes('warm') || (item.outcome || '').toLowerCase().includes('interested')) outcomeClass = 'warm';
+          
+          html += '<div class="timeline-item ' + outcomeClass + '">';
+          html += '<div class="timeline-date">' + (item.date || '-') + '</div>';
+          html += '<div class="timeline-content">';
+          html += '<div class="timeline-outcome ' + outcomeClass + '">' + escapeHtml(item.outcome || '-') + '</div>';
+          if (item.notes) {
+            html += '<div class="timeline-notes">' + escapeHtml(item.notes) + '</div>';
+          }
+          html += '</div></div>';
+        });
+        timelineEl.innerHTML = html;
+      }
+    }
+
+    function closeProspectModal() {
+      document.getElementById('prospect-detail-modal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      var modal = document.getElementById('prospect-detail-modal');
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    };
 
     async function switchTab(view, el) {
       // Update nav state

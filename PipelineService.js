@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Pipeline and Metrics Service
  * Specialized calculations for the K&L SuiteCRM View.
  * CLEAN-ROOM VERSION: No Unicode/Non-Breaking Spaces.
@@ -60,12 +60,12 @@ var PipelineService = {
       console.log('PipelineService.calculateFunnel: Processing', prospects.length, 'prospects and', outreach.length, 'outreach records');
 
       var hotCount = prospects.filter(function(p) {
-        var status = (p.contactstatus || p.contactStatus || '').toString().toLowerCase();
+        var status = (p['contact status'] || p.contactstatus || p.contactStatus || '').toString().toLowerCase();
         return status.includes('interested (hot)') || status.includes('hot');
       }).length;
 
       var warmCount = prospects.filter(function(p) {
-        var status = (p.contactstatus || p.contactStatus || '').toString().toLowerCase();
+        var status = (p['contact status'] || p.contactstatus || p.contactStatus || '').toString().toLowerCase();
         return status.includes('interested (warm)') || status.includes('warm');
       }).length;
 
@@ -112,17 +112,16 @@ var PipelineService = {
       
       var urgent = data
         .filter(function(p) { 
-          // Try both normalized and canonical property names
-          var band = (p.urgencyband || p.urgencyBand || '').toString().toLowerCase();
+          var band = (p['urgency band'] || p.urgencyband || p.urgencyBand || '').toString().toLowerCase();
           var isUrgent = band === 'high' || band === 'overdue';
           if (isUrgent) {
-            console.log('PipelineService.getUrgentProspects: Found urgent prospect:', p.companyname || p.companyName, 'with band:', band);
+            console.log('PipelineService.getUrgentProspects: Found urgent prospect:', p['company name'] || p.companyname || p.companyName, 'with band:', band);
           }
           return isUrgent; 
         })
         .sort(function(a, b) { 
-          var scoreA = parseFloat(a.urgencyscore || a.urgencyScore) || 0;
-          var scoreB = parseFloat(b.urgencyscore || b.urgencyScore) || 0;
+          var scoreA = parseFloat(a['urgency score'] || a.urgencyscore || a.urgencyScore) || 0;
+          var scoreB = parseFloat(b['urgency score'] || b.urgencyscore || b.urgencyScore) || 0;
           return scoreB - scoreA; 
         })
         .slice(0, 10);
@@ -152,8 +151,8 @@ var PipelineService = {
       console.log('PipelineService.getRecentWins: Processing', wins.length, 'accounts');
 
       var sorted = wins.sort(function(a, b) {
-        var dateA = new Date(a.timestamp || 0);
-        var dateB = new Date(b.timestamp || 0);
+        var dateA = new Date(a['timestamp'] || a.timestamp || 0);
+        var dateB = new Date(b['timestamp'] || b.timestamp || 0);
         return dateB - dateA;
       }).slice(0, 5);
       
@@ -177,9 +176,9 @@ var PipelineService = {
         return []; 
       }
 
-      var statusLower = status.toLowerCase();
+      var statusLower = status.toString().toLowerCase();
       var filtered = data.filter(function(p) {
-        var contactStatus = (p.contactstatus || p.contactStatus || '').toString().toLowerCase();
+        var contactStatus = (p['contact status'] || p.contactstatus || p.contactStatus || '').toString().toLowerCase();
         return contactStatus === statusLower || 
                (statusLower === 'hot' && contactStatus.includes('interested (hot)')) ||
                (statusLower === 'warm' && contactStatus.includes('interested (warm)'));

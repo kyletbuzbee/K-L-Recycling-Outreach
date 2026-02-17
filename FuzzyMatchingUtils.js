@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Fuzzy Matching Utilities for K&L Recycling CRM
  * Handles company name/ID differences between Outreach and Prospects sheets
  * Version: 1.0.0
@@ -102,31 +102,39 @@ function calculateStringSimilarity(str1, str2) {
  * @return {number} Levenshtein distance
  */
 function levenshteinDistance(str1, str2) {
-  var matrix = [];
-  
-  for (var i = 0; i <= str1.length; i++) {
-    matrix[i] = [i];
-  }
-  
-  for (var j = 0; j <= str2.length; j++) {
-    matrix[0][j] = j;
-  }
-  
-  for (var i = 1; i <= str1.length; i++) {
-    for (var j = 1; j <= str2.length; j++) {
-      if (str1.charAt(i - 1) === str2.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j - 1] + 1
-        );
+  try {
+    str1 = str1 || '';
+    str2 = str2 || '';
+    
+    var matrix = [];
+    
+    for (var i = 0; i <= str1.length; i++) {
+      matrix[i] = [i];
+    }
+    
+    for (var j = 0; j <= str2.length; j++) {
+      matrix[0][j] = j;
+    }
+    
+    for (var i = 1; i <= str1.length; i++) {
+      for (var j = 1; j <= str2.length; j++) {
+        if (str1.charAt(i - 1) === str2.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j - 1] + 1
+          );
+        }
       }
     }
+    
+    return matrix[str1.length][str2.length];
+  } catch (e) {
+    console.error('levenshteinDistance error:', e.message);
+    return 0;
   }
-  
-  return matrix[str1.length][str2.length];
 }
 
 /**

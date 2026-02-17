@@ -1193,36 +1193,43 @@ var DataValidation = {
    * @return {number} Distance
    */
   simpleLevenshtein: function(a, b) {
-    if (a.length === 0) return b.length;
-    if (b.length === 0) return a.length;
+    try {
+      a = a || '';
+      b = b || '';
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
 
-    var matrix = [];
+      var matrix = [];
 
-    // Initialize matrix
-    for (var i = 0; i <= b.length; i++) {
-      matrix[i] = [i];
-    }
+      // Initialize matrix
+      for (var i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+      }
 
-    for (var j = 0; j <= a.length; j++) {
-      matrix[0][j] = j;
-    }
+      for (var j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+      }
 
-    // Fill matrix
-    for (var i = 1; i <= b.length; i++) {
-      for (var j = 1; j <= a.length; j++) {
-        if (b.charAt(i-1) === a.charAt(j-1)) {
-          matrix[i][j] = matrix[i-1][j-1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i-1][j-1] + 1, // substitution
-            matrix[i][j-1] + 1,   // insertion
-            matrix[i-1][j] + 1    // deletion
-          );
+      // Fill matrix
+      for (var i = 1; i <= b.length; i++) {
+        for (var j = 1; j <= a.length; j++) {
+          if (b.charAt(i-1) === a.charAt(j-1)) {
+            matrix[i][j] = matrix[i-1][j-1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i-1][j-1] + 1, // substitution
+              matrix[i][j-1] + 1,   // insertion
+              matrix[i-1][j] + 1    // deletion
+            );
+          }
         }
       }
-    }
 
-    return matrix[b.length][a.length];
+      return matrix[b.length][a.length];
+    } catch (e) {
+      console.error('simpleLevenshtein error:', e.message);
+      return 0;
+    }
   },
 
   /**

@@ -18,25 +18,25 @@ function runMasterAutofill() {
 }
 
 function autofillProspects(ss) {
-  const sheet = ss.getSheetByName('Prospects');
+  const sheet = ss.getSheetByName(CONFIG.SHEETS.PROSPECTS);
   if (!sheet) return;
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return;
 
   // Last Outcome (H) & Last Outreach Date (I)
-  sheet.getRange(2, 8).setFormula('=XLOOKUP(A2, Outreach!$B:$B, Outreach!$F:$F, "", 0, -1)');
-  sheet.getRange(2, 9).setFormula('=XLOOKUP(A2, Outreach!$B:$B, Outreach!$D:$D, "", 0, -1)');
+  sheet.getRange(2, 8).setFormula(`=XLOOKUP(A2, ${CONFIG.SHEETS.OUTREACH}!$B:$B, ${CONFIG.SHEETS.OUTREACH}!$F:$F, "", 0, -1)`);
+  sheet.getRange(2, 9).setFormula(`=XLOOKUP(A2, ${CONFIG.SHEETS.OUTREACH}!$B:$B, ${CONFIG.SHEETS.OUTREACH}!$D:$D, "", 0, -1)`);
   
   // Days Since (J), Countdown (K), Next Step (L)
   sheet.getRange(2, 10).setFormula('=IF(I2="", "", TODAY() - I2)');
   sheet.getRange(2, 11).setFormula('=L2 - TODAY()');
-  sheet.getRange(2, 12).setFormula('=IF(I2="", TODAY()+14, I2 + IFERROR(XLOOKUP(H2, Settings!$B:$B, Settings!$E:$E), 14))');
+  sheet.getRange(2, 12).setFormula(`=IF(I2="", TODAY()+14, I2 + IFERROR(XLOOKUP(H2, ${CONFIG.SHEETS.SETTINGS}!$B:$B, ${CONFIG.SHEETS.SETTINGS}!$E:$E), 14))`);
   
   // Contact Status (M)
-  sheet.getRange(2, 13).setFormula('=IFERROR(XLOOKUP(H2, Settings!$B:$B, Settings!$D:$D), "Prospect")');
+  sheet.getRange(2, 13).setFormula(`=IFERROR(XLOOKUP(H2, ${CONFIG.SHEETS.SETTINGS}!$B:$B, ${CONFIG.SHEETS.SETTINGS}!$D:$D), "Prospect")`);
   
   // Priority Score (O) - The "Architect" Version with Keyword Matching
-  const priorityFormula = `=LET(ind, E2, days, J2, stale, 60, base, IFERROR(XLOOKUP(ind, Settings!$B:$B, Settings!$C:$C), IFERROR(XLOOKUP("*"&ind&"*", Settings!$D:$D, Settings!$C:$C, 50, 2), 50)), mult, IF(days > stale, 0.3, 1), ROUND(base * mult))`;
+  const priorityFormula = `=LET(ind, E2, days, J2, stale, 60, base, IFERROR(XLOOKUP(ind, ${CONFIG.SHEETS.SETTINGS}!$B:$B, ${CONFIG.SHEETS.SETTINGS}!$C:$C), IFERROR(XLOOKUP("*"&ind&"*", ${CONFIG.SHEETS.SETTINGS}!$D:$D, ${CONFIG.SHEETS.SETTINGS}!$C:$C, 50, 2), 50)), mult, IF(days > stale, 0.3, 1), ROUND(base * mult))`;
   sheet.getRange(2, 15).setFormula(priorityFormula);
   
   // Urgency Band (P) & Urgency Score (Q)
@@ -52,17 +52,17 @@ function autofillProspects(ss) {
 }
 
 function autofillOutreach(ss) {
-  const sheet = ss.getSheetByName('Outreach');
+  const sheet = ss.getSheetByName(CONFIG.SHEETS.OUTREACH);
   if (!sheet) return;
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return;
 
   // Stage (G) & Status (H)
-  sheet.getRange(2, 7).setFormula('=IF(F2="Initial Contact", "Outreach", IFERROR(XLOOKUP(F2, Settings!$B:$B, Settings!$C:$C), "Outreach"))');
-  sheet.getRange(2, 8).setFormula('=IFERROR(XLOOKUP(F2, Settings!$B:$B, Settings!$D:$D), "Cold")');
+  sheet.getRange(2, 7).setFormula(`=IF(F2="Initial Contact", "Outreach", IFERROR(XLOOKUP(F2, ${CONFIG.SHEETS.SETTINGS}!$B:$B, ${CONFIG.SHEETS.SETTINGS}!$C:$C), "Outreach"))`);
+  sheet.getRange(2, 8).setFormula(`=IFERROR(XLOOKUP(F2, ${CONFIG.SHEETS.SETTINGS}!$B:$B, ${CONFIG.SHEETS.SETTINGS}!$D:$D), "Cold")`);
   
   // Next Visit Date (I), Days Since (J), Countdown (K)
-  sheet.getRange(2, 9).setFormula('=IF(D2="", "", D2 + IFERROR(XLOOKUP(F2, Settings!$B:$B, Settings!$E:$E), 14))');
+  sheet.getRange(2, 9).setFormula(`=IF(D2="", "", D2 + IFERROR(XLOOKUP(F2, ${CONFIG.SHEETS.SETTINGS}!$B:$B, ${CONFIG.SHEETS.SETTINGS}!$E:$E), 14))`);
   sheet.getRange(2, 10).setFormula('=IF(D2="", "", TODAY() - D2)');
   sheet.getRange(2, 11).setFormula('=IF(I2="", "", I2 - TODAY())');
   

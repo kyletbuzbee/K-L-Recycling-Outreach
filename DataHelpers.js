@@ -765,23 +765,61 @@ function prependRowsBatch(sheetName, rowObjects) {
       return { success: false, error: 'rowObjects must be a non-empty array' };
     }
     
-    var results = [];
+    var accessResult = SharedUtils.checkSpreadsheetAccess('prependRowsBatch');
+    if (!accessResult.success) {
+      return { success: false, error: accessResult.error };
+    }
+    var ss = accessResult.spreadsheet;
+    var sheet = ss.getSheetByName(sn);
+    if (!sheet) {
+        return { success: false, error: 'Sheet not found: ' + sn };
+    }
+
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var rowsToPrepend = [];
+
     for (var i = 0; i < rows.length; i++) {
-      var result = prependRowSafe(sn, rows[i]);
-      results.push({
-        index: i,
-        success: result.success,
-        error: result.error || null
-      });
+        var rowObj = rows[i];
+        var rowArray = [];
+        for (var j = 0; j < headers.length; j++) {
+            var header = headers[j];
+            var key = SharedUtils.normalizeHeader(header);
+            var fallbackKey = String(header).toLowerCase().trim();
+            var cellValue = '';
+
+            if (rowObj.hasOwnProperty(key)) {
+                cellValue = rowObj[key];
+            } else if (rowObj.hasOwnProperty(fallbackKey)) {
+                cellValue = rowObj[fallbackKey];
+            } else {
+                var found = false;
+                for (var objKey in rowObj) {
+                    if (SharedUtils.normalizeHeader(objKey) === key) {
+                        cellValue = rowObj[objKey];
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    cellValue = '';
+                }
+            }
+            rowArray.push(cellValue);
+        }
+        rowsToPrepend.push(rowArray);
+    }
+
+    if (rowsToPrepend.length > 0) {
+        sheet.insertRowsBefore(2, rowsToPrepend.length);
+        sheet.getRange(2, 1, rowsToPrepend.length, headers.length).setValues(rowsToPrepend);
     }
     
-    var successCount = results.filter(function(r) { return r.success; }).length;
     return {
-      success: successCount === results.length,
-      total: results.length,
-      successful: successCount,
-      failed: results.length - successCount,
-      results: results
+      success: true,
+      total: rows.length,
+      successful: rows.length,
+      failed: 0,
+      results: []
     };
   };
   
@@ -800,23 +838,61 @@ function appendRowsBatch(sheetName, rowObjects) {
       return { success: false, error: 'rowObjects must be a non-empty array' };
     }
     
-    var results = [];
+    var accessResult = SharedUtils.checkSpreadsheetAccess('appendRowsBatch');
+    if (!accessResult.success) {
+      return { success: false, error: accessResult.error };
+    }
+    var ss = accessResult.spreadsheet;
+    var sheet = ss.getSheetByName(sn);
+    if (!sheet) {
+        return { success: false, error: 'Sheet not found: ' + sn };
+    }
+
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var rowsToAppend = [];
+
     for (var i = 0; i < rows.length; i++) {
-      var result = appendRowSafe(sn, rows[i]);
-      results.push({
-        index: i,
-        success: result.success,
-        error: result.error || null
-      });
+        var rowObj = rows[i];
+        var rowArray = [];
+        for (var j = 0; j < headers.length; j++) {
+            var header = headers[j];
+            var key = SharedUtils.normalizeHeader(header);
+            var fallbackKey = String(header).toLowerCase().trim();
+            var cellValue = '';
+
+            if (rowObj.hasOwnProperty(key)) {
+                cellValue = rowObj[key];
+            } else if (rowObj.hasOwnProperty(fallbackKey)) {
+                cellValue = rowObj[fallbackKey];
+            } else {
+                var found = false;
+                for (var objKey in rowObj) {
+                    if (SharedUtils.normalizeHeader(objKey) === key) {
+                        cellValue = rowObj[objKey];
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    cellValue = '';
+                }
+            }
+            rowArray.push(cellValue);
+        }
+        rowsToAppend.push(rowArray);
+    }
+
+    if (rowsToAppend.length > 0) {
+        var lastRow = sheet.getLastRow();
+        sheet.getRange(lastRow + 1, 1, rowsToAppend.length, headers.length).setValues(rowsToAppend);
     }
     
-    var successCount = results.filter(function(r) { return r.success; }).length;
     return {
-      success: successCount === results.length,
-      total: results.length,
-      successful: successCount,
-      failed: results.length - successCount,
-      results: results
+      success: true,
+      total: rows.length,
+      successful: rows.length,
+      failed: 0,
+      results: []
     };
   };
   
